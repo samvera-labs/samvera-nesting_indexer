@@ -31,11 +31,13 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rspec", "~> 3.0"
   spec.add_development_dependency "rspec-its"
   spec.add_development_dependency "guard-rspec"
-  spec.add_development_dependency "terminal-notifier-guard", "~> 1.6.4"
+  spec.add_development_dependency "terminal-notifier-guard"
   spec.add_development_dependency "terminal-notifier"
   spec.add_development_dependency "rubocop"
   spec.add_development_dependency "simplecov"
   spec.add_development_dependency "codeclimate-test-reporter"
   spec.add_development_dependency "json"
+  # As a secondary dependency, listen is preventing bundling
+  spec.add_development_dependency "listen", '~> 3.0.8'
 
 end

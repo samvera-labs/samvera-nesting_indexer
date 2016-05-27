@@ -1,6 +1,7 @@
 require "curate/indexer/version"
 require "curate/indexer/caching_module"
 require "curate/indexer/reindexer"
+require "curate/indexer/persistence"
 
 require 'set'
 
@@ -202,9 +203,9 @@ module Curate
 
           define_method("add_#{method_name}") do |*pids|
             if instance_variable_get("@#{method_name}")
-              instance_variable_set("@#{method_name}", (instance_variable_get("@#{method_name}") + Array(*pids).flatten))
+              instance_variable_set("@#{method_name}", (instance_variable_get("@#{method_name}") + Array(pids).flatten))
             else
-              instance_variable_set("@#{method_name}", Set.new(Array(*pids).flatten))
+              instance_variable_set("@#{method_name}", Set.new(Array(pids).flatten))
             end
           end
         end
@@ -214,42 +215,6 @@ module Curate
         attr_writer :pid, :level
       end
       private_constant :Document
-    end
-
-    # Responsible for being a layer between Fedora and the heavy lifting of the
-    # reindexing processor. It has aspects that will need to change.
-    module Persistence
-      extend CachingModule
-
-      # This is a disposable intermediary between Fedora and the processing system for reindexing.
-      class Document
-        attr_reader :pid, :member_of
-        def initialize(pid:, member_of: [])
-          # A concession that when I make something it should be persisted.
-          Persistence.add_to_cache(pid, self)
-          self.pid = pid
-          self.member_of = member_of
-        end
-
-        def add_member_of(*pids)
-          @member_of += Array(pids).compact
-        end
-
-        private
-
-        attr_writer :pid
-        def member_of=(input)
-          # I'd prefer Array.wrap, but I'm assuming we won't have a DateTime object
-          @member_of = Set.new(Array(input).compact)
-        end
-      end
-      private_constant :Document
-
-      class Collection < Document
-      end
-
-      class Work < Document
-      end
     end
   end
 end

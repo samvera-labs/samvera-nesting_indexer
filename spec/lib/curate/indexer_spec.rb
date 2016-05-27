@@ -113,11 +113,13 @@ module Curate
       end
     end
     context 'a Diamond scenario' do
+      let(:persistence) do
+        { "a" => [], "b" => %w(a), "c" => %w(a), "1" => %w(b c) }
+      end
       before do
-        Indexer::Persistence::Collection.new(pid: 'a')
-        Indexer::Persistence::Collection.new(pid: 'b', member_of: %w(a))
-        Indexer::Persistence::Collection.new(pid: 'c', member_of: %w(a))
-        Indexer::Persistence::Work.new(pid: '1', member_of: %w(b c))
+        persistence.each_pair do |pid, member_of|
+          Indexer::Persistence::Document.new(pid: pid, member_of: member_of)
+        end
       end
 
       it 'should walk up the member_of relationships' do
@@ -148,10 +150,13 @@ module Curate
     end
 
     context 'a Triangle scenario' do
+      let(:persistence) do
+        { "a" => [], "b" => %w(a), "1" => %w(a b) }
+      end
       before do
-        Indexer::Persistence::Collection.new(pid: 'a')
-        Indexer::Persistence::Collection.new(pid: 'b', member_of: %w(a))
-        Indexer::Persistence::Work.new(pid: '1', member_of: %w(a b))
+        persistence.each_pair do |pid, member_of|
+          Indexer::Persistence::Document.new(pid: pid, member_of: member_of)
+        end
       end
 
       it 'should walk up the member_of relationships' do

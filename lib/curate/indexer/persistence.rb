@@ -39,7 +39,6 @@ module Curate
           @member_of = Set.new(input.flatten.compact)
         end
       end
-      private_constant :Document
 
       class Collection < Document
       end

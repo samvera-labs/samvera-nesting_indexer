@@ -107,8 +107,8 @@ module Curate
           self.pid = pid
           instance_exec { yield(self) } if block_given?
           # Ensuring that transitive relations always contain direct members
-          self.is_transitive_member_of = is_transitive_member_of + is_member_of
-          self.has_transitive_collection_members = has_transitive_collection_members + has_collection_members
+          add_is_transitive_member_of(is_member_of)
+          add_has_transitive_collection_members(has_collection_members)
         end
 
         [

@@ -5,9 +5,9 @@ module Curate
   module Indexer
     # Coordinates the reindexing of the entire direct relationship graph
     class Reindexer
-      def initialize(requested_pid:, max_level:)
-        self.requested_pid = requested_pid
-        self.max_level = max_level
+      def initialize(keywords = {})
+        self.requested_pid = keywords.fetch(:requested_pid)
+        self.max_level = keywords.fetch(:max_level)
         @document_to_reindex = Processing.find_or_create_processing_document_for(pid: requested_pid, level: 0)
         @rebuilder = Index.new_rebuilder(requested_for: document_to_reindex)
         @queue = Queue.new
@@ -18,7 +18,7 @@ module Curate
         document = document_to_reindex
         while document
           document.member_of.each do |member_of_pid|
-            reindex_relation(document: document, member_of_pid: member_of_pid)
+            reindex_relation(document, member_of_pid)
           end
           document = queue.dequeue
         end
@@ -29,15 +29,15 @@ module Curate
 
       attr_writer :requested_pid, :max_level
 
-      def reindex_relation(document:, member_of_pid:)
+      def reindex_relation(document, member_of_pid)
         next_level = document.level + 1
-        guard_max_level_achieved!(next_level: next_level)
+        guard_max_level_achieved!(next_level)
         member_of_document = Processing.find_or_create_processing_document_for(pid: member_of_pid, level: next_level)
         rebuilder.associate(document: document, member_of_document: member_of_document)
         queue.enqueue(member_of_document)
       end
 
-      def guard_max_level_achieved!(next_level:)
+      def guard_max_level_achieved!(next_level)
         return true if next_level < max_level
         raise(
           ReindexingReachedMaxLevelError,

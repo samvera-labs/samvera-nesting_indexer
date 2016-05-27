@@ -5,8 +5,8 @@ module Curate
     # Responsible for representing an index document
     class IndexingDocument
       attr_reader :pid
-      def initialize(pid:, &block)
-        self.pid = pid
+      def initialize(keywords = {}, &block)
+        self.pid = keywords.fetch(:pid)
         initialize_relationship_sets!
         instance_exec(self, &block) if block_given?
         # Ensuring that transitive relations always contain direct members

@@ -18,7 +18,7 @@ AllCops:
     - 'vendor/**/*'
     - 'tmp/**/*'
     - 'bin/**/*'
-  TargetRubyVersion: 2.2
+  TargetRubyVersion: 2.0
 LineLength:
   Description: 'Limit lines to 140 characters.'
   Max: 140

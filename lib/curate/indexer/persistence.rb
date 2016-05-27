@@ -16,11 +16,11 @@ module Curate
       # @see Curate::Indexer::IndexingDocument
       class Document
         attr_reader :pid
-        def initialize(pid:, member_of: [])
+        def initialize(keywords = {})
+          self.pid = keywords.fetch(:pid)
+          self.member_of = keywords.fetch(:member_of) { [] }
           # A concession that when I make something it should be persisted.
           Persistence.add_to_cache(pid, self)
-          self.pid = pid
-          self.member_of = member_of
         end
 
         def member_of

@@ -2,7 +2,6 @@ require 'spec_helper'
 require 'rspec/its'
 
 require 'set'
-require 'forwardable'
 
 module Curate
   module Indexer

@@ -302,64 +302,61 @@ module Curate
       context 'when building index for Work 2' do
         context 'and the existing index is not empty' do
           before do
-            Indexer.reindex(pid: '1')
-            # Skipping pid: 2 as I want to index it
-            Indexer.reindex(pid: '3')
-            Indexer.reindex(pid: '4')
-            Indexer.reindex(pid: '5')
-            Indexer.reindex(pid: '6')
+            %w(1 3 4 5 6).each do |pid|
+              Indexer.reindex(pid: pid)
+            end
           end
           it 'should walk up the is_member_of relationships and merge with existing index' do
             response = Indexer.reindex(pid: '2')
             expect(response.is_member_of).to eq(['b'])
-            expect(response.is_transitive_member_of).to eq(['b', 'a', 'd'])
+            expect(response.is_transitive_member_of).to eq(%w(b a d))
             expect(response.has_collection_members).to eq([])
             expect(response.has_transitive_collection_members).to eq([])
 
             indexed_collection_b = Indexer::Index::Query.find('b')
-            expect(indexed_collection_b.is_transitive_member_of).to eq(['a', 'd'])
-            expect(indexed_collection_b.is_member_of).to eq(['a', 'd'])
-            expect(indexed_collection_b.has_collection_members).to eq(['c', '2'])
-            expect(indexed_collection_b.has_transitive_collection_members.sort).to eq(['c', '3', '2'].sort)
+            expect(indexed_collection_b.is_transitive_member_of).to eq(%w(a d))
+            expect(indexed_collection_b.is_member_of).to eq(%w(a d))
+            expect(indexed_collection_b.has_collection_members).to eq(%w(c 2))
+            expect(indexed_collection_b.has_transitive_collection_members.sort).to eq(%w(c 3 2).sort)
 
             indexed_collection_a = Indexer::Index::Query.find('a')
             expect(indexed_collection_a.is_transitive_member_of).to eq([])
             expect(indexed_collection_a.is_member_of).to eq([])
-            expect(indexed_collection_a.has_collection_members).to eq(['1', 'b'])
-            expect(indexed_collection_a.has_transitive_collection_members.sort).to eq(['1', '2', '3', 'b', 'c'].sort)
+            expect(indexed_collection_a.has_collection_members).to eq(%w(1 b))
+            expect(indexed_collection_a.has_transitive_collection_members.sort).to eq(%w(1 2 3 b c))
 
             indexed_collection_d = Indexer::Index::Query.find('d')
             expect(indexed_collection_d.is_transitive_member_of).to eq([])
             expect(indexed_collection_d.is_member_of).to eq([])
-            expect(indexed_collection_d.has_collection_members).to eq(['b', '4'])
-            expect(indexed_collection_d.has_transitive_collection_members.sort).to eq(['2', '3', '4', 'b', 'c'].sort)
+            expect(indexed_collection_d.has_collection_members).to eq(%w(b 4))
+            expect(indexed_collection_d.has_transitive_collection_members.sort).to eq(%w(2 3 4 b c))
           end
         end
         context 'and the index is empty' do
           it 'should walk up the is_member_of relationships' do
             response = Indexer.reindex(pid: '2')
             expect(response.is_member_of).to eq(['b'])
-            expect(response.is_transitive_member_of).to eq(['b', 'a', 'd'])
+            expect(response.is_transitive_member_of).to eq(%w(b a d))
             expect(response.has_collection_members).to eq([])
             expect(response.has_transitive_collection_members).to eq([])
 
             indexed_collection_b = Indexer::Index::Query.find('b')
-            expect(indexed_collection_b.is_transitive_member_of).to eq(['a', 'd'])
-            expect(indexed_collection_b.is_member_of).to eq(['a', 'd'])
-            expect(indexed_collection_b.has_collection_members).to eq(['2'])
-            expect(indexed_collection_b.has_transitive_collection_members).to eq(['2'])
+            expect(indexed_collection_b.is_transitive_member_of).to eq(%w(a d))
+            expect(indexed_collection_b.is_member_of).to eq(%w(a d))
+            expect(indexed_collection_b.has_collection_members).to eq(%w(2))
+            expect(indexed_collection_b.has_transitive_collection_members).to eq(%w(2))
 
             indexed_collection_a = Indexer::Index::Query.find('a')
             expect(indexed_collection_a.is_transitive_member_of).to eq([])
             expect(indexed_collection_a.is_member_of).to eq([])
-            expect(indexed_collection_a.has_collection_members).to eq(['b'])
-            expect(indexed_collection_a.has_transitive_collection_members.sort).to eq(['2', 'b'].sort)
+            expect(indexed_collection_a.has_collection_members).to eq(%w(b))
+            expect(indexed_collection_a.has_transitive_collection_members.sort).to eq(%w(2 b))
 
             indexed_collection_d = Indexer::Index::Query.find('d')
             expect(indexed_collection_d.is_transitive_member_of).to eq([])
             expect(indexed_collection_d.is_member_of).to eq([])
-            expect(indexed_collection_d.has_collection_members).to eq(['b'])
-            expect(indexed_collection_d.has_transitive_collection_members.sort).to eq(['2', 'b'].sort)
+            expect(indexed_collection_d.has_collection_members).to eq(%w(b))
+            expect(indexed_collection_d.has_transitive_collection_members.sort).to eq(%w(2 b))
           end
         end
       end

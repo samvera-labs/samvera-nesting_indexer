@@ -112,9 +112,39 @@ module Curate
         end
       end
     end
+
+    # An assistive class for verification of graphs
+    class Verifier
+      attr_accessor :pid, :collection_members, :transitive_collection_members, :member_of, :transitive_member_of
+      def initialize(pid, options = {})
+        self.pid = pid
+        self.collection_members = options.fetch(:collection_members) { [] }
+        self.member_of = options.fetch(:member_of) { [] }
+        # A concession that transitive relationships are additive to the "direct" relationship
+        self.transitive_collection_members = (options.fetch(:transitive_collection_members) { [] } + collection_members).uniq
+        self.transitive_member_of = (options.fetch(:transitive_member_of) { [] } + member_of).uniq
+      end
+
+      def verified?
+        @item = Indexer::Index::Query.find(pid)
+        [:collection_members, :transitive_collection_members, :member_of, :transitive_member_of].each do |method_name|
+          return false unless @item.public_send(method_name).sort == send(method_name).sort
+        end
+        true
+      end
+    end
+
     context 'a Diamond scenario' do
       let(:persistence) do
         { "a" => [], "b" => %w(a), "c" => %w(a), "1" => %w(b c) }
+      end
+      let(:expected) do
+        [
+          Verifier.new('1', member_of: %w(b c), transitive_member_of: %w(a b c)),
+          Verifier.new('a', collection_members: %w(b c), transitive_collection_members: %w(1 b c)),
+          Verifier.new('b', member_of: %w(a), collection_members: %w(1)),
+          Verifier.new('c', member_of: %w(a), collection_members: %w(1))
+        ]
       end
       before do
         persistence.each_pair do |pid, member_of|
@@ -123,29 +153,10 @@ module Curate
       end
 
       it 'should walk up the member_of relationships' do
-        response = Indexer.reindex(pid: '1')
-        expect(response.member_of).to eq(%w(b c))
-        expect(response.transitive_member_of.sort).to eq(%w(a b c))
-        expect(response.collection_members).to eq([])
-        expect(response.transitive_collection_members).to eq([])
-
-        indexed_collection_a = Indexer::Index::Query.find('a')
-        expect(indexed_collection_a.transitive_member_of).to eq([])
-        expect(indexed_collection_a.member_of).to eq([])
-        expect(indexed_collection_a.collection_members.sort).to eq(%w(b c))
-        expect(indexed_collection_a.transitive_collection_members.sort).to eq(%w(1 b c))
-
-        indexed_collection_b = Indexer::Index::Query.find('b')
-        expect(indexed_collection_b.transitive_member_of).to eq(%w(a))
-        expect(indexed_collection_b.member_of).to eq(%w(a))
-        expect(indexed_collection_b.collection_members).to eq(%w(1))
-        expect(indexed_collection_b.transitive_collection_members).to eq(%w(1))
-
-        indexed_collection_c = Indexer::Index::Query.find('c')
-        expect(indexed_collection_c.transitive_member_of).to eq(%w(a))
-        expect(indexed_collection_c.member_of).to eq(%w(a))
-        expect(indexed_collection_c.collection_members).to eq(%w(1))
-        expect(indexed_collection_c.transitive_collection_members).to eq(%w(1))
+        Indexer.reindex(pid: '1')
+        expected.each do |item|
+          expect(item).to be_verified
+        end
       end
     end
 
@@ -159,24 +170,19 @@ module Curate
         end
       end
 
+      let(:expected) do
+        [
+          Verifier.new('1', member_of: %w(a b)),
+          Verifier.new('a', collection_members: %w(1 b)),
+          Verifier.new('b', member_of: %w(a), collection_members: %w(1))
+        ]
+      end
+
       it 'should walk up the member_of relationships' do
-        response = Indexer.reindex(pid: '1')
-        expect(response.member_of).to eq(%w(a b))
-        expect(response.transitive_member_of.sort).to eq(%w(a b))
-        expect(response.collection_members).to eq([])
-        expect(response.transitive_collection_members).to eq([])
-
-        indexed_collection_a = Indexer::Index::Query.find('a')
-        expect(indexed_collection_a.transitive_member_of).to eq([])
-        expect(indexed_collection_a.member_of).to eq([])
-        expect(indexed_collection_a.collection_members.sort).to eq(%w(1 b))
-        expect(indexed_collection_a.transitive_collection_members.sort).to eq(%w(1 b))
-
-        indexed_collection_b = Indexer::Index::Query.find('b')
-        expect(indexed_collection_b.transitive_member_of).to eq(%w(a))
-        expect(indexed_collection_b.member_of).to eq(%w(a))
-        expect(indexed_collection_b.collection_members).to eq(%w(1))
-        expect(indexed_collection_b.transitive_collection_members).to eq(%w(1))
+        Indexer.reindex(pid: '1')
+        expected.each do |item|
+          expect(item).to be_verified
+        end
       end
     end
   end

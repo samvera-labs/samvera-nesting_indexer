@@ -79,9 +79,9 @@ module Curate
       # Responsible for representing an index document
       class Document
         attr_reader :pid
-        def initialize(pid:)
+        def initialize(pid:, &block)
           self.pid = pid
-          instance_exec { yield(self) } if block_given?
+          instance_exec(self, &block) if block_given?
           # Ensuring that transitive relations always contain direct members
           add_transitive_member_of(member_of)
           add_transitive_collection_members(collection_members)
@@ -160,11 +160,11 @@ module Curate
         attr_writer :pid, :level, :persistence_finder, :index_finder
 
         def build_from(persisted_document:, index_document:)
-          Document.new(pid: pid, level: level) do |query_document|
-            query_document.add_transitive_member_of(index_document.transitive_member_of)
-            query_document.add_member_of(persisted_document.member_of)
-            query_document.add_transitive_collection_members(index_document.transitive_collection_members)
-            query_document.add_collection_members(index_document.collection_members)
+          Document.new(pid: pid, level: level) do
+            add_transitive_member_of(index_document.transitive_member_of)
+            add_member_of(persisted_document.member_of)
+            add_transitive_collection_members(index_document.transitive_collection_members)
+            add_collection_members(index_document.collection_members)
           end
         end
 
@@ -182,10 +182,10 @@ module Curate
       # @see Builder
       class Document
         attr_reader :pid, :level
-        def initialize(pid:, level:)
+        def initialize(pid:, level:, &block)
           self.pid = pid
           self.level = level
-          instance_exec { yield(self) } if block_given?
+          instance_exec(self, &block) if block_given?
           # Ensuring that transitive relations always contain direct members
           add_transitive_member_of(member_of)
           add_transitive_collection_members(collection_members)

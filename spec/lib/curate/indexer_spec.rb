@@ -118,10 +118,10 @@ module Curate
       let(:level) { 4 }
       let(:persisted_document) { Indexer::Persistence::Work.new(pid: pid, member_of: %w(B)) }
       let(:indexed_document) do
-        Indexer::Index::Document.new(pid: pid) do |doc|
-          doc.add_transitive_member_of %w(B C)
-          doc.add_transitive_collection_members %w(E F)
-          doc.add_collection_members %w(E)
+        Indexer::Index::Document.new(pid: pid) do
+          add_transitive_member_of %w(B C)
+          add_transitive_collection_members %w(E F)
+          add_collection_members %w(E)
         end
       end
       let(:persistence_finder) { double('Persistence Finder', call: persisted_document) }

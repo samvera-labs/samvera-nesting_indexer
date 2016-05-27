@@ -1,5 +1,20 @@
 sudo: false
+cache: bundler
+
 language: ruby
 rvm:
   - 2.3.1
+  - 2.2.5
+  - 2.2.2
+  - 2.1.10
+  - 2.0.0-p451
+
+matrix:
+  allow_failures:
+    - rvm:
+      - "2.3.1"
+      - 2.0.0-p451
+
 before_install: gem install bundler -v 1.12.5
+
+script: 'bundle exec rake'

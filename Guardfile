@@ -24,7 +24,7 @@
 #  * zeus: 'zeus rspec' (requires the server to be started separately)
 #  * 'just' rspec: 'rspec'
 
-notification :terminal_notifier, subtitle: 'Sipity'
+notification :terminal_notifier, subtitle: 'Curate::Indexer'
 
 guard :rspec, cmd: "bundle exec rspec" do
   require "guard/rspec/dsl"

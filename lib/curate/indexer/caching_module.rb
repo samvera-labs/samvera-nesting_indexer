@@ -1,5 +1,4 @@
 module Curate
-  # Responsible for the indexing strategy of related objects
   module Indexer
     # There are several layers of caching involved, this provides some of the common behavior.
     module CachingModule
@@ -19,6 +18,5 @@ module Curate
         @cache = {}
       end
     end
-    private_constant :CachingModule
   end
 end

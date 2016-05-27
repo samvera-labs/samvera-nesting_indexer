@@ -69,17 +69,24 @@ module Curate
 
         def associate(document:, member_of_document:)
           document_writer = find_or_build_writer_for(document: document)
-          member_writer = find_or_build_writer_for(document: member_of_document)
-          [
-            :transitive_member_of, :member_of, :has_collection_members, :has_transitive_collection_members
-          ].each do |method_name|
-            document_writer.public_send("add_#{method_name}", *document.public_send(method_name))
-            member_writer.public_send("add_#{method_name}", *member_of_document.public_send(method_name))
-          end
-          document_writer.add_member_of(member_writer.pid)
-          document_writer.add_transitive_member_of(member_writer.pid, *member_writer.transitive_member_of)
-          member_writer.add_has_collection_members(document_writer.pid)
-          member_writer.add_has_transitive_collection_members(document_writer.pid, *document_writer.has_transitive_collection_members)
+          member_of_writer = find_or_build_writer_for(document: member_of_document)
+
+          # Ensure the relationships are copied onto the document
+          copy_relationships(target: document_writer, source: document)
+          copy_relationships(target: member_of_writer, source: member_of_document)
+
+          # Business logic of writing relationships
+          document_writer.add_member_of(member_of_writer.pid)
+          document_writer.add_transitive_member_of(member_of_writer.pid, *member_of_writer.transitive_member_of)
+          member_of_writer.add_has_collection_members(document_writer.pid)
+          member_of_writer.add_has_transitive_collection_members(document_writer.pid, *document_writer.has_transitive_collection_members)
+        end
+
+        def copy_relationships(target:, source:)
+          target.add_transitive_member_of(source.transitive_member_of)
+          target.add_member_of(source.member_of)
+          target.add_has_collection_members(source.has_collection_members)
+          target.add_has_transitive_collection_members(source.has_transitive_collection_members)
         end
 
         def rebuild_and_return_requested_for

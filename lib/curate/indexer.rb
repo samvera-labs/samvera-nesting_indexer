@@ -67,16 +67,16 @@ module Curate
           self.cache = {}
         end
 
-        def associate(document:, is_member_of_document:)
+        def associate(document:, member_of_document:)
           document_writer = find_or_build_writer_for(document: document)
-          member_writer = find_or_build_writer_for(document: is_member_of_document)
+          member_writer = find_or_build_writer_for(document: member_of_document)
           [
-            :is_transitive_member_of, :is_member_of, :has_collection_members, :has_transitive_collection_members
+            :is_transitive_member_of, :member_of, :has_collection_members, :has_transitive_collection_members
           ].each do |method_name|
             document_writer.public_send("add_#{method_name}", *document.public_send(method_name))
-            member_writer.public_send("add_#{method_name}", *is_member_of_document.public_send(method_name))
+            member_writer.public_send("add_#{method_name}", *member_of_document.public_send(method_name))
           end
-          document_writer.add_is_member_of(member_writer.pid)
+          document_writer.add_member_of(member_writer.pid)
           document_writer.add_is_transitive_member_of(member_writer.pid, *member_writer.is_transitive_member_of)
           member_writer.add_has_collection_members(document_writer.pid)
           member_writer.add_has_transitive_collection_members(document_writer.pid, *document_writer.has_transitive_collection_members)
@@ -114,13 +114,13 @@ module Curate
           self.pid = pid
           instance_exec { yield(self) } if block_given?
           # Ensuring that transitive relations always contain direct members
-          add_is_transitive_member_of(is_member_of)
+          add_is_transitive_member_of(member_of)
           add_has_transitive_collection_members(has_collection_members)
         end
 
         [
           :is_transitive_member_of,
-          :is_member_of,
+          :member_of,
           :has_collection_members,
           :has_transitive_collection_members
         ].each do |method_name|
@@ -197,7 +197,7 @@ module Curate
         def build_from(persisted_document:, index_document:)
           Document.new(pid: pid, level: level) do |query_document|
             query_document.is_transitive_member_of = index_document.is_transitive_member_of
-            query_document.is_member_of = persisted_document.is_member_of
+            query_document.member_of = persisted_document.member_of
             query_document.has_transitive_collection_members = index_document.has_transitive_collection_members
             query_document.has_collection_members = index_document.has_collection_members
           end
@@ -222,13 +222,13 @@ module Curate
           self.level = level
           instance_exec { yield(self) } if block_given?
           # Ensuring that transitive relations always contain direct members
-          self.is_transitive_member_of = is_transitive_member_of + is_member_of
+          self.is_transitive_member_of = is_transitive_member_of + member_of
           self.has_transitive_collection_members = has_transitive_collection_members + has_collection_members
         end
 
         [
           :is_transitive_member_of,
-          :is_member_of,
+          :member_of,
           :has_collection_members,
           :has_transitive_collection_members
         ].each do |method_name|
@@ -255,24 +255,24 @@ module Curate
 
       # This is a disposable intermediary between Fedora and the processing system for reindexing.
       class Document
-        attr_reader :pid, :is_member_of
-        def initialize(pid:, is_member_of: [])
+        attr_reader :pid, :member_of
+        def initialize(pid:, member_of: [])
           # A concession that when I make something it should be persisted.
           Persistence.add_to_cache(pid, self)
           self.pid = pid
-          self.is_member_of = is_member_of
+          self.member_of = member_of
         end
 
-        def add_is_member_of(*pids)
-          @is_member_of += Array(pids).compact
+        def add_member_of(*pids)
+          @member_of += Array(pids).compact
         end
 
         private
 
         attr_writer :pid
-        def is_member_of=(input)
+        def member_of=(input)
           # I'd prefer Array.wrap, but I'm assuming we won't have a DateTime object
-          @is_member_of = Set.new(Array(input).compact)
+          @member_of = Set.new(Array(input).compact)
         end
       end
       private_constant :Document
@@ -302,8 +302,8 @@ module Curate
       def reindex
         document = document_to_reindex
         while document
-          document.is_member_of.each do |is_member_of_pid|
-            reindex_relation(document: document, is_member_of_pid: is_member_of_pid)
+          document.member_of.each do |member_of_pid|
+            reindex_relation(document: document, member_of_pid: member_of_pid)
           end
           document = queue.dequeue
         end
@@ -314,12 +314,12 @@ module Curate
 
       attr_writer :requested_pid, :max_level
 
-      def reindex_relation(document:, is_member_of_pid:)
+      def reindex_relation(document:, member_of_pid:)
         next_level = document.level + 1
         guard_max_level_achieved!(next_level: next_level)
-        is_member_of_document = Processing.find_or_create_processing_document_for(pid: is_member_of_pid, level: next_level)
-        rebuilder.associate(document: document, is_member_of_document: is_member_of_document)
-        queue.enqueue(is_member_of_document)
+        member_of_document = Processing.find_or_create_processing_document_for(pid: member_of_pid, level: next_level)
+        rebuilder.associate(document: document, member_of_document: member_of_document)
+        queue.enqueue(member_of_document)
       end
 
       def guard_max_level_achieved!(next_level:)

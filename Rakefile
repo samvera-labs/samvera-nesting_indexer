@@ -22,7 +22,7 @@ end
 
 task(
   default: [
-    # 'commitment:rubocop',
+    'commitment:rubocop',
     'commitment:configure_test_for_code_coverage',
     'spec',
     'commitment:code_coverage'

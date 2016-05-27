@@ -1,7 +1,5 @@
 require "curate/indexer/version"
-require "curate/indexer/exceptions"
 require "curate/indexer/caching_module"
-require "curate/indexer/queue"
 require "curate/indexer/reindexer"
 
 require 'set'

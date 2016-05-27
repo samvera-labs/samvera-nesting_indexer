@@ -1,3 +1,5 @@
+require 'curate/indexer/exceptions'
+require 'curate/indexer/queue'
 module Curate
   # Responsible for the indexing strategy of related objects
   module Indexer

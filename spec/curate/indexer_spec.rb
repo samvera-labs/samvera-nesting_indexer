@@ -2,13 +2,14 @@ require 'spec_helper'
 require 'rspec/its'
 
 require 'set'
-require 'dry-equalizer'
 require 'forwardable'
 
 module Curate
   module Indexer
+    # Namespacing for common errors
     class RuntimeError < RuntimeError
     end
+    # An exception thrown when a possible cycle is detected in the graph.
     class ReindexingReachedMaxLevelError < RuntimeError
       attr_accessor :requested_pid, :visited_pids, :max_level
       def initialize(requested_pid:, visited_pids:, max_level:)
@@ -18,6 +19,8 @@ module Curate
         super("ERROR: Reindexing reached level #{max_level} on PID:#{requested_pid}. Possible graph cycle detected.")
       end
     end
+
+    # An assistive class in the breadth first search.
     class Queue
       def initialize
         @queue = []
@@ -32,6 +35,7 @@ module Curate
     end
     private_constant :Queue
 
+    # There are several layers of caching involved, this provides some of the common behavior.
     module Cache
       def find(key, &block)
         cache.fetch(key, &block)
@@ -47,14 +51,6 @@ module Curate
       end
     end
     private_constant :Cache
-
-    module Inspector
-      def inspect
-        vars = instance_variables.map { |ivar| "#{ivar}=#{instance_variable_get(ivar).inspect}" }.join(' ')
-        %(#<Indexer::Index::Document #{vars}>)
-      end
-    end
-    private_constant :Inspector
 
     module Index
       def self.new_rebuilder(requested_for:)
@@ -106,8 +102,6 @@ module Curate
       end
 
       class Document
-        include Dry::Equalizer(:pid)
-        include Inspector
         attr_reader :pid
         def initialize(pid:)
           self.pid = pid
@@ -206,8 +200,6 @@ module Curate
       private_constant :Builder
 
       class QueryDocument
-        include Dry::Equalizer(:pid, :level)
-        include Inspector
         attr_reader :pid, :level
         def initialize(pid:, level:)
           self.pid = pid
@@ -250,8 +242,6 @@ module Curate
 
       # This is a disposable intermediary between Fedora and the processing system for reindexing.
       class Document
-        include Dry::Equalizer(:pid)
-        include Inspector
         attr_reader :pid, :is_member_of
         def initialize(pid:, is_member_of: [])
           # A concession that when I make something it should be persisted.

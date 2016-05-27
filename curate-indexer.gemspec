@@ -33,5 +33,4 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "guard-rspec"
   spec.add_development_dependency "terminal-notifier-guard", "~> 1.6.4"
   spec.add_development_dependency "terminal-notifier"
-  spec.add_dependency "dry-equalizer"
 end

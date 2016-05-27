@@ -18,11 +18,16 @@ AllCops:
     - 'vendor/**/*'
     - 'tmp/**/*'
     - 'bin/**/*'
-
+  TargetRubyVersion: 2.2
 LineLength:
   Description: 'Limit lines to 140 characters.'
   Max: 140
   Enabled: true
+
+ModuleLength:
+  Exclude:
+    - 'spec/**/*'
+
 
 Style/StringLiterals:
   Description: 'Checks if uses of quotes match the configured preference.'

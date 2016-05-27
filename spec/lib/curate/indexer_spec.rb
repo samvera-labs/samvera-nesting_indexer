@@ -11,17 +11,17 @@ module Curate
 
     context 'Graph Scenario 1' do
       let!(:collection_a) { Indexer::Persistence::Collection.new(pid: 'a') }
-      let!(:collection_b) { Indexer::Persistence::Collection.new(pid: 'b', is_member_of: ['a', 'd']) }
-      let!(:collection_c) { Indexer::Persistence::Collection.new(pid: 'c', is_member_of: ['b']) }
+      let!(:collection_b) { Indexer::Persistence::Collection.new(pid: 'b', is_member_of: %w(a d)) }
+      let!(:collection_c) { Indexer::Persistence::Collection.new(pid: 'c', is_member_of: %w(b)) }
       let!(:collection_d) { Indexer::Persistence::Collection.new(pid: 'd') }
       let!(:collection_e) { Indexer::Persistence::Collection.new(pid: 'e') }
       let!(:collection_f) { Indexer::Persistence::Collection.new(pid: 'f') }
       let!(:collection_g) { Indexer::Persistence::Collection.new(pid: 'g') }
-      let!(:work_1) { Indexer::Persistence::Work.new(pid: '1', is_member_of: ['a', 'e']) }
-      let!(:work_2) { Indexer::Persistence::Work.new(pid: '2', is_member_of: ['b']) }
-      let!(:work_3) { Indexer::Persistence::Work.new(pid: '3', is_member_of: ['c']) }
-      let!(:work_4) { Indexer::Persistence::Work.new(pid: '4', is_member_of: ['d']) }
-      let!(:work_5) { Indexer::Persistence::Work.new(pid: '5', is_member_of: ['f']) }
+      let!(:work_1) { Indexer::Persistence::Work.new(pid: '1', is_member_of: %w(a e)) }
+      let!(:work_2) { Indexer::Persistence::Work.new(pid: '2', is_member_of: %w(b)) }
+      let!(:work_3) { Indexer::Persistence::Work.new(pid: '3', is_member_of: %w(c)) }
+      let!(:work_4) { Indexer::Persistence::Work.new(pid: '4', is_member_of: %w(d)) }
+      let!(:work_5) { Indexer::Persistence::Work.new(pid: '5', is_member_of: %w(f)) }
       let!(:work_6) { Indexer::Persistence::Work.new(pid: '6') }
 
       context 'when building index for Work 2' do
@@ -35,7 +35,7 @@ module Curate
             %w(1 2 3 4 5 6).each do |pid|
               Indexer.reindex(pid: pid)
             end
-             # Because the above reindexing creates caches that need invalidating
+            # Because the above reindexing creates caches that need invalidating
             Indexer::Processing.clear_cache!
           end
           it 'should amend the expected graph' do
@@ -53,7 +53,7 @@ module Curate
               Indexer.reindex(pid: pid)
             end
             # Because the above reindexing creates caches that need invalidating
-           Indexer::Processing.clear_cache!
+            Indexer::Processing.clear_cache!
           end
           it 'should walk up the is_member_of relationships and merge with existing index' do
             response = Indexer.reindex(pid: '2')
@@ -116,12 +116,12 @@ module Curate
     context '.create_processing_document_for' do
       let(:pid) { 'A' }
       let(:level) { 4 }
-      let(:persisted_document) { Indexer::Persistence::Work.new(pid: pid, is_member_of: ['B']) }
+      let(:persisted_document) { Indexer::Persistence::Work.new(pid: pid, is_member_of: %w(B)) }
       let(:indexed_document) do
         Indexer::Index::Document.new(pid: pid) do |doc|
-          doc.is_transitive_member_of = ['B', 'C']
-          doc.has_transitive_collection_members = ['E', 'F']
-          doc.has_collection_members = ['E']
+          doc.is_transitive_member_of = %w(B C)
+          doc.has_transitive_collection_members = %w(E F)
+          doc.has_collection_members = %w(E)
         end
       end
       let(:persistence_finder) { double('Persistence Finder', call: persisted_document) }
@@ -134,10 +134,10 @@ module Curate
           index_finder: index_finder
         )
       end
-      its(:is_member_of) { is_expected.to eq(['B']) }
-      its(:is_transitive_member_of) { is_expected.to eq(['B', 'C']) }
-      its(:has_transitive_collection_members) { is_expected.to eq(['E', 'F']) }
-      its(:has_collection_members) { is_expected.to eq(['E']) }
+      its(:is_member_of) { is_expected.to eq(%w(B)) }
+      its(:is_transitive_member_of) { is_expected.to eq(%w(B C)) }
+      its(:has_transitive_collection_members) { is_expected.to eq(%w(E F)) }
+      its(:has_collection_members) { is_expected.to eq(%w(E)) }
     end
   end
 end

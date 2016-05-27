@@ -25,11 +25,11 @@ task(
     # 'commitment:rubocop',
     'commitment:configure_test_for_code_coverage',
     'spec',
-    'commitment:code_coverage',
+    'commitment:code_coverage'
   ]
 )
 
 
 RSpec::Core::RakeTask.new(:spec)
 
-task :default => :spec
+task default: :spec

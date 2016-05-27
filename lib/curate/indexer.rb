@@ -3,6 +3,7 @@ require "curate/indexer/version"
 require 'set'
 
 module Curate
+  # Responsible for the indexing strategy of related objects
   module Indexer
     # Namespacing for common errors
     class RuntimeError < RuntimeError
@@ -23,6 +24,7 @@ module Curate
       def initialize
         @queue = []
       end
+
       def enqueue(object)
         @queue << object
       end
@@ -38,18 +40,22 @@ module Curate
       def find(key, &block)
         cache.fetch(key, &block)
       end
+
       def cache
         @cache ||= {}
       end
+
       def add_to_cache(key, value)
         cache[key] ||= value
       end
+
       def clear_cache!
         @cache = {}
       end
     end
     private_constant :Cache
 
+    # Represents the interaction with the index
     module Index
       def self.new_rebuilder(requested_for:)
         Rebuilder.new(requested_for: requested_for)
@@ -60,6 +66,7 @@ module Curate
           self.requested_for = requested_for
           self.cache = {}
         end
+
         def associate(document:, is_member_of_document:)
           document_writer = find_or_build_writer_for(document: document)
           is_member_of_document_writer = find_or_build_writer_for(document: is_member_of_document)
@@ -77,6 +84,7 @@ module Curate
           is_member_of_document_writer.add_has_collection_members(document_writer.pid)
           is_member_of_document_writer.add_has_transitive_collection_members(document_writer.pid, *document_writer.has_transitive_collection_members)
         end
+
         def rebuild_and_return_requested_for
           returning_value = nil
           cache.each_value do |writer_document|
@@ -91,7 +99,9 @@ module Curate
         end
 
         attr_reader :requested_for
+
         private
+
         attr_writer :requested_for
         attr_accessor :cache
 
@@ -100,6 +110,7 @@ module Curate
         end
       end
 
+      # Responsible for representing an index document
       class Document
         attr_reader :pid
         def initialize(pid:)
@@ -136,10 +147,13 @@ module Curate
         def write!
           Index::Query.cache[pid] = self
         end
+
         private
+
         attr_writer :pid
       end
 
+      # Contains the Query interactions with the Index
       module Query
         extend Cache
         def self.find(pid)
@@ -161,6 +175,8 @@ module Curate
         cache[pid][level] = Builder.new(pid: pid, level: level, **keywords).build
       end
 
+      # Responsible for building a processing document by "smashing" together a persisted document
+      # and its index representation.
       class Builder
         def initialize(pid:, level:, persistence_finder: default_persistence_finder, index_finder: default_index_finder)
           self.pid = pid
@@ -176,7 +192,9 @@ module Curate
         end
 
         attr_reader :pid, :level, :persistence_finder, :index_finder
+
         private
+
         attr_writer :pid, :level, :persistence_finder, :index_finder
 
         def build_from(persisted_document:, index_document:)
@@ -198,6 +216,8 @@ module Curate
       end
       private_constant :Builder
 
+      # Represents a document under processing
+      # @see Builder
       class Document
         attr_reader :pid, :level
         def initialize(pid:, level:)
@@ -223,7 +243,9 @@ module Curate
             instance_variable_set("@#{method_name}", Set.new(Array(values)))
           end
         end
+
         private
+
         attr_writer :pid, :level
       end
       private_constant :Document
@@ -248,7 +270,9 @@ module Curate
           @is_member_of += Array(pids).compact
         end
 
+
         private
+
         attr_writer :pid
         def is_member_of=(input)
           # I'd prefer Array.wrap, but I'm assuming we won't have a DateTime object

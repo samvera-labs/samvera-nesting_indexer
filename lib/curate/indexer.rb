@@ -78,15 +78,15 @@ module Curate
           # Business logic of writing relationships
           document_writer.add_member_of(member_of_writer.pid)
           document_writer.add_transitive_member_of(member_of_writer.pid, *member_of_writer.transitive_member_of)
-          member_of_writer.add_has_collection_members(document_writer.pid)
-          member_of_writer.add_has_transitive_collection_members(document_writer.pid, *document_writer.has_transitive_collection_members)
+          member_of_writer.add_collection_members(document_writer.pid)
+          member_of_writer.add_transitive_collection_members(document_writer.pid, *document_writer.transitive_collection_members)
         end
 
         def copy_relationships(target:, source:)
           target.add_transitive_member_of(source.transitive_member_of)
           target.add_member_of(source.member_of)
-          target.add_has_collection_members(source.has_collection_members)
-          target.add_has_transitive_collection_members(source.has_transitive_collection_members)
+          target.add_collection_members(source.collection_members)
+          target.add_transitive_collection_members(source.transitive_collection_members)
         end
 
         def rebuild_and_return_requested_for
@@ -122,14 +122,14 @@ module Curate
           instance_exec { yield(self) } if block_given?
           # Ensuring that transitive relations always contain direct members
           add_transitive_member_of(member_of)
-          add_has_transitive_collection_members(has_collection_members)
+          add_transitive_collection_members(collection_members)
         end
 
         [
           :transitive_member_of,
           :member_of,
-          :has_collection_members,
-          :has_transitive_collection_members
+          :collection_members,
+          :transitive_collection_members
         ].each do |method_name|
           define_method(method_name) do
             (instance_variable_get("@#{method_name}") || []).to_a
@@ -205,8 +205,8 @@ module Curate
           Document.new(pid: pid, level: level) do |query_document|
             query_document.transitive_member_of = index_document.transitive_member_of
             query_document.member_of = persisted_document.member_of
-            query_document.has_transitive_collection_members = index_document.has_transitive_collection_members
-            query_document.has_collection_members = index_document.has_collection_members
+            query_document.transitive_collection_members = index_document.transitive_collection_members
+            query_document.collection_members = index_document.collection_members
           end
         end
 
@@ -230,14 +230,14 @@ module Curate
           instance_exec { yield(self) } if block_given?
           # Ensuring that transitive relations always contain direct members
           self.transitive_member_of = transitive_member_of + member_of
-          self.has_transitive_collection_members = has_transitive_collection_members + has_collection_members
+          self.transitive_collection_members = transitive_collection_members + collection_members
         end
 
         [
           :transitive_member_of,
           :member_of,
-          :has_collection_members,
-          :has_transitive_collection_members
+          :collection_members,
+          :transitive_collection_members
         ].each do |method_name|
           define_method(method_name) do
             (instance_variable_get("@#{method_name}") || []).to_a

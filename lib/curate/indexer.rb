@@ -69,24 +69,17 @@ module Curate
 
         def associate(document:, is_member_of_document:)
           document_writer = find_or_build_writer_for(document: document)
-          is_member_of_document_writer = find_or_build_writer_for(document: is_member_of_document)
+          member_writer = find_or_build_writer_for(document: is_member_of_document)
           [
-            :is_transitive_member_of,
-            :is_member_of,
-            :has_collection_members,
-            :has_transitive_collection_members
+            :is_transitive_member_of, :is_member_of, :has_collection_members, :has_transitive_collection_members
           ].each do |method_name|
             document_writer.public_send("add_#{method_name}", *document.public_send(method_name))
-            is_member_of_document_writer.public_send("add_#{method_name}", *is_member_of_document.public_send(method_name))
+            member_writer.public_send("add_#{method_name}", *is_member_of_document.public_send(method_name))
           end
-          document_writer.add_is_member_of(is_member_of_document_writer.pid)
-          document_writer.add_is_transitive_member_of(
-            is_member_of_document_writer.pid, *is_member_of_document_writer.is_transitive_member_of
-          )
-          is_member_of_document_writer.add_has_collection_members(document_writer.pid)
-          is_member_of_document_writer.add_has_transitive_collection_members(
-            document_writer.pid, *document_writer.has_transitive_collection_members
-          )
+          document_writer.add_is_member_of(member_writer.pid)
+          document_writer.add_is_transitive_member_of(member_writer.pid, *member_writer.is_transitive_member_of)
+          member_writer.add_has_collection_members(document_writer.pid)
+          member_writer.add_has_transitive_collection_members(document_writer.pid, *document_writer.has_transitive_collection_members)
         end
 
         def rebuild_and_return_requested_for
@@ -273,7 +266,6 @@ module Curate
         def add_is_member_of(*pids)
           @is_member_of += Array(pids).compact
         end
-
 
         private
 

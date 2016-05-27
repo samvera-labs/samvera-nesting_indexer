@@ -29,9 +29,9 @@ module Curate
         @cache ||= {}
       end
       def add_to_cache(key, value)
-        cache[key] = value
+        cache[key] ||= value
       end
-      def clear!
+      def clear_cache!
         @cache = {}
       end
     end
@@ -140,6 +140,7 @@ module Curate
     # Responsible for coordinating all of the building process of the new index
     # data.
     module Processing
+      extend Cache
       def self.find_or_create_processing_document_for(pid:, level:, **keywords)
         cache.fetch(pid).fetch(level)
       rescue KeyError
@@ -184,8 +185,6 @@ module Curate
       end
       private_constant :Builder
 
-      extend Cache
-
       class QueryDocument
         include Dry::Equalizer(:pid, :level)
         attr_reader :pid, :level
@@ -221,13 +220,12 @@ module Curate
     # Responsible for being a layer between Fedora and the heavy lifting of the
     # reindexing processor. It has aspects that will need to change.
     module Persistence
+      extend Cache
       def self.find_and_cache_document(pid:)
         find(pid: pid).tap do |document|
           cache[pid] = document
         end
       end
-
-      extend Cache
 
       # This is a disposable intermediary between Fedora and the processing system for reindexing.
       class Document
@@ -280,48 +278,89 @@ end
 
 module Curate
   RSpec.describe Indexer do
-    before { Indexer::Persistence.clear! }
+    before do
+      Indexer::Index::Query.clear_cache!
+      Indexer::Persistence.clear_cache!
+      Indexer::Processing.clear_cache!
+    end
 
     context 'Graph Scenario 1' do
       let!(:collection_a) { Indexer::Persistence::Collection.new(pid: 'a') }
-      let!(:collection_b) { Indexer::Persistence::Collection.new(pid: 'b', is_member_of: [collection_a.pid, collection_d.pid]) }
-      let!(:collection_c) { Indexer::Persistence::Collection.new(pid: 'c', is_member_of: [collection_b.pid]) }
+      let!(:collection_b) { Indexer::Persistence::Collection.new(pid: 'b', is_member_of: ['a', 'd']) }
+      let!(:collection_c) { Indexer::Persistence::Collection.new(pid: 'c', is_member_of: ['b']) }
       let!(:collection_d) { Indexer::Persistence::Collection.new(pid: 'd') }
       let!(:collection_e) { Indexer::Persistence::Collection.new(pid: 'e') }
       let!(:collection_f) { Indexer::Persistence::Collection.new(pid: 'f') }
       let!(:collection_g) { Indexer::Persistence::Collection.new(pid: 'g') }
-      let!(:work_1) { Indexer::Persistence::Work.new(pid: '1', is_member_of: [collection_a.pid, collection_e.pid]) }
-      let!(:work_2) { Indexer::Persistence::Work.new(pid: '2', is_member_of: [collection_b.pid]) }
-      let!(:work_3) { Indexer::Persistence::Work.new(pid: '3', is_member_of: [collection_c.pid]) }
-      let!(:work_4) { Indexer::Persistence::Work.new(pid: '4', is_member_of: [collection_d.pid]) }
-      let!(:work_5) { Indexer::Persistence::Work.new(pid: '5', is_member_of: [collection_f.pid]) }
+      let!(:work_1) { Indexer::Persistence::Work.new(pid: '1', is_member_of: ['a', 'e']) }
+      let!(:work_2) { Indexer::Persistence::Work.new(pid: '2', is_member_of: ['b']) }
+      let!(:work_3) { Indexer::Persistence::Work.new(pid: '3', is_member_of: ['c']) }
+      let!(:work_4) { Indexer::Persistence::Work.new(pid: '4', is_member_of: ['d']) }
+      let!(:work_5) { Indexer::Persistence::Work.new(pid: '5', is_member_of: ['f']) }
       let!(:work_6) { Indexer::Persistence::Work.new(pid: '6') }
 
       context 'when building index for Work 2' do
-        it 'will be direct in Collection C and transitive in B, A, D' do
-          response = Indexer.reindex(pid: work_2.pid)
-          expect(response.is_member_of).to eq([collection_b.pid])
-          expect(response.is_transitive_member_of).to eq([collection_b.pid, collection_a.pid, collection_d.pid])
-          expect(response.has_collection_members).to eq([])
-          expect(response.has_transitive_collection_members).to eq([])
+        context 'and the existing index is not empty' do
+          before do
+            Indexer.reindex(pid: '1')
+            # Skipping pid: 2 as I want to index it
+            Indexer.reindex(pid: '3')
+            Indexer.reindex(pid: '4')
+            Indexer.reindex(pid: '5')
+            Indexer.reindex(pid: '6')
+          end
+          it 'should walk up the is_member_of relationships and merge with existing index' do
+            response = Indexer.reindex(pid: '2')
+            expect(response.is_member_of).to eq(['b'])
+            expect(response.is_transitive_member_of).to eq(['b', 'a', 'd'])
+            expect(response.has_collection_members).to eq([])
+            expect(response.has_transitive_collection_members).to eq([])
 
-          indexed_collection_b = Indexer::Index::Query.find(collection_b.pid)
-          expect(indexed_collection_b.is_transitive_member_of).to eq([collection_a.pid, collection_d.pid])
-          expect(indexed_collection_b.is_member_of).to eq([collection_a.pid, collection_d.pid])
-          expect(indexed_collection_b.has_collection_members).to eq([work_2.pid])
-          expect(indexed_collection_b.has_transitive_collection_members).to eq([work_2.pid])
+            indexed_collection_b = Indexer::Index::Query.find('b')
+            expect(indexed_collection_b.is_transitive_member_of).to eq(['a', 'd'])
+            expect(indexed_collection_b.is_member_of).to eq(['a', 'd'])
+            expect(indexed_collection_b.has_collection_members).to eq(['c', '2'])
+            expect(indexed_collection_b.has_transitive_collection_members.sort).to eq(['c', '3', '2'].sort)
 
-          indexed_collection_a = Indexer::Index::Query.find(collection_a.pid)
-          expect(indexed_collection_a.is_transitive_member_of).to eq([])
-          expect(indexed_collection_a.is_member_of).to eq([])
-          expect(indexed_collection_a.has_collection_members).to eq([collection_b.pid])
-          expect(indexed_collection_a.has_transitive_collection_members.sort).to eq([work_2.pid, collection_b.pid].sort)
+            indexed_collection_a = Indexer::Index::Query.find('a')
+            expect(indexed_collection_a.is_transitive_member_of).to eq([])
+            expect(indexed_collection_a.is_member_of).to eq([])
+            expect(indexed_collection_a.has_collection_members).to eq(['1', 'b'])
+            expect(indexed_collection_a.has_transitive_collection_members.sort).to eq(['1', '2', '3', 'b', 'c'].sort)
 
-          indexed_collection_d = Indexer::Index::Query.find(collection_d.pid)
-          expect(indexed_collection_d.is_transitive_member_of).to eq([])
-          expect(indexed_collection_d.is_member_of).to eq([])
-          expect(indexed_collection_d.has_collection_members).to eq([collection_b.pid])
-          expect(indexed_collection_d.has_transitive_collection_members.sort).to eq([work_2.pid, collection_b.pid].sort)
+            indexed_collection_d = Indexer::Index::Query.find('d')
+            expect(indexed_collection_d.is_transitive_member_of).to eq([])
+            expect(indexed_collection_d.is_member_of).to eq([])
+            expect(indexed_collection_d.has_collection_members).to eq(['b', '4'])
+            expect(indexed_collection_d.has_transitive_collection_members.sort).to eq(['2', '3', '4', 'b', 'c'].sort)
+          end
+        end
+        context 'and the index is empty' do
+          it 'should walk up the is_member_of relationships' do
+            response = Indexer.reindex(pid: '2')
+            expect(response.is_member_of).to eq(['b'])
+            expect(response.is_transitive_member_of).to eq(['b', 'a', 'd'])
+            expect(response.has_collection_members).to eq([])
+            expect(response.has_transitive_collection_members).to eq([])
+
+            indexed_collection_b = Indexer::Index::Query.find('b')
+            expect(indexed_collection_b.is_transitive_member_of).to eq(['a', 'd'])
+            expect(indexed_collection_b.is_member_of).to eq(['a', 'd'])
+            expect(indexed_collection_b.has_collection_members).to eq(['2'])
+            expect(indexed_collection_b.has_transitive_collection_members).to eq(['2'])
+
+            indexed_collection_a = Indexer::Index::Query.find('a')
+            expect(indexed_collection_a.is_transitive_member_of).to eq([])
+            expect(indexed_collection_a.is_member_of).to eq([])
+            expect(indexed_collection_a.has_collection_members).to eq(['b'])
+            expect(indexed_collection_a.has_transitive_collection_members.sort).to eq(['2', 'b'].sort)
+
+            indexed_collection_d = Indexer::Index::Query.find('d')
+            expect(indexed_collection_d.is_transitive_member_of).to eq([])
+            expect(indexed_collection_d.is_member_of).to eq([])
+            expect(indexed_collection_d.has_collection_members).to eq(['b'])
+            expect(indexed_collection_d.has_transitive_collection_members.sort).to eq(['2', 'b'].sort)
+          end
         end
       end
     end

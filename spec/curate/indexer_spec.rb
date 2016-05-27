@@ -1,6 +1,7 @@
 require 'spec_helper'
-
 require 'rspec/its'
+
+require 'set'
 require 'dry-equalizer'
 require 'forwardable'
 

@@ -96,10 +96,6 @@ module Curate
             (instance_variable_get("@#{method_name}") || []).to_a
           end
 
-          define_method("#{method_name}=") do |values|
-            send("add_#{method_name}", values)
-          end
-
           define_method("add_#{method_name}") do |*pids|
             if instance_variable_get("@#{method_name}")
               instance_variable_set("@#{method_name}", (instance_variable_get("@#{method_name}") + Array(pids).flatten))
@@ -164,10 +160,10 @@ module Curate
 
         def build_from(persisted_document:, index_document:)
           Document.new(pid: pid, level: level) do |query_document|
-            query_document.transitive_member_of = index_document.transitive_member_of
-            query_document.member_of = persisted_document.member_of
-            query_document.transitive_collection_members = index_document.transitive_collection_members
-            query_document.collection_members = index_document.collection_members
+            query_document.add_transitive_member_of(index_document.transitive_member_of)
+            query_document.add_member_of(persisted_document.member_of)
+            query_document.add_transitive_collection_members(index_document.transitive_collection_members)
+            query_document.add_collection_members(index_document.collection_members)
           end
         end
 
@@ -190,8 +186,8 @@ module Curate
           self.level = level
           instance_exec { yield(self) } if block_given?
           # Ensuring that transitive relations always contain direct members
-          self.transitive_member_of = transitive_member_of + member_of
-          self.transitive_collection_members = transitive_collection_members + collection_members
+          add_transitive_member_of(member_of)
+          add_transitive_collection_members(collection_members)
         end
 
         [
@@ -204,8 +200,12 @@ module Curate
             (instance_variable_get("@#{method_name}") || []).to_a
           end
 
-          define_method("#{method_name}=") do |values|
-            instance_variable_set("@#{method_name}", Set.new(Array(values)))
+          define_method("add_#{method_name}") do |*pids|
+            if instance_variable_get("@#{method_name}")
+              instance_variable_set("@#{method_name}", (instance_variable_get("@#{method_name}") + Array(*pids).flatten))
+            else
+              instance_variable_set("@#{method_name}", Set.new(Array(*pids).flatten))
+            end
           end
         end
 

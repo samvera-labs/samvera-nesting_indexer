@@ -5,7 +5,7 @@ module Curate
   module Indexer
     module Persistence
       RSpec.describe Document do
-        subject { described_class.new(pid: 'A', member_of: %w(1 2 3 4))}
+        subject { described_class.new(pid: 'A', member_of: %w(1 2 3 4)) }
 
         its(:member_of) { should be_a(Array) }
 

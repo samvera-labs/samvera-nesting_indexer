@@ -55,6 +55,7 @@ module Curate
       def self.new_rebuilder(requested_for:)
         Rebuilder.new(requested_for: requested_for)
       end
+      # Responsible for co-ordinating the rebuild of the index
       class Rebuilder
         def initialize(requested_for:)
           self.requested_for = requested_for
@@ -80,7 +81,7 @@ module Curate
         def rebuild_and_return_requested_for
           returning_value = nil
           cache.each_value do |writer_document|
-            writer_document.write! # Persist to the cache
+            writer_document.write! # Persist to the index
             returning_value = writer_document if requested_for.pid == writer_document.pid
           end
           returning_value

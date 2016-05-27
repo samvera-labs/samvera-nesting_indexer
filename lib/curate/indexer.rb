@@ -1,5 +1,6 @@
 require "curate/indexer/version"
 require "curate/indexer/exceptions"
+require "curate/indexer/caching_module"
 
 require 'set'
 
@@ -21,26 +22,6 @@ module Curate
       end
     end
     private_constant :Queue
-
-    # There are several layers of caching involved, this provides some of the common behavior.
-    module Cache
-      def find(key, &block)
-        cache.fetch(key, &block)
-      end
-
-      def cache
-        @cache ||= {}
-      end
-
-      def add_to_cache(key, value)
-        cache[key] ||= value
-      end
-
-      def clear_cache!
-        @cache = {}
-      end
-    end
-    private_constant :Cache
 
     # Represents the interaction with the index
     module Index
@@ -146,7 +127,7 @@ module Curate
 
       # Contains the Query interactions with the Index
       module Query
-        extend Cache
+        extend CachingModule
         def self.find(pid)
           cache.fetch(pid)
         rescue KeyError
@@ -158,7 +139,7 @@ module Curate
     # Responsible for coordinating all of the building process of the new index
     # data.
     module Processing
-      extend Cache
+      extend CachingModule
       def self.find_or_create_processing_document_for(pid:, level:, **keywords)
         cache.fetch(pid).fetch(level)
       rescue KeyError
@@ -245,7 +226,7 @@ module Curate
     # Responsible for being a layer between Fedora and the heavy lifting of the
     # reindexing processor. It has aspects that will need to change.
     module Persistence
-      extend Cache
+      extend CachingModule
 
       # This is a disposable intermediary between Fedora and the processing system for reindexing.
       class Document

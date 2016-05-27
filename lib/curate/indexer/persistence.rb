@@ -9,6 +9,11 @@ module Curate
       extend CachingModule
 
       # This is a disposable intermediary between Fedora and the processing system for reindexing.
+      # I believe it is a good idea to keep separation from the persistence layer and the processing.
+      #
+      # Unlike the IndexingDocument, the Persistence Document should only have the direct relationship
+      # information.
+      # @see Curate::Indexer::IndexingDocument
       class Document
         attr_reader :pid
         def initialize(pid:, member_of: [])

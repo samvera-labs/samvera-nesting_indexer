@@ -10,19 +10,21 @@ module Curate
     end
 
     context 'Graph Scenario 1' do
-      let!(:collection_a) { Indexer::Persistence::Collection.new(pid: 'a') }
-      let!(:collection_b) { Indexer::Persistence::Collection.new(pid: 'b', member_of: %w(a d)) }
-      let!(:collection_c) { Indexer::Persistence::Collection.new(pid: 'c', member_of: %w(b)) }
-      let!(:collection_d) { Indexer::Persistence::Collection.new(pid: 'd') }
-      let!(:collection_e) { Indexer::Persistence::Collection.new(pid: 'e') }
-      let!(:collection_f) { Indexer::Persistence::Collection.new(pid: 'f') }
-      let!(:collection_g) { Indexer::Persistence::Collection.new(pid: 'g') }
-      let!(:work_1) { Indexer::Persistence::Work.new(pid: '1', member_of: %w(a e)) }
-      let!(:work_2) { Indexer::Persistence::Work.new(pid: '2', member_of: %w(b)) }
-      let!(:work_3) { Indexer::Persistence::Work.new(pid: '3', member_of: %w(c)) }
-      let!(:work_4) { Indexer::Persistence::Work.new(pid: '4', member_of: %w(d)) }
-      let!(:work_5) { Indexer::Persistence::Work.new(pid: '5', member_of: %w(f)) }
-      let!(:work_6) { Indexer::Persistence::Work.new(pid: '6') }
+      before do
+        Indexer::Persistence::Collection.new(pid: 'a')
+        Indexer::Persistence::Collection.new(pid: 'b', member_of: %w(a d))
+        Indexer::Persistence::Collection.new(pid: 'c', member_of: %w(b))
+        Indexer::Persistence::Collection.new(pid: 'd')
+        Indexer::Persistence::Collection.new(pid: 'e')
+        Indexer::Persistence::Collection.new(pid: 'f')
+        Indexer::Persistence::Collection.new(pid: 'g')
+        Indexer::Persistence::Work.new(pid: '1', member_of: %w(a e))
+        Indexer::Persistence::Work.new(pid: '2', member_of: %w(b))
+        Indexer::Persistence::Work.new(pid: '3', member_of: %w(c))
+        Indexer::Persistence::Work.new(pid: '4', member_of: %w(d))
+        Indexer::Persistence::Work.new(pid: '5', member_of: %w(f))
+        Indexer::Persistence::Work.new(pid: '6')
+      end
 
       context 'when building index for Work 2' do
         context 'and we have a max_depth violation' do
@@ -39,7 +41,7 @@ module Curate
             Indexer::Processing.clear_cache!
           end
           it 'should amend the expected graph' do
-            work_2.add_member_of('c')
+            Indexer::Persistence.find('2').add_member_of('c')
             response = Indexer.reindex(pid: '2')
             expect(response.member_of).to eq(%w(b c))
             expect(response.transitive_member_of.sort).to eq(%w(a b c d))
@@ -111,10 +113,12 @@ module Curate
       end
     end
     context 'a Diamond scenario' do
-      let!(:collection_a) { Indexer::Persistence::Collection.new(pid: 'a') }
-      let!(:collection_b) { Indexer::Persistence::Collection.new(pid: 'b', member_of: %w(a)) }
-      let!(:collection_c) { Indexer::Persistence::Collection.new(pid: 'c', member_of: %w(a)) }
-      let!(:work_1) { Indexer::Persistence::Work.new(pid: '1', member_of: %w(b c)) }
+      before do
+        Indexer::Persistence::Collection.new(pid: 'a')
+        Indexer::Persistence::Collection.new(pid: 'b', member_of: %w(a))
+        Indexer::Persistence::Collection.new(pid: 'c', member_of: %w(a))
+        Indexer::Persistence::Work.new(pid: '1', member_of: %w(b c))
+      end
 
       it 'should walk up the member_of relationships' do
         response = Indexer.reindex(pid: '1')
@@ -144,9 +148,11 @@ module Curate
     end
 
     context 'a Triangle scenario' do
-      let!(:collection_a) { Indexer::Persistence::Collection.new(pid: 'a') }
-      let!(:collection_b) { Indexer::Persistence::Collection.new(pid: 'b', member_of: %w(a)) }
-      let!(:work_1) { Indexer::Persistence::Work.new(pid: '1', member_of: %w(a b)) }
+      before do
+        Indexer::Persistence::Collection.new(pid: 'a')
+        Indexer::Persistence::Collection.new(pid: 'b', member_of: %w(a))
+        Indexer::Persistence::Work.new(pid: '1', member_of: %w(a b))
+      end
 
       it 'should walk up the member_of relationships' do
         response = Indexer.reindex(pid: '1')

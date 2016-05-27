@@ -71,13 +71,13 @@ module Curate
           document_writer = find_or_build_writer_for(document: document)
           member_writer = find_or_build_writer_for(document: member_of_document)
           [
-            :is_transitive_member_of, :member_of, :has_collection_members, :has_transitive_collection_members
+            :transitive_member_of, :member_of, :has_collection_members, :has_transitive_collection_members
           ].each do |method_name|
             document_writer.public_send("add_#{method_name}", *document.public_send(method_name))
             member_writer.public_send("add_#{method_name}", *member_of_document.public_send(method_name))
           end
           document_writer.add_member_of(member_writer.pid)
-          document_writer.add_is_transitive_member_of(member_writer.pid, *member_writer.is_transitive_member_of)
+          document_writer.add_transitive_member_of(member_writer.pid, *member_writer.transitive_member_of)
           member_writer.add_has_collection_members(document_writer.pid)
           member_writer.add_has_transitive_collection_members(document_writer.pid, *document_writer.has_transitive_collection_members)
         end
@@ -114,12 +114,12 @@ module Curate
           self.pid = pid
           instance_exec { yield(self) } if block_given?
           # Ensuring that transitive relations always contain direct members
-          add_is_transitive_member_of(member_of)
+          add_transitive_member_of(member_of)
           add_has_transitive_collection_members(has_collection_members)
         end
 
         [
-          :is_transitive_member_of,
+          :transitive_member_of,
           :member_of,
           :has_collection_members,
           :has_transitive_collection_members
@@ -196,7 +196,7 @@ module Curate
 
         def build_from(persisted_document:, index_document:)
           Document.new(pid: pid, level: level) do |query_document|
-            query_document.is_transitive_member_of = index_document.is_transitive_member_of
+            query_document.transitive_member_of = index_document.transitive_member_of
             query_document.member_of = persisted_document.member_of
             query_document.has_transitive_collection_members = index_document.has_transitive_collection_members
             query_document.has_collection_members = index_document.has_collection_members
@@ -222,12 +222,12 @@ module Curate
           self.level = level
           instance_exec { yield(self) } if block_given?
           # Ensuring that transitive relations always contain direct members
-          self.is_transitive_member_of = is_transitive_member_of + member_of
+          self.transitive_member_of = transitive_member_of + member_of
           self.has_transitive_collection_members = has_transitive_collection_members + has_collection_members
         end
 
         [
-          :is_transitive_member_of,
+          :transitive_member_of,
           :member_of,
           :has_collection_members,
           :has_transitive_collection_members

@@ -48,6 +48,14 @@ module Curate
     end
     private_constant :Cache
 
+    module Inspector
+      def inspect
+        vars = instance_variables.map { |ivar| "#{ivar}=#{instance_variable_get(ivar).inspect}" }.join(' ')
+        %(#<Indexer::Index::Document #{vars}>)
+      end
+    end
+    private_constant :Inspector
+
     module Index
       def self.new_rebuilder(requested_for:)
         Rebuilder.new(requested_for: requested_for)
@@ -99,6 +107,7 @@ module Curate
 
       class Document
         include Dry::Equalizer(:pid)
+        include Inspector
         attr_reader :pid
         def initialize(pid:)
           self.pid = pid
@@ -106,11 +115,6 @@ module Curate
           # Ensuring that transitive relations always contain direct members
           self.is_transitive_member_of = is_transitive_member_of + is_member_of
           self.has_transitive_collection_members = has_transitive_collection_members + has_collection_members
-        end
-
-        def inspect
-          vars = instance_variables.map { |ivar| "#{ivar}=#{instance_variable_get(ivar).inspect}" }.join(' ')
-          %(#<Indexer::Index::Document #{vars}>)
         end
 
         [
@@ -203,6 +207,7 @@ module Curate
 
       class QueryDocument
         include Dry::Equalizer(:pid, :level)
+        include Inspector
         attr_reader :pid, :level
         def initialize(pid:, level:)
           self.pid = pid
@@ -246,6 +251,7 @@ module Curate
       # This is a disposable intermediary between Fedora and the processing system for reindexing.
       class Document
         include Dry::Equalizer(:pid)
+        include Inspector
         attr_reader :pid, :is_member_of
         def initialize(pid:, is_member_of: [])
           # A concession that when I make something it should be persisted.
@@ -256,12 +262,16 @@ module Curate
         def type
           self.class.to_s
         end
-        alias is_member_of is_member_of
+
+        def add_is_member_of(*pids)
+          @is_member_of += Array(pids).compact
+        end
+
         private
         attr_writer :pid
         def is_member_of=(input)
           # I'd prefer Array.wrap, but I'm assuming we won't have a DateTime object
-          @is_member_of = Array(input).compact
+          @is_member_of = Set.new(Array(input).compact)
         end
       end
       private_constant :Document
@@ -323,11 +333,30 @@ module Curate
             expect { Indexer.reindex(pid: '2', max_level: 1) }.to raise_error(Indexer::ReindexingReachedMaxLevelError)
           end
         end
+        context 'and we added something to the object' do
+          before do
+            %w(1 2 3 4 5 6).each do |pid|
+              Indexer.reindex(pid: pid)
+            end
+             # Because the above reindexing creates caches that need invalidating
+            Indexer::Processing.clear_cache!
+          end
+          it 'should amend the expected graph' do
+            work_2.add_is_member_of('c')
+            response = Indexer.reindex(pid: '2')
+            expect(response.is_member_of).to eq(%w(b c))
+            expect(response.is_transitive_member_of.sort).to eq(%w(a b c d))
+            expect(response.has_collection_members).to eq([])
+            expect(response.has_transitive_collection_members).to eq([])
+          end
+        end
         context 'and the existing index is not empty' do
           before do
             %w(1 3 4 5 6).each do |pid|
               Indexer.reindex(pid: pid)
             end
+            # Because the above reindexing creates caches that need invalidating
+           Indexer::Processing.clear_cache!
           end
           it 'should walk up the is_member_of relationships and merge with existing index' do
             response = Indexer.reindex(pid: '2')

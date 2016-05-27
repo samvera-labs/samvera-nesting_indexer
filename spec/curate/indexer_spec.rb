@@ -7,6 +7,17 @@ require 'forwardable'
 
 module Curate
   module Indexer
+    class RuntimeError < RuntimeError
+    end
+    class ReindexingReachedMaxLevelError < RuntimeError
+      attr_accessor :requested_pid, :visited_pids, :max_level
+      def initialize(requested_pid:, visited_pids:, max_level:)
+        self.requested_pid = requested_pid
+        self.visited_pids = visited_pids
+        self.max_level = max_level
+        super("ERROR: Reindexing reached level #{max_level} on PID:#{requested_pid}. Possible graph cycle detected.")
+      end
+    end
     class Queue
       def initialize
         @queue = []
@@ -71,6 +82,11 @@ module Curate
           end
           returning_value
         end
+
+        def visited_pids
+          cache.keys
+        end
+
         attr_reader :requested_for
         private
         attr_writer :requested_for
@@ -265,7 +281,9 @@ module Curate
       while document = queue.dequeue
         document.is_member_of.each do |is_member_of_pid|
           next_level = document.level + 1
-          raise "Cyclical graph detected for PID:#{pid}" if next_level >= max_level
+          if next_level >= max_level
+            raise ReindexingReachedMaxLevelError, requested_pid: pid, visited_pids: rebuilder.visited_pids, max_level: max_level
+          end
           is_member_of_document = Processing.find_or_create_processing_document_for(pid: is_member_of_pid, level: next_level)
           rebuilder.associate(document: document, is_member_of_document: is_member_of_document)
           queue.enqueue(is_member_of_document)
@@ -300,6 +318,11 @@ module Curate
       let!(:work_6) { Indexer::Persistence::Work.new(pid: '6') }
 
       context 'when building index for Work 2' do
+        context 'and we have a max_depth violation' do
+          it 'should raise an exception' do
+            expect { Indexer.reindex(pid: '2', max_level: 1) }.to raise_error(Indexer::ReindexingReachedMaxLevelError)
+          end
+        end
         context 'and the existing index is not empty' do
           before do
             %w(1 3 4 5 6).each do |pid|

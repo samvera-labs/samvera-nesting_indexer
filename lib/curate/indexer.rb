@@ -80,9 +80,13 @@ module Curate
             is_member_of_document_writer.public_send("add_#{method_name}", *is_member_of_document.public_send(method_name))
           end
           document_writer.add_is_member_of(is_member_of_document_writer.pid)
-          document_writer.add_is_transitive_member_of(is_member_of_document_writer.pid, *is_member_of_document_writer.is_transitive_member_of)
+          document_writer.add_is_transitive_member_of(
+            is_member_of_document_writer.pid, *is_member_of_document_writer.is_transitive_member_of
+          )
           is_member_of_document_writer.add_has_collection_members(document_writer.pid)
-          is_member_of_document_writer.add_has_transitive_collection_members(document_writer.pid, *document_writer.has_transitive_collection_members)
+          is_member_of_document_writer.add_has_transitive_collection_members(
+            document_writer.pid, *document_writer.has_transitive_collection_members
+          )
         end
 
         def rebuild_and_return_requested_for

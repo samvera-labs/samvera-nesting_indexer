@@ -181,7 +181,7 @@ module Curate
         attr_writer :pid, :level, :persistence_finder, :index_finder
 
         def build_from(persisted_document:, index_document:)
-          QueryDocument.new(pid: pid, level: level) do |query_document|
+          Document.new(pid: pid, level: level) do |query_document|
             query_document.is_transitive_member_of = index_document.is_transitive_member_of
             query_document.is_member_of = persisted_document.is_member_of
             query_document.has_transitive_collection_members = index_document.has_transitive_collection_members
@@ -199,7 +199,7 @@ module Curate
       end
       private_constant :Builder
 
-      class QueryDocument
+      class Document
         attr_reader :pid, :level
         def initialize(pid:, level:)
           self.pid = pid
@@ -227,7 +227,7 @@ module Curate
         private
         attr_writer :pid, :level
       end
-      private_constant :QueryDocument
+      private_constant :Document
     end
 
     # Responsible for being a layer between Fedora and the heavy lifting of the

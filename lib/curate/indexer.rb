@@ -289,22 +289,53 @@ module Curate
     end
 
     def self.reindex(pid:, max_level: 20)
-      document_to_reindex = Processing.find_or_create_processing_document_for(pid: pid, level: 0)
-      rebuilder = Index.new_rebuilder(requested_for: document_to_reindex)
-      queue = Queue.new
-      queue.enqueue(document_to_reindex)
-      while document = queue.dequeue
-        document.is_member_of.each do |is_member_of_pid|
-          next_level = document.level + 1
-          if next_level >= max_level
-            raise ReindexingReachedMaxLevelError, requested_pid: pid, visited_pids: rebuilder.visited_pids, max_level: max_level
-          end
-          is_member_of_document = Processing.find_or_create_processing_document_for(pid: is_member_of_pid, level: next_level)
-          rebuilder.associate(document: document, is_member_of_document: is_member_of_document)
-          queue.enqueue(is_member_of_document)
-        end
-      end
-      rebuilder.rebuild_and_return_requested_for
+      Reindexer.new(requested_pid: pid, max_level: max_level).reindex
     end
+
+    # Coordinates the reindexing of the entire direct relationship graph
+    class Reindexer
+      def initialize(requested_pid:, max_level:)
+        self.requested_pid = requested_pid
+        self.max_level = max_level
+        @document_to_reindex = Processing.find_or_create_processing_document_for(pid: requested_pid, level: 0)
+        @rebuilder = Index.new_rebuilder(requested_for: document_to_reindex)
+        @queue = Queue.new
+      end
+      attr_reader :requested_pid, :max_level, :rebuilder, :document_to_reindex, :queue
+
+      def reindex
+        document = document_to_reindex
+        while document
+          document.is_member_of.each do |is_member_of_pid|
+            reindex_relation(document: document, is_member_of_pid: is_member_of_pid)
+          end
+          document = queue.dequeue
+        end
+        rebuilder.rebuild_and_return_requested_for
+      end
+
+      private
+
+      attr_writer :requested_pid, :max_level
+
+      def reindex_relation(document:, is_member_of_pid:)
+        next_level = document.level + 1
+        guard_max_level_achieved!(next_level: next_level)
+        is_member_of_document = Processing.find_or_create_processing_document_for(pid: is_member_of_pid, level: next_level)
+        rebuilder.associate(document: document, is_member_of_document: is_member_of_document)
+        queue.enqueue(is_member_of_document)
+      end
+
+      def guard_max_level_achieved!(next_level:)
+        return true if next_level < max_level
+        raise(
+          ReindexingReachedMaxLevelError,
+          requested_pid: requested_pid,
+          visited_pids: rebuilder.visited_pids,
+          max_level: max_level
+        )
+      end
+    end
+    private_constant :Reindexer
   end
 end

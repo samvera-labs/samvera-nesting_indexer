@@ -2,6 +2,7 @@ require "curate/indexer/version"
 require "curate/indexer/caching_module"
 require "curate/indexer/reindexer"
 require "curate/indexer/persistence"
+require "curate/indexer/indexing_document"
 
 require 'set'
 
@@ -12,6 +13,7 @@ module Curate
     private_constant :CachingModule
     private_constant :Queue
     private_constant :Reindexer
+    private_constant :IndexingDocument
 
     def self.reindex(pid:, max_level: 20)
       Reindexer.new(requested_pid: pid, max_level: max_level).reindex
@@ -77,42 +79,10 @@ module Curate
       end
 
       # Responsible for representing an index document
-      class Document
-        attr_reader :pid
-        def initialize(pid:, &block)
-          self.pid = pid
-          instance_exec(self, &block) if block_given?
-          # Ensuring that transitive relations always contain direct members
-          add_transitive_member_of(member_of)
-          add_transitive_collection_members(collection_members)
-        end
-
-        [
-          :transitive_member_of,
-          :member_of,
-          :collection_members,
-          :transitive_collection_members
-        ].each do |method_name|
-          define_method(method_name) do
-            (instance_variable_get("@#{method_name}") || []).to_a
-          end
-
-          define_method("add_#{method_name}") do |*pids|
-            if instance_variable_get("@#{method_name}")
-              instance_variable_set("@#{method_name}", (instance_variable_get("@#{method_name}") + Array(pids).flatten))
-            else
-              instance_variable_set("@#{method_name}", Set.new(Array(pids).flatten))
-            end
-          end
-        end
-
+      class Document < IndexingDocument
         def write!
           Index::Query.cache[pid] = self
         end
-
-        private
-
-        attr_writer :pid
       end
 
       # Contains the Query interactions with the Index
@@ -180,34 +150,11 @@ module Curate
 
       # Represents a document under processing
       # @see Builder
-      class Document
+      class Document < IndexingDocument
         attr_reader :pid, :level
         def initialize(pid:, level:, &block)
-          self.pid = pid
           self.level = level
-          instance_exec(self, &block) if block_given?
-          # Ensuring that transitive relations always contain direct members
-          add_transitive_member_of(member_of)
-          add_transitive_collection_members(collection_members)
-        end
-
-        [
-          :transitive_member_of,
-          :member_of,
-          :collection_members,
-          :transitive_collection_members
-        ].each do |method_name|
-          define_method(method_name) do
-            (instance_variable_get("@#{method_name}") || []).to_a
-          end
-
-          define_method("add_#{method_name}") do |*pids|
-            if instance_variable_get("@#{method_name}")
-              instance_variable_set("@#{method_name}", (instance_variable_get("@#{method_name}") + Array(pids).flatten))
-            else
-              instance_variable_set("@#{method_name}", Set.new(Array(pids).flatten))
-            end
-          end
+          super(pid: pid, &block)
         end
 
         private

@@ -110,6 +110,64 @@ module Curate
         end
       end
     end
+    context 'a Diamond scenario' do
+      let!(:collection_a) { Indexer::Persistence::Collection.new(pid: 'a') }
+      let!(:collection_b) { Indexer::Persistence::Collection.new(pid: 'b', member_of: %w(a)) }
+      let!(:collection_c) { Indexer::Persistence::Collection.new(pid: 'c', member_of: %w(a)) }
+      let!(:work_1) { Indexer::Persistence::Work.new(pid: '1', member_of: %w(b c)) }
+
+      it 'should walk up the member_of relationships' do
+        response = Indexer.reindex(pid: '1')
+        expect(response.member_of).to eq(%w(b c))
+        expect(response.transitive_member_of.sort).to eq(%w(a b c))
+        expect(response.collection_members).to eq([])
+        expect(response.transitive_collection_members).to eq([])
+
+        indexed_collection_a = Indexer::Index::Query.find('a')
+        expect(indexed_collection_a.transitive_member_of).to eq([])
+        expect(indexed_collection_a.member_of).to eq([])
+        expect(indexed_collection_a.collection_members.sort).to eq(%w(b c))
+        expect(indexed_collection_a.transitive_collection_members.sort).to eq(%w(1 b c))
+
+        indexed_collection_b = Indexer::Index::Query.find('b')
+        expect(indexed_collection_b.transitive_member_of).to eq(%w(a))
+        expect(indexed_collection_b.member_of).to eq(%w(a))
+        expect(indexed_collection_b.collection_members).to eq(%w(1))
+        expect(indexed_collection_b.transitive_collection_members).to eq(%w(1))
+
+        indexed_collection_c = Indexer::Index::Query.find('c')
+        expect(indexed_collection_c.transitive_member_of).to eq(%w(a))
+        expect(indexed_collection_c.member_of).to eq(%w(a))
+        expect(indexed_collection_c.collection_members).to eq(%w(1))
+        expect(indexed_collection_c.transitive_collection_members).to eq(%w(1))
+      end
+    end
+
+    context 'a Triangle scenario' do
+      let!(:collection_a) { Indexer::Persistence::Collection.new(pid: 'a') }
+      let!(:collection_b) { Indexer::Persistence::Collection.new(pid: 'b', member_of: %w(a)) }
+      let!(:work_1) { Indexer::Persistence::Work.new(pid: '1', member_of: %w(a b)) }
+
+      it 'should walk up the member_of relationships' do
+        response = Indexer.reindex(pid: '1')
+        expect(response.member_of).to eq(%w(a b))
+        expect(response.transitive_member_of.sort).to eq(%w(a b))
+        expect(response.collection_members).to eq([])
+        expect(response.transitive_collection_members).to eq([])
+
+        indexed_collection_a = Indexer::Index::Query.find('a')
+        expect(indexed_collection_a.transitive_member_of).to eq([])
+        expect(indexed_collection_a.member_of).to eq([])
+        expect(indexed_collection_a.collection_members.sort).to eq(%w(1 b))
+        expect(indexed_collection_a.transitive_collection_members.sort).to eq(%w(1 b))
+
+        indexed_collection_b = Indexer::Index::Query.find('b')
+        expect(indexed_collection_b.transitive_member_of).to eq(%w(a))
+        expect(indexed_collection_b.member_of).to eq(%w(a))
+        expect(indexed_collection_b.collection_members).to eq(%w(1))
+        expect(indexed_collection_b.transitive_collection_members).to eq(%w(1))
+      end
+    end
   end
 
   RSpec.describe Indexer::Processing do

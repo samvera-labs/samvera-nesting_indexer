@@ -3,6 +3,7 @@ require "curate/indexer/caching_module"
 require "curate/indexer/reindexer"
 require "curate/indexer/persistence"
 require "curate/indexer/indexing_document"
+require "dry/equalizer"
 
 require 'set'
 
@@ -94,6 +95,7 @@ module Curate
 
       # Responsible for representing an index document
       class Document < IndexingDocument
+        include Dry::Equalizer(:pid, :member_of, :transitive_member_of, :collection_members, :transitive_collection_members)
         def write!
           Index::Query.cache[pid] = self
         end

@@ -1,6 +1,7 @@
 require 'spec_helper'
 require 'curate/indexer'
-require 'support/hash_indexer'
+require 'support/compact_graph_indexer'
+require 'support/individual_node_indexer'
 
 RSpec.describe 'reindexing via a tree' do
   [
@@ -37,35 +38,9 @@ RSpec.describe 'reindexing via a tree' do
   private
 
   # The previous_entries hash format is as follows: the key represents the node,
-  # the value for the key represents the member_of relationship. See the example
-  # below:
-  #
-  # ```ruby
-  # { a: [], b: [:a], c: [:b] }
-  # ```
-  #
-  # * Node `:a` has:
-  #   - members: `[:b]`
-  #   - transitive_members: `[:b, :c]`
-  #   - member_of: `[]`
-  #   - transitive_member_of: `[]`
-  # * Node `:b` has:
-  #   - members: `[:c]`
-  #   - transitive_members: `[:c]`
-  #   - member_of: `[:a]`
-  #   - transitive_member_of: `[:a]`
-  # * Node `:c` has:
-  #   - members: `[]`
-  #   - transitive_members: `[]`
-  #   - member_of: `[:b]`
-  #   - transitive_member_of: `[:b]``
+  # the value for the key represents the member_of relationship.
   def build_previous_index(previous_entries)
-    previous_entries.each_pair do |pid, member_of|
-      Curate::Indexer::Persistence::Document.new(pid: pid, member_of: member_of)
-      Curate::Indexer.reindex(pid: pid)
-    end
-    # If we don't clear the processing cache, we'll be obliterating the previous work
-    Curate::Indexer::Processing.clear_cache!
+    IndividualNodeIndexer.call(previous_entries)
   end
 
   def reindex_for_events(events)
@@ -87,11 +62,11 @@ RSpec.describe 'reindexing via a tree' do
   end
 
   def clear_all_caches
-    HashIndexer.clear_all_caches!
+    CompactGraphIndexer.clear_all_caches!
   end
 
   def build_index_from_compact_graph_format(compact_graph)
-    HashIndexer.call(compact_graph)
+    CompactGraphIndexer.call(compact_graph)
     Curate::Indexer::Index::Query.cache
   end
 end

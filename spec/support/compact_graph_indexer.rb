@@ -1,5 +1,5 @@
 # A recursive indexer for a compact hash representation of the collection graph.
-module HashIndexer
+module CompactGraphIndexer
   # This is an non-optimized index builder for generating the index based on
   # hash entries.
   #

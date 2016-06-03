@@ -8,6 +8,12 @@ module Curate
     module Persistence
       extend CachingModule
 
+      def self.find_or_build(pid)
+        find(pid) do
+          cache[pid] = Document.new(pid: pid)
+        end
+      end
+
       # This is a disposable intermediary between Fedora and the processing system for reindexing.
       # I believe it is a good idea to keep separation from the persistence layer and the processing.
       #

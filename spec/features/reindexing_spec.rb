@@ -10,6 +10,11 @@ RSpec.describe 'reindexing via a tree' do
       previous: { a: [], b: [], c: [], d: [:a, :b] },
       event: { c: [:a, :b] },
       expected: { a: { d: {}, c: {} }, b: { d: {}, c: {} }, c: {}, d: {} }
+    }, {
+      # Adding a new node to the graph
+      previous: { a: [], b: [:a], c: [:a], d: [:b, :c] },
+      event: { e: [:a] },
+      expected: { a: { e: {}, b: { d: {} }, c: { d: {} } } }
     }
   ].each_with_index do |config, index|
     context "Scenario #{index}" do
@@ -63,7 +68,7 @@ RSpec.describe 'reindexing via a tree' do
 
   def reindex_for_events(events)
     events.each_pair do |pid, member_of|
-      Curate::Indexer::Persistence.find(pid).add_member_of(*member_of)
+      Curate::Indexer::Persistence.find_or_build(pid).add_member_of(*member_of)
       Curate::Indexer.reindex(pid: pid)
     end
   end

@@ -29,6 +29,29 @@ RSpec.describe 'reindexing via a tree' do
 
   private
 
+  # The previous_entries hash format is as follows: the key represents the node,
+  # the value for the key represents the member_of relationship. See the example
+  # below:
+  #
+  # ```ruby
+  # { a: [], b: [:a], c: [:b] }
+  # ```
+  #
+  # * Node `:a` has:
+  #   - collection_members: `[:b]`
+  #   - transitive_collection_members: `[:b, :c]`
+  #   - member_of: `[]`
+  #   - transitive_member_of: `[]`
+  # * Node `:b` has:
+  #   - collection_members: `[:c]`
+  #   - transitive_collection_members: `[:c]`
+  #   - member_of: `[:a]`
+  #   - transitive_member_of: `[:a]`
+  # * Node `:c` has:
+  #   - collection_members: `[]`
+  #   - transitive_collection_members: `[]`
+  #   - member_of: `[:b]`
+  #   - transitive_member_of: `[:b]``
   def build_previous_index(previous_entries)
     previous_entries.each_pair do |pid, member_of|
       Curate::Indexer::Persistence::Document.new(pid: pid, member_of: member_of)
@@ -82,7 +105,7 @@ RSpec.describe 'reindexing via a tree' do
   #   - collection_members: `[]`
   #   - transitive_collection_members: `[]`
   #   - member_of: `[:b]`
-  #   - transitive_member_of: `[:b,
+  #   - transitive_member_of: `[:b]``
   def build_index_from_compact_graph_format(compact_graph)
     HashIndexer.call(compact_graph)
     Curate::Indexer::Index::Query.cache

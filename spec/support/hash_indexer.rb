@@ -2,6 +2,29 @@
 module HashIndexer
   # This is an non-optimized index builder for generating the index based on
   # hash entries.
+  #
+  #
+  # The compact graph format is a means of expressing members relationships. Note the example below:
+  #
+  # ```ruby
+  #   { a: { b: { c: {} } } }
+  # ```
+  #
+  # * Node `:a` has:
+  #   - members: `[:b]`
+  #   - transitive_members: `[:b, :c]`
+  #   - member_of: `[]`
+  #   - transitive_member_of: `[]`
+  # * Node `:b` has:
+  #   - members: `[:c]`
+  #   - transitive_members: `[:c]`
+  #   - member_of: `[:a]`
+  #   - transitive_member_of: `[:a]`
+  # * Node `:c` has:
+  #   - members: `[]`
+  #   - transitive_members: `[]`
+  #   - member_of: `[:b]`
+  #   - transitive_member_of: `[:b]``
   def self.call(graph, member_of_document = nil, rebuilder = nil)
     return true if end_of_recursion?(graph, rebuilder)
     graph.each_pair do |key, subgraph|

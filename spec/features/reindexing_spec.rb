@@ -90,27 +90,6 @@ RSpec.describe 'reindexing via a tree' do
     HashIndexer.clear_all_caches!
   end
 
-  # The compact graph format is a means of expressing members relationships. Note the example below:
-  #
-  # ```ruby
-  #   { a: { b: { c: {} } } }
-  # ```
-  #
-  # * Node `:a` has:
-  #   - members: `[:b]`
-  #   - transitive_members: `[:b, :c]`
-  #   - member_of: `[]`
-  #   - transitive_member_of: `[]`
-  # * Node `:b` has:
-  #   - members: `[:c]`
-  #   - transitive_members: `[:c]`
-  #   - member_of: `[:a]`
-  #   - transitive_member_of: `[:a]`
-  # * Node `:c` has:
-  #   - members: `[]`
-  #   - transitive_members: `[]`
-  #   - member_of: `[:b]`
-  #   - transitive_member_of: `[:b]``
   def build_index_from_compact_graph_format(compact_graph)
     HashIndexer.call(compact_graph)
     Curate::Indexer::Index::Query.cache

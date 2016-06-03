@@ -43,18 +43,18 @@ RSpec.describe 'reindexing via a tree' do
   # ```
   #
   # * Node `:a` has:
-  #   - collection_members: `[:b]`
-  #   - transitive_collection_members: `[:b, :c]`
+  #   - members: `[:b]`
+  #   - transitive_members: `[:b, :c]`
   #   - member_of: `[]`
   #   - transitive_member_of: `[]`
   # * Node `:b` has:
-  #   - collection_members: `[:c]`
-  #   - transitive_collection_members: `[:c]`
+  #   - members: `[:c]`
+  #   - transitive_members: `[:c]`
   #   - member_of: `[:a]`
   #   - transitive_member_of: `[:a]`
   # * Node `:c` has:
-  #   - collection_members: `[]`
-  #   - transitive_collection_members: `[]`
+  #   - members: `[]`
+  #   - transitive_members: `[]`
   #   - member_of: `[:b]`
   #   - transitive_member_of: `[:b]``
   def build_previous_index(previous_entries)
@@ -78,8 +78,8 @@ RSpec.describe 'reindexing via a tree' do
       mem[pid] = Curate::Indexer::Index::Document.new(pid: pid) do
         add_member_of(document.member_of)
         add_transitive_member_of(document.transitive_member_of)
-        add_collection_members(document.collection_members)
-        add_transitive_collection_members(document.transitive_collection_members)
+        add_members(document.members)
+        add_transitive_members(document.transitive_members)
       end
     end
   end
@@ -90,25 +90,25 @@ RSpec.describe 'reindexing via a tree' do
     Curate::Indexer::Processing.clear_cache!
   end
 
-  # The compact graph format is a means of expressing collection_members relationships. Note the example below:
+  # The compact graph format is a means of expressing members relationships. Note the example below:
   #
   # ```ruby
   #   { a: { b: { c: {} } } }
   # ```
   #
   # * Node `:a` has:
-  #   - collection_members: `[:b]`
-  #   - transitive_collection_members: `[:b, :c]`
+  #   - members: `[:b]`
+  #   - transitive_members: `[:b, :c]`
   #   - member_of: `[]`
   #   - transitive_member_of: `[]`
   # * Node `:b` has:
-  #   - collection_members: `[:c]`
-  #   - transitive_collection_members: `[:c]`
+  #   - members: `[:c]`
+  #   - transitive_members: `[:c]`
   #   - member_of: `[:a]`
   #   - transitive_member_of: `[:a]`
   # * Node `:c` has:
-  #   - collection_members: `[]`
-  #   - transitive_collection_members: `[]`
+  #   - members: `[]`
+  #   - transitive_members: `[]`
   #   - member_of: `[:b]`
   #   - transitive_member_of: `[:b]``
   def build_index_from_compact_graph_format(compact_graph)

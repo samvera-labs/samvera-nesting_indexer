@@ -6,7 +6,7 @@ module Curate
     RSpec.describe IndexingDocument do
       subject { described_class.new(pid: 'A') }
 
-      [:member_of, :transitive_member_of, :collection_members, :transitive_collection_members].each do |method_name|
+      [:member_of, :transitive_member_of, :members, :transitive_members].each do |method_name|
         its(method_name) { should be_a(Array) }
         context "#add_#{method_name}" do
           context 'with an existing pid' do

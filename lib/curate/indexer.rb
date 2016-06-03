@@ -52,8 +52,8 @@ module Curate
           # Business logic of writing relationships
           document_writer.add_member_of(member_of_writer.pid)
           document_writer.add_transitive_member_of(member_of_writer.pid, *member_of_writer.transitive_member_of)
-          member_of_writer.add_collection_members(document_writer.pid)
-          member_of_writer.add_transitive_collection_members(document_writer.pid, *document_writer.transitive_collection_members)
+          member_of_writer.add_members(document_writer.pid)
+          member_of_writer.add_transitive_members(document_writer.pid, *document_writer.transitive_members)
         end
 
         def copy_relationships(keywords = {})
@@ -61,8 +61,8 @@ module Curate
           source = keywords.fetch(:source)
           target.add_transitive_member_of(source.transitive_member_of)
           target.add_member_of(source.member_of)
-          target.add_collection_members(source.collection_members)
-          target.add_transitive_collection_members(source.transitive_collection_members)
+          target.add_members(source.members)
+          target.add_transitive_members(source.transitive_members)
         end
 
         public
@@ -96,7 +96,7 @@ module Curate
       # Responsible for representing an index document
       class Document < IndexingDocument
         include Dry::Equalizer(
-          :pid, :sorted_member_of, :sorted_transitive_member_of, :sorted_collection_members, :sorted_transitive_collection_members
+          :pid, :sorted_member_of, :sorted_transitive_member_of, :sorted_members, :sorted_transitive_members
         )
         def write!
           Index::Query.cache[pid] = self
@@ -110,12 +110,12 @@ module Curate
           member_of.sort
         end
 
-        def sorted_collection_members
-          collection_members.sort
+        def sorted_members
+          members.sort
         end
 
-        def sorted_transitive_collection_members
-          transitive_collection_members.sort
+        def sorted_transitive_members
+          transitive_members.sort
         end
       end
 
@@ -173,8 +173,8 @@ module Curate
           Document.new(pid: pid, level: level) do
             add_transitive_member_of(index_document.transitive_member_of)
             add_member_of(persisted_document.member_of)
-            add_transitive_collection_members(index_document.transitive_collection_members)
-            add_collection_members(index_document.collection_members)
+            add_transitive_members(index_document.transitive_members)
+            add_members(index_document.members)
           end
         end
 

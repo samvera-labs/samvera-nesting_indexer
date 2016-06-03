@@ -14,9 +14,7 @@ RSpec.describe 'reindexing via a tree' do
   ].each_with_index do |config, index|
     context "Scenario #{index}" do
       before do
-        Curate::Indexer::Index::Query.clear_cache!
-        Curate::Indexer::Persistence.clear_cache!
-        Curate::Indexer::Processing.clear_cache!
+        clear_all_caches
       end
       it "should be correct" do
         build_previous_index(config.fetch(:previous))
@@ -31,13 +29,6 @@ RSpec.describe 'reindexing via a tree' do
 
   private
 
-  def reindex_for_events(events)
-    events.each_pair do |pid, member_of|
-      Curate::Indexer::Persistence.find(pid).add_member_of(*member_of)
-      Curate::Indexer.reindex(pid: pid)
-    end
-  end
-
   def build_previous_index(previous_entries)
     previous_entries.each_pair do |pid, member_of|
       Curate::Indexer::Persistence::Document.new(pid: pid, member_of: member_of)
@@ -45,6 +36,13 @@ RSpec.describe 'reindexing via a tree' do
     end
     # If we don't clear the processing cache, we'll be obliterating the previous work
     Curate::Indexer::Processing.clear_cache!
+  end
+
+  def reindex_for_events(events)
+    events.each_pair do |pid, member_of|
+      Curate::Indexer::Persistence.find(pid).add_member_of(*member_of)
+      Curate::Indexer.reindex(pid: pid)
+    end
   end
 
   def build_snapshot_of_index
@@ -84,7 +82,7 @@ RSpec.describe 'reindexing via a tree' do
   #   - collection_members: `[]`
   #   - transitive_collection_members: `[]`
   #   - member_of: `[:b]`
-  #   - transitive_member_of: `[:b, :a]`
+  #   - transitive_member_of: `[:b,
   def build_index_from_compact_graph_format(compact_graph)
     HashIndexer.call(compact_graph)
     Curate::Indexer::Index::Query.cache

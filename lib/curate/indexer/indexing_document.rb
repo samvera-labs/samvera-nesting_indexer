@@ -14,36 +14,16 @@ module Curate
         add_transitive_collection_members(collection_members)
       end
 
-      def transitive_member_of
-        @transitive_member_of.to_a
-      end
+      [:transitive_member_of, :member_of, :collection_members, :transitive_collection_members].each do |relationship_name|
+        class_eval <<-EOV, __FILE__, __LINE__ + 1
+          def #{relationship_name}
+            @#{relationship_name}.map(&:last)
+          end
 
-      def member_of
-        @member_of.to_a
-      end
-
-      def collection_members
-        @collection_members.to_a
-      end
-
-      def transitive_collection_members
-        @transitive_collection_members.to_a
-      end
-
-      def add_transitive_member_of(*pids)
-        @transitive_member_of += pids.flatten.compact
-      end
-
-      def add_member_of(*pids)
-        @member_of += pids.flatten.compact
-      end
-
-      def add_collection_members(*pids)
-        @collection_members += pids.flatten.compact
-      end
-
-      def add_transitive_collection_members(*pids)
-        @transitive_collection_members += pids.flatten.compact
+          def add_#{relationship_name}(*pids)
+            @#{relationship_name} += pids.flatten.compact.map {|p| [pid, p].flatten }
+          end
+        EOV
       end
 
       private
@@ -51,10 +31,9 @@ module Curate
       attr_writer :pid
 
       def initialize_relationship_sets!
-        @transitive_member_of = Set.new
-        @member_of = Set.new
-        @transitive_collection_members = Set.new
-        @collection_members = Set.new
+        [:transitive_member_of, :member_of, :collection_members, :transitive_collection_members].each do |relationship_name|
+          instance_variable_set("@#{relationship_name}", Set.new)
+        end
       end
     end
   end

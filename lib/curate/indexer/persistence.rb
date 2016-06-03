@@ -24,8 +24,9 @@ module Curate
       class Document < IndexingDocument
         attr_reader :pid
         def initialize(keywords = {})
-          super(pid: keywords.fetch(:pid))
-          add_member_of(keywords.fetch(:member_of) { [] })
+          super(pid: keywords.fetch(:pid)) do
+            add_member_of(keywords.fetch(:member_of) { [] })
+          end
           # A concession that when I make something it should be persisted.
           Persistence.add_to_cache(pid, self)
         end

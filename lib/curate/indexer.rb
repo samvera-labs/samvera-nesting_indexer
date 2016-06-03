@@ -95,9 +95,27 @@ module Curate
 
       # Responsible for representing an index document
       class Document < IndexingDocument
-        include Dry::Equalizer(:pid, :member_of, :transitive_member_of, :collection_members, :transitive_collection_members)
+        include Dry::Equalizer(
+          :pid, :sorted_member_of, :sorted_transitive_member_of, :sorted_collection_members, :sorted_transitive_collection_members
+        )
         def write!
           Index::Query.cache[pid] = self
+        end
+
+        def sorted_transitive_member_of
+          transitive_member_of.sort
+        end
+
+        def sorted_member_of
+          member_of.sort
+        end
+
+        def sorted_collection_members
+          collection_members.sort
+        end
+
+        def sorted_transitive_collection_members
+          transitive_collection_members.sort
         end
       end
 

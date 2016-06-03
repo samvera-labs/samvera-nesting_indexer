@@ -9,7 +9,7 @@ RSpec.describe 'reindexing via a tree' do
     }, {
       previous: { a: [], b: [], c: [], d: [:a, :b] },
       event: { c: [:a, :b] },
-      expected: { a: { d: {}, c: {} }, b: { d: {}, c: {} }, c: {}, d: {} }
+      expected: { a: { d: {}, c: {} }, b: { d: {}, c: {} } }
     }, {
       # Adding a new node to the graph
       previous: { a: [], b: [:a], c: [:a], d: [:b, :c] },

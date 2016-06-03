@@ -1,5 +1,6 @@
 require 'set'
 require 'curate/indexer/caching_module'
+require 'curate/indexer/indexing_document'
 
 module Curate
   module Indexer
@@ -20,29 +21,13 @@ module Curate
       # Unlike the IndexingDocument, the Persistence Document should only have the direct relationship
       # information.
       # @see Curate::Indexer::IndexingDocument
-      class Document
+      class Document < IndexingDocument
         attr_reader :pid
         def initialize(keywords = {})
-          self.pid = keywords.fetch(:pid)
-          self.member_of = keywords.fetch(:member_of) { [] }
+          super(pid: keywords.fetch(:pid))
+          add_member_of(keywords.fetch(:member_of) { [] })
           # A concession that when I make something it should be persisted.
           Persistence.add_to_cache(pid, self)
-        end
-
-        def member_of
-          @member_of.to_a
-        end
-
-        def add_member_of(*pids)
-          @member_of += pids.flatten.compact
-        end
-
-        private
-
-        attr_writer :pid
-        def member_of=(*input)
-          # I'd prefer Array.wrap, but I'm assuming we won't have a DateTime object
-          @member_of = Set.new(input.flatten.compact)
         end
       end
 

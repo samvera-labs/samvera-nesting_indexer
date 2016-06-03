@@ -3,26 +3,34 @@ require 'curate/indexer'
 RSpec.describe 'reindexing via a tree' do
   # A recursive indexer for a compact hash representation of the collection graph.
   module HashIndexer
-    def self.call(hash, member_of_document = nil, rebuilder = nil)
-      if hash.empty?
-        Curate::Indexer::Processing.clear_cache!
-        rebuilder.send(:cache).each do |key, document|
-          Curate::Indexer.reindex(pid: key)
-        end
-        return true
-      end
-      hash.each_pair do |key, sub_hash|
+    def self.call(graph, member_of_document = nil, rebuilder = nil)
+      return true if end_of_recursion?(graph, rebuilder)
+      graph.each_pair do |key, subgraph|
         document = Curate::Indexer::Index::Query.find(key)
-        persisted_document = Curate::Indexer::Persistence.find(document.pid) do
-          Curate::Indexer::Persistence::Document.new(pid: document.pid)
-        end
-        rebuilder = rebuilder || Curate::Indexer::Index.new_rebuilder(requested_for: document)
-        if member_of_document
-          persisted_document.add_member_of(member_of_document.pid)
-          rebuilder.associate(document: document, member_of_document: member_of_document)
-        end
-        call(sub_hash, document, rebuilder)
+        rebuilder = associate(document, member_of_document, rebuilder)
+        call(subgraph, document, rebuilder)
       end
+    end
+
+    def self.end_of_recursion?(graph, rebuilder)
+      return false unless graph.empty?
+      Curate::Indexer::Processing.clear_cache!
+      rebuilder.send(:cache).each do |key, _document|
+        Curate::Indexer.reindex(pid: key)
+      end
+      true
+    end
+
+    def self.associate(document, member_of_document, rebuilder)
+      persisted_document = Curate::Indexer::Persistence.find(document.pid) do
+        Curate::Indexer::Persistence::Document.new(pid: document.pid)
+      end
+      rebuilder ||= Curate::Indexer::Index.new_rebuilder(requested_for: document)
+      if member_of_document
+        persisted_document.add_member_of(member_of_document.pid)
+        rebuilder.associate(document: document, member_of_document: member_of_document)
+      end
+      rebuilder
     end
   end
   [
@@ -30,7 +38,7 @@ RSpec.describe 'reindexing via a tree' do
       previous: { a: [], b: [:a], c: [] },
       event: { c: [:b, :a] },
       expected: { a: { b: { c: {} }, c: {} } }
-    },{
+    }, {
       previous: { a: [], b: [], c: [], d: [:a, :b] },
       event: { c: [:a, :b] },
       expected: { a: { d: {}, c: {} }, b: { d: {}, c: {} }, c: {}, d: {} }

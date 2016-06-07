@@ -39,8 +39,10 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "simplecov"
   spec.add_development_dependency "codeclimate-test-reporter"
   spec.add_development_dependency "json"
+  spec.add_development_dependency "byebug"
   # As a secondary dependency, listen is preventing bundling
   spec.add_development_dependency "listen", '~> 3.0.8'
   spec.add_dependency "dry-equalizer"
-
+  spec.add_dependency "dry-initializer"
+  spec.add_dependency "dry-types"
 end

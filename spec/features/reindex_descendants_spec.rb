@@ -102,9 +102,17 @@ module Curate
     end
   end
 
+  module Exceptions
+    class CycleDetectionError < RuntimeError
+    end
+  end
+
   # :nodoc:
   class Reindexer
-    DEFAULT_TIME_TO_LIVE = 7
+    ProcessingDocument = Struct.new(:pid, :time_to_live)
+
+    # This assumes a rather deep graph
+    DEFAULT_TIME_TO_LIVE = 15
     def self.reindex_descendants(pid, time_to_live = DEFAULT_TIME_TO_LIVE)
       new(pid: pid, time_to_live: time_to_live).call
     end
@@ -114,15 +122,16 @@ module Curate
     option :queue, default: proc { Queue.new }
 
     def call
-      with_each_indexed_child_of(pid) { |child| queue.enqueue(child) }
+      with_each_indexed_child_of(pid) do |child|
+        queue.enqueue(ProcessingDocument.new(child.pid, time_to_live))
+      end
       while index_document = queue.dequeue
+        raise Exceptions::CycleDetectionError if index_document.time_to_live <= 0
         preservation_document = Preservation::Storage.find(index_document.pid)
-        Index::Document.new(
-          parents_and_path_and_ancestors_for(preservation_document)
-        ).tap do |document|
-          Index::Storage.write(document)
+        Index::Document.new(parents_and_path_and_ancestors_for(preservation_document)).write
+        with_each_indexed_child_of(index_document.pid) do |child|
+          queue.enqueue(ProcessingDocument.new(child.pid, index_document.time_to_live - 1))
         end
-        with_each_indexed_child_of(index_document.pid) { |child| queue.enqueue(child) }
       end
       self
     end
@@ -232,6 +241,19 @@ module Curate
             end
           end
         end
+      end
+    end
+
+    context "Cyclical graphs" do
+      it 'will catch due to a time to live constraint' do
+        starting_graph = {
+          parents: { a: [], b: ['a', 'd'], c: ['b'], d: ['c'] },
+          ancestors: { a: [], b: ['a', 'c', 'd', 'b'], c: ['a', 'b'], d: ['a', 'b', 'c'] },
+          pathnames: { a: [], b: ['a/b', 'b/d', 'b/d/c'], c: ['a/c', 'b/c'], d: ['a/d', 'b/d'] },
+        }
+        build_graph(starting_graph)
+
+        expect { Reindexer.reindex_descendants(:a) }.to raise_error(Exceptions::CycleDetectionError)
       end
     end
   end

@@ -145,58 +145,67 @@ module Curate
     attr_writer :document
   end
   RSpec.describe 'Reindex descendants' do
-    let(:starting_graph) do
-      {
-        parents: { a: [], b: ['a'], c: ['a', 'b'], d: ['c', 'e'], e: ['b'] },
-        ancestors: { a: [], b: ['a'], c: ['a/b', 'a'], d: ['a', 'a/b', 'a/b/c', 'a/b/e', 'a/c'], e: ['a', 'a/b'] },
-        pathnames: { a: ['a'], b: ['a/b'], c: ['a/c', 'a/b/c'], d: ['a/c/d', 'a/b/c/d', 'a/b/e/d'], e: ['a/b/e'] }
-      }
-    end
-    let(:updated_document) { Preservation::Document.new(pid: :c, parents: ['a']) }
-    let(:updated_index_document) { Index::Document.new(pid: :c, parents: ['a'], pathnames: ['a/c'], ancestors: ['a']) }
-    let(:ending_graph) do
-      {
-        parents: { a: [], b: ['a'], c: ['a'], d: ['c', 'e'], e: ['b'] },
-        ancestors: { a: [], b: ['a'], c: ['a'], d: ['a', 'a/b', 'a/b/e', 'a/c'], e: ['a', 'a/b'] },
-        pathnames: { a: ['a'], b: ['a/b'], c: ['a/c'], d: ['a/c/d', 'a/b/e/d'], e: ['a/b/e'] }
-      }
+    before do
+      Preservation::Storage.clear_cache!
+      Index::Storage.clear_cache!
     end
 
-    before { Preservation::Storage.clear_cache! }
+    [
+      {
+        starting_graph: {
+          parents: { a: [], b: ['a'], c: ['a', 'b'], d: ['c', 'e'], e: ['b'] },
+          ancestors: { a: [], b: ['a'], c: ['a/b', 'a'], d: ['a', 'a/b', 'a/b/c', 'a/b/e', 'a/c'], e: ['a', 'a/b'] },
+          pathnames: { a: ['a'], b: ['a/b'], c: ['a/c', 'a/b/c'], d: ['a/c/d', 'a/b/c/d', 'a/b/e/d'], e: ['a/b/e'] }
+        },
+        updated_document: Preservation::Document.new(pid: :c, parents: ['a']),
+        updated_index_document: Index::Document.new(pid: :c, parents: ['a'], pathnames: ['a/c'], ancestors: ['a']),
+        ending_graph: {
+          parents: { a: [], b: ['a'], c: ['a'], d: ['c', 'e'], e: ['b'] },
+          ancestors: { a: [], b: ['a'], c: ['a'], d: ['a', 'a/b', 'a/b/e', 'a/c'], e: ['a', 'a/b'] },
+          pathnames: { a: ['a'], b: ['a/b'], c: ['a/c'], d: ['a/c/d', 'a/b/e/d'], e: ['a/b/e'] }
+        }
+      }
+    ].each_with_index do |the_scenario, index|
+      context "Scenario #{index}" do
+        let(:starting_graph) { the_scenario.fetch(:starting_graph) }
+        let(:updated_document) { the_scenario.fetch(:updated_document) }
+        let(:updated_index_document) { the_scenario.fetch(:updated_index_document) }
+        let(:ending_graph) { the_scenario.fetch(:ending_graph) }
+        it 'will update the graph' do
+          # Create the starting_graph
+          starting_graph.fetch(:parents).keys.each do |node_name|
+            parents = starting_graph.fetch(:parents).fetch(node_name)
+            Preservation::Document.new(pid: node_name, parents: parents).tap do |doc|
+              Preservation::Storage.write(doc)
+            end
+            Index::Document.new(
+              pid: node_name,
+              parents: parents,
+              ancestors: starting_graph.fetch(:ancestors).fetch(node_name),
+              pathnames: starting_graph.fetch(:pathnames).fetch(node_name)
+            ).tap do |doc|
+              Index::Storage.write(doc)
+            end
+          end
 
-    it 'will update the graph' do
-      # Create the starting_graph
-      starting_graph.fetch(:parents).keys.each do |node_name|
-        parents = starting_graph.fetch(:parents).fetch(node_name)
-        Preservation::Document.new(pid: node_name, parents: parents).tap do |doc|
-          Preservation::Storage.write(doc)
+          # Perform the update to the Fedora document
+          Preservation::Storage.write(updated_document)
+          # Perform the ActiveFedora "update_index"
+          Index::Storage.write(updated_index_document)
+
+          Reindexer.reindex_descendants(updated_document.pid)
+
+          # Verify the expected behavior
+          ending_graph.fetch(:parents).keys.each do |node_name|
+            document = Index::Document.new(
+              pid: node_name,
+              parents: ending_graph.fetch(:parents).fetch(node_name),
+              ancestors: ending_graph.fetch(:ancestors).fetch(node_name),
+              pathnames: ending_graph.fetch(:pathnames).fetch(node_name)
+            )
+            expect(Index::Storage.find(node_name)).to eq(document)
+          end
         end
-        Index::Document.new(
-          pid: node_name,
-          parents: parents,
-          ancestors: starting_graph.fetch(:ancestors).fetch(node_name),
-          pathnames: starting_graph.fetch(:pathnames).fetch(node_name)
-        ).tap do |doc|
-          Index::Storage.write(doc)
-        end
-      end
-
-      # Perform the update to the Fedora document
-      Preservation::Storage.write(updated_document)
-      # Perform the ActiveFedora "update_index"
-      Index::Storage.write(updated_index_document)
-
-      Reindexer.reindex_descendants(updated_document.pid)
-
-      # Verify the expected behavior
-      ending_graph.fetch(:parents).keys.each do |node_name|
-        document = Index::Document.new(
-          pid: node_name,
-          parents: ending_graph.fetch(:parents).fetch(node_name),
-          ancestors: ending_graph.fetch(:ancestors).fetch(node_name),
-          pathnames: ending_graph.fetch(:pathnames).fetch(node_name)
-        )
-        expect(Index::Storage.find(node_name)).to eq(document)
       end
     end
   end

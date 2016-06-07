@@ -68,9 +68,9 @@ module Curate
       include Dry::Equalizer(:pid, :sorted_parents, :sorted_pathnames, :sorted_ancestors)
       extend Dry::Initializer::Mixin
       option :pid, type: Types::Coercible::String
-      option :parents
-      option :pathnames
-      option :ancestors
+      option :parents, type: Types::Coercible::Array
+      option :pathnames, type: Types::Coercible::Array
+      option :ancestors, type: Types::Coercible::Array
 
       def write
         Storage.write(self)
@@ -104,11 +104,13 @@ module Curate
 
   # :nodoc:
   class Reindexer
-    def self.reindex_descendants(pid)
-      new(pid: pid).call
+    DEFAULT_TIME_TO_LIVE = 7
+    def self.reindex_descendants(pid, time_to_live = DEFAULT_TIME_TO_LIVE)
+      new(pid: pid, time_to_live: time_to_live).call
     end
     extend Dry::Initializer::Mixin
     option :pid, type: Types::Coercible::String
+    option :time_to_live, type: Types::Coercible::Int
     option :queue, default: proc { Queue.new }
 
     def call

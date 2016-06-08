@@ -3,6 +3,7 @@ require 'set'
 require 'dry-equalizer'
 require 'dry-initializer'
 require 'dry-types'
+require 'forwardable'
 
 # :nodoc:
 module Curate
@@ -109,6 +110,7 @@ module Curate
 
   # :nodoc:
   class Reindexer
+    extend Forwardable
     ProcessingDocument = Struct.new(:pid, :time_to_live)
 
     # This assumes a rather deep graph
@@ -122,21 +124,29 @@ module Curate
     option :queue, default: proc { Queue.new }
 
     def call
-      with_each_indexed_child_of(pid) do |child|
-        queue.enqueue(ProcessingDocument.new(child.pid, time_to_live))
-      end
-      while index_document = queue.dequeue
-        raise Exceptions::CycleDetectionError if index_document.time_to_live <= 0
-        preservation_document = Preservation::Storage.find(index_document.pid)
-        Index::Document.new(parents_and_path_and_ancestors_for(preservation_document)).write
-        with_each_indexed_child_of(index_document.pid) do |child|
-          queue.enqueue(ProcessingDocument.new(child.pid, index_document.time_to_live - 1))
-        end
+      with_each_indexed_child_of(pid) { |child| enqueue(child.pid, time_to_live) }
+      index_document = dequeue
+      while index_document
+        process_a_document(index_document)
+        with_each_indexed_child_of(index_document.pid) { |child| enqueue(child.pid, index_document.time_to_live - 1) }
+        index_document = dequeue
       end
       self
     end
 
     private
+
+    def_delegator :queue, :dequeue
+
+    def enqueue(pid, time_to_live)
+      queue.enqueue(ProcessingDocument.new(pid, time_to_live))
+    end
+
+    def process_a_document(index_document)
+      raise Exceptions::CycleDetectionError if index_document.time_to_live <= 0
+      preservation_document = Preservation::Storage.find(index_document.pid)
+      Index::Document.new(parents_and_path_and_ancestors_for(preservation_document)).write
+    end
 
     def parents_and_path_and_ancestors_for(preservation_document)
       parents = Set.new

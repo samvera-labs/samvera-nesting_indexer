@@ -92,7 +92,7 @@ module Curate
               # Perform the update to the Fedora document
               Preservation::Document.new(preservation_document_attributes).write
 
-              Indexer.reindex(preservation_document_attributes.fetch(:pid))
+              Indexer.reindex_relationships(preservation_document_attributes.fetch(:pid))
 
               # Verify the expected behavior
               ending_graph.fetch(:parent_pids).keys.each do |pid|
@@ -118,7 +118,7 @@ module Curate
           }
           build_graph(starting_graph)
 
-          expect { Indexer.reindex(:a) }.to raise_error(Exceptions::CycleDetectionError)
+          expect { Indexer.reindex_relationships(:a) }.to raise_error(Exceptions::CycleDetectionError)
         end
       end
     end

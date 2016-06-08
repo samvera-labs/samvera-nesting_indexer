@@ -9,7 +9,7 @@ module Curate
     # Responsible for reindexing the PID and its descendants
     # @note There is cycle detection via the TIME_TO_LIVE counter
     # @api private
-    class Reindexer
+    class RelationshipReindexer
       def initialize(options = {})
         @pid = options.fetch(:pid).to_s
         @time_to_live = options.fetch(:time_to_live).to_i

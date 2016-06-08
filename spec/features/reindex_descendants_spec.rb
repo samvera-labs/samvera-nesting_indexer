@@ -217,7 +217,7 @@ module Curate
           starting_graph: {
             parents: { a: [], b: [], c: ['a', 'b'], d: ['a', 'b'] },
             ancestors: { a: [], b: [], c: ['a', 'b'], d: ['a', 'b'] },
-            pathnames: { a: ['a'], b: ['b'], c: ['a/c', 'b/c'], d: ['a/d', 'b/d'] },
+            pathnames: { a: ['a'], b: ['b'], c: ['a/c', 'b/c'], d: ['a/d', 'b/d'] }
           },
           updated_attributes: { pid: :c, parents: ['a'], pathnames: ['a/c'], ancestors: ['a'] },
           ending_graph: {
@@ -248,7 +248,7 @@ module Curate
             pathnames: {
               a: ['a'], b: ['g/b'], c: ['a/c', 'g/b/c'], d: ['g/b/d', 'g/b/c/d', 'a/c/d'], e: ['g/b/e', 'g/b/c/e', 'a/c/e'],
               f: ['g/b/e/f', 'g/b/c/e/f', 'a/c/e/f'], g: ['g']
-            },
+            }
           }
         }
       ].each_with_index do |the_scenario, index|
@@ -286,7 +286,7 @@ module Curate
         starting_graph = {
           parents: { a: [], b: ['a', 'd'], c: ['b'], d: ['c'] },
           ancestors: { a: [], b: ['a', 'c', 'd', 'b'], c: ['a', 'b'], d: ['a', 'b', 'c'] },
-          pathnames: { a: [], b: ['a/b', 'b/d', 'b/d/c'], c: ['a/c', 'b/c'], d: ['a/d', 'b/d'] },
+          pathnames: { a: [], b: ['a/b', 'b/d', 'b/d/c'], c: ['a/c', 'b/c'], d: ['a/d', 'b/d'] }
         }
         build_graph(starting_graph)
 

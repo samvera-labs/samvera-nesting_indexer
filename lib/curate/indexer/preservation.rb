@@ -11,9 +11,9 @@ module Curate
       class Document
         def initialize(keywords = {})
           @pid = keywords.fetch(:pid).to_s
-          @parents = Array(keywords.fetch(:parents))
+          @parent_pids = Array(keywords.fetch(:parent_pids))
         end
-        attr_reader :pid, :parents
+        attr_reader :pid, :parent_pids
 
         def write
           Storage.write(self)

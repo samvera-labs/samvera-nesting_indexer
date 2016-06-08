@@ -16,12 +16,12 @@ module Curate
 
       def build_graph(graph)
         # Create the starting_graph
-        graph.fetch(:parents).keys.each do |pid|
-          parents = graph.fetch(:parents).fetch(pid)
-          Preservation::Document.new(pid: pid, parents: parents).write
+        graph.fetch(:parent_pids).keys.each do |pid|
+          parent_pids = graph.fetch(:parent_pids).fetch(pid)
+          Preservation::Document.new(pid: pid, parent_pids: parent_pids).write
           Index::Document.new(
             pid: pid,
-            parents: parents,
+            parent_pids: parent_pids,
             ancestors: graph.fetch(:ancestors).fetch(pid),
             pathnames: graph.fetch(:pathnames).fetch(pid)
           ).write
@@ -33,33 +33,33 @@ module Curate
           {
             name: 'A semi-complicated graph with diamonds and triangle relationships',
             starting_graph: {
-              parents: { a: [], b: ['a'], c: ['a', 'b'], d: ['c', 'e'], e: ['b'] },
+              parent_pids: { a: [], b: ['a'], c: ['a', 'b'], d: ['c', 'e'], e: ['b'] },
               ancestors: { a: [], b: ['a'], c: ['a/b', 'a'], d: ['a', 'a/b', 'a/b/c', 'a/b/e', 'a/c'], e: ['a', 'a/b'] },
               pathnames: { a: ['a'], b: ['a/b'], c: ['a/c', 'a/b/c'], d: ['a/c/d', 'a/b/c/d', 'a/b/e/d'], e: ['a/b/e'] }
             },
-            updated_attributes: { pid: :c, parents: ['a'], pathnames: ['a/c'], ancestors: ['a'] },
+            updated_attributes: { pid: :c, parent_pids: ['a'], pathnames: ['a/c'], ancestors: ['a'] },
             ending_graph: {
-              parents: { a: [], b: ['a'], c: ['a'], d: ['c', 'e'], e: ['b'] },
+              parent_pids: { a: [], b: ['a'], c: ['a'], d: ['c', 'e'], e: ['b'] },
               ancestors: { a: [], b: ['a'], c: ['a'], d: ['a', 'a/b', 'a/b/e', 'a/c'], e: ['a', 'a/b'] },
               pathnames: { a: ['a'], b: ['a/b'], c: ['a/c'], d: ['a/c/d', 'a/b/e/d'], e: ['a/b/e'] }
             }
           }, {
-            name: 'Two child with same parents and one drops one of the parents',
+            name: 'Two child with same parent_pids and one drops one of the parent_pids',
             starting_graph: {
-              parents: { a: [], b: [], c: ['a', 'b'], d: ['a', 'b'] },
+              parent_pids: { a: [], b: [], c: ['a', 'b'], d: ['a', 'b'] },
               ancestors: { a: [], b: [], c: ['a', 'b'], d: ['a', 'b'] },
               pathnames: { a: ['a'], b: ['b'], c: ['a/c', 'b/c'], d: ['a/d', 'b/d'] }
             },
-            updated_attributes: { pid: :c, parents: ['a'], pathnames: ['a/c'], ancestors: ['a'] },
+            updated_attributes: { pid: :c, parent_pids: ['a'], pathnames: ['a/c'], ancestors: ['a'] },
             ending_graph: {
-              parents: { a: [], b: [], c: ['a'], d: ['a', 'b'] },
+              parent_pids: { a: [], b: [], c: ['a'], d: ['a', 'b'] },
               ancestors: { a: [], b: [], c: ['a'], d: ['a', 'b'] },
               pathnames: { a: ['a'], b: ['b'], c: ['a/c'], d: ['a/d', 'b/d'] }
             }
           }, {
-            name: 'Switching top-level parents in a nested graph',
+            name: 'Switching top-level parent_pids in a nested graph',
             starting_graph: {
-              parents: { a: [], b: ['a'], c: ['a', 'b'], d: ['b', 'c'], e: ['b', 'c'], f: ['e'], g: [] },
+              parent_pids: { a: [], b: ['a'], c: ['a', 'b'], d: ['b', 'c'], e: ['b', 'c'], f: ['e'], g: [] },
               ancestors: {
                 a: [], b: ['a'], c: ['a', 'a/b'], d: ['a', 'a/b', 'a/b/c', 'a/c'], e: ['a', 'a/b', 'a/b/c', 'a/c'],
                 f: ['a', 'a/b', 'a/b/e', 'a/b/c', 'a/b/c/e', 'a/c', 'a/c/e'], g: []
@@ -69,9 +69,9 @@ module Curate
                 f: ['a/b/e/f', 'a/b/c/e/f', 'a/c/e/f'], g: ['g']
               }
             },
-            updated_attributes: { pid: :b, parents: ['g'], pathnames: ['g/b'], ancestors: ['g'] },
+            updated_attributes: { pid: :b, parent_pids: ['g'], pathnames: ['g/b'], ancestors: ['g'] },
             ending_graph: {
-              parents: { a: [], b: ['g'], c: ['a', 'b'], d: ['b', 'c'], e: ['b', 'c'], f: ['e'], g: [] },
+              parent_pids: { a: [], b: ['g'], c: ['a', 'b'], d: ['b', 'c'], e: ['b', 'c'], f: ['e'], g: [] },
               ancestors: {
                 a: [], b: ['g'], c: ['a', 'g', 'g/b'], d: ['g', 'g/b', 'g/b/c', 'a', 'a/c'], e: ['g', 'g/b', 'g/b/c', 'a', 'a/c'],
                 f: ['a', 'a/c', 'a/c/e', 'g', 'g/b', 'g/b/c', 'g/b/c/e', 'g/b/e'], g: []
@@ -91,17 +91,17 @@ module Curate
               build_graph(starting_graph)
 
               # Perform the update to the Fedora document
-              Preservation::Document.new(pid: updated_attributes.fetch(:pid), parents: updated_attributes.fetch(:parents)).write
+              Preservation::Document.new(pid: updated_attributes.fetch(:pid), parent_pids: updated_attributes.fetch(:parent_pids)).write
               # Perform the ActiveFedora "update_index"
               Index::Document.new(updated_attributes).write
 
               DescendantReindexer.reindex_descendants(updated_attributes.fetch(:pid))
 
               # Verify the expected behavior
-              ending_graph.fetch(:parents).keys.each do |pid|
+              ending_graph.fetch(:parent_pids).keys.each do |pid|
                 document = Index::Document.new(
                   pid: pid,
-                  parents: ending_graph.fetch(:parents).fetch(pid),
+                  parent_pids: ending_graph.fetch(:parent_pids).fetch(pid),
                   ancestors: ending_graph.fetch(:ancestors).fetch(pid),
                   pathnames: ending_graph.fetch(:pathnames).fetch(pid)
                 )
@@ -115,7 +115,7 @@ module Curate
       context "Cyclical graphs" do
         it 'will catch due to a time to live constraint' do
           starting_graph = {
-            parents: { a: [], b: ['a', 'd'], c: ['b'], d: ['c'] },
+            parent_pids: { a: [], b: ['a', 'd'], c: ['b'], d: ['c'] },
             ancestors: { a: [], b: ['a', 'c', 'd', 'b'], c: ['a', 'b'], d: ['a', 'b', 'c'] },
             pathnames: { a: [], b: ['a/b', 'b/d', 'b/d/c'], c: ['a/c', 'b/c'], d: ['a/d', 'b/d'] }
           }

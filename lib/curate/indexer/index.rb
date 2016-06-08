@@ -9,22 +9,22 @@ module Curate
       # A rudimentary representation of what is needed to reindex Solr documents
       class Document
         # A quick and dirty means of doing comparative logic
-        include Dry::Equalizer(:pid, :sorted_parents, :sorted_pathnames, :sorted_ancestors)
+        include Dry::Equalizer(:pid, :sorted_parent_pids, :sorted_pathnames, :sorted_ancestors)
 
         def initialize(keywords = {})
           @pid = keywords.fetch(:pid).to_s
-          @parents = Array(keywords.fetch(:parents))
+          @parent_pids = Array(keywords.fetch(:parent_pids))
           @pathnames = Array(keywords.fetch(:pathnames))
           @ancestors = Array(keywords.fetch(:ancestors))
         end
-        attr_reader :pid, :parents, :pathnames, :ancestors
+        attr_reader :pid, :parent_pids, :pathnames, :ancestors
 
         def write
           Storage.write(self)
         end
 
-        def sorted_parents
-          parents.sort
+        def sorted_parent_pids
+          parent_pids.sort
         end
 
         def sorted_pathnames
@@ -40,7 +40,7 @@ module Curate
       module Storage
         extend StorageModule
         def self.find_children_of_pid(pid)
-          cache.values.select { |document| document.parents.include?(pid) }
+          cache.values.select { |document| document.parent_pids.include?(pid) }
         end
       end
     end

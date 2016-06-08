@@ -53,10 +53,10 @@ module Curate
       def process_a_document(index_document)
         raise Exceptions::CycleDetectionError, pid if index_document.time_to_live <= 0
         preservation_document = Preservation::Storage.find(index_document.pid)
-        Index::Document.new(parents_and_path_and_ancestors_for(preservation_document)).write
+        Index::Document.new(parent_pids_and_path_and_ancestors_for(preservation_document)).write
       end
 
-      def parents_and_path_and_ancestors_for(preservation_document)
+      def parent_pids_and_path_and_ancestors_for(preservation_document)
         ParentAndPathAndAncestorsBuilder.new(preservation_document).to_hash
       end
 
@@ -65,27 +65,27 @@ module Curate
       class ParentAndPathAndAncestorsBuilder
         def initialize(preservation_document)
           @preservation_document = preservation_document
-          @parents = Set.new
+          @parent_pids = Set.new
           @pathnames = Set.new
           @ancestors = Set.new
           compile!
         end
 
         def to_hash
-          { pid: @preservation_document.pid, parents: @parents.to_a, pathnames: @pathnames.to_a, ancestors: @ancestors.to_a }
+          { pid: @preservation_document.pid, parent_pids: @parent_pids.to_a, pathnames: @pathnames.to_a, ancestors: @ancestors.to_a }
         end
 
         private
 
         def compile!
-          @preservation_document.parents.each do |parent_pid|
+          @preservation_document.parent_pids.each do |parent_pid|
             parent_index_document = Index::Storage.find(parent_pid)
             compile_one!(parent_index_document)
           end
         end
 
         def compile_one!(parent_index_document)
-          @parents << parent_index_document.pid
+          @parent_pids << parent_index_document.pid
           parent_index_document.pathnames.each do |pathname|
             @pathnames << File.join(pathname, @preservation_document.pid)
             slugs = pathname.split("/")

@@ -1,5 +1,6 @@
 require 'spec_helper'
 require 'curate/indexer'
+require 'curate/indexer/exceptions'
 require 'set'
 require 'dry-equalizer'
 require 'dry-initializer'
@@ -78,11 +79,6 @@ module Curate
         def self.find_children_of_pid(pid)
           cache.values.select { |document| document.parents.include?(pid) }
         end
-      end
-    end
-
-    module Exceptions
-      class CycleDetectionError < RuntimeError
       end
     end
 

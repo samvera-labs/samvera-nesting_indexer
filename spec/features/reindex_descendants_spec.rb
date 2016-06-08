@@ -3,6 +3,7 @@ require 'curate/indexer'
 require 'curate/indexer/exceptions'
 require 'curate/indexer/storage_module'
 require 'curate/indexer/preservation'
+require 'curate/indexer/index'
 require 'set'
 require 'dry-equalizer'
 require 'dry-initializer'
@@ -12,47 +13,7 @@ require 'forwardable'
 module Curate
   module Indexer
     # :nodoc:
-    module Index
-      # :nodoc:
-      class Document
-        include Dry::Equalizer(:pid, :sorted_parents, :sorted_pathnames, :sorted_ancestors)
-        extend Dry::Initializer::Mixin
-        option :pid, type: Types::Coercible::String
-        option :parents, type: Types::Coercible::Array
-        option :pathnames, type: Types::Coercible::Array
-        option :ancestors, type: Types::Coercible::Array
-
-        def write
-          Storage.write(self)
-        end
-
-        def sorted_parents
-          parents.sort
-        end
-
-        def sorted_pathnames
-          pathnames.sort
-        end
-
-        def sorted_ancestors
-          ancestors.sort
-        end
-      end
-
-      # :nodoc:
-      module Storage
-        extend StorageModule
-        def self.find_children_of_pid(pid)
-          cache.values.select { |document| document.parents.include?(pid) }
-        end
-      end
-    end
-
-    # :nodoc:
     class Reindexer
-      extend Forwardable
-      ProcessingDocument = Struct.new(:pid, :time_to_live)
-
       # This assumes a rather deep graph
       DEFAULT_TIME_TO_LIVE = 15
       def self.reindex_descendants(pid, time_to_live = DEFAULT_TIME_TO_LIVE)
@@ -76,8 +37,11 @@ module Curate
 
       private
 
+      extend Forwardable
       def_delegator :queue, :shift, :dequeue
 
+      ProcessingDocument = Struct.new(:pid, :time_to_live)
+      private_constant :ProcessingDocument
       def enqueue(pid, time_to_live)
         queue.push(ProcessingDocument.new(pid, time_to_live))
       end

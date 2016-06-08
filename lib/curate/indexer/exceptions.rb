@@ -1,17 +1,15 @@
 module Curate
-  # Responsible for the indexing strategy of related objects
   module Indexer
-    # Namespacing for common errors
-    class RuntimeError < RuntimeError
-    end
-    # An exception thrown when a possible cycle is detected in the graph.
-    class ReindexingReachedMaxLevelError < RuntimeError
-      attr_accessor :requested_pid, :visited_pids, :max_level
-      def initialize(keywords = {})
-        self.requested_pid = keywords.fetch(:requested_pid)
-        self.visited_pids = keywords.fetch(:visited_pids)
-        self.max_level = keywords.fetch(:max_level)
-        super("ERROR: Reindexing reached level #{max_level} on PID:#{requested_pid}. Possible graph cycle detected.")
+    module Exceptions
+      class RuntimeError < ::RuntimeError
+      end
+      # Raised when we may have detected a cycle within the graph
+      class CycleDetectionError < RuntimeError
+        attr_reader :pid
+        def initialize(pid)
+          @pid = pid
+          super "Possible graph cycle discovered related to PID:#{pid}."
+        end
       end
     end
   end

@@ -43,3 +43,6 @@ Documentation:
   Exclude:
   - spec/**/*
   - test/**/*
+
+Sytle/WordArray:
+  Enabled: false

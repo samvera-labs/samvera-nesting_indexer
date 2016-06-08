@@ -149,23 +149,42 @@ module Curate
     end
 
     def parents_and_path_and_ancestors_for(preservation_document)
-      parents = Set.new
-      pathnames = Set.new
-      ancestors = Set.new
-      preservation_document.parents.each do |parent_pid|
-        parent_index_document = Index::Storage.find(parent_pid)
-        parents << parent_pid
-        parent_index_document.pathnames.each do |pathname|
-          pathnames << File.join(pathname, preservation_document.pid)
-          slugs = pathname.split("/")
-          slugs.each_index do |i|
-            ancestors << slugs[0..i].join('/')
-          end
-        end
-        ancestors += parent_index_document.ancestors
-      end
-      { pid: preservation_document.pid, parents: parents.to_a, pathnames: pathnames.to_a, ancestors: ancestors.to_a }
+      ParentAndPathAndAncestorsBuilder.new(preservation_document).to_hash
     end
+
+    class ParentAndPathAndAncestorsBuilder
+      def initialize(preservation_document)
+        @preservation_document = preservation_document
+        @parents = Set.new
+        @pathnames = Set.new
+        @ancestors = Set.new
+        compile!
+      end
+
+      def to_hash
+        { pid: @preservation_document.pid, parents: @parents.to_a, pathnames: @pathnames.to_a, ancestors: @ancestors.to_a }
+      end
+
+      private
+
+      def compile!
+        @preservation_document.parents.each do |parent_pid|
+          parent_index_document = Index::Storage.find(parent_pid)
+          compile_one!(parent_index_document)
+        end
+      end
+
+      def compile_one!(parent_index_document)
+        @parents << parent_index_document.pid
+        parent_index_document.pathnames.each do |pathname|
+          @pathnames << File.join(pathname, @preservation_document.pid)
+          slugs = pathname.split("/")
+          slugs.each_index { |i| @ancestors << slugs[0..i].join('/') }
+        end
+        @ancestors += parent_index_document.ancestors
+      end
+    end
+    private_constant :ParentAndPathAndAncestorsBuilder
 
     def with_each_indexed_child_of(pid)
       Index::Storage.find_children_of_pid(pid).each { |child| yield(child) }
@@ -181,19 +200,15 @@ module Curate
 
     def build_graph(graph)
       # Create the starting_graph
-      graph.fetch(:parents).keys.each do |node_name|
-        parents = graph.fetch(:parents).fetch(node_name)
-        Preservation::Document.new(pid: node_name, parents: parents).tap do |doc|
-          Preservation::Storage.write(doc)
-        end
+      graph.fetch(:parents).keys.each do |pid|
+        parents = graph.fetch(:parents).fetch(pid)
+        Preservation::Document.new(pid: pid, parents: parents).write
         Index::Document.new(
-          pid: node_name,
+          pid: pid,
           parents: parents,
-          ancestors: graph.fetch(:ancestors).fetch(node_name),
-          pathnames: graph.fetch(:pathnames).fetch(node_name)
-        ).tap do |doc|
-          Index::Storage.write(doc)
-        end
+          ancestors: graph.fetch(:ancestors).fetch(pid),
+          pathnames: graph.fetch(:pathnames).fetch(pid)
+        ).write
       end
     end
 

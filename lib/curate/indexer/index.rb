@@ -3,9 +3,13 @@ require 'curate/indexer/storage_module'
 
 module Curate
   module Indexer
+    # @api private
+    #
     # An abstract representation of the underlying index service. In the case of
     # CurateND this is an abstraction of Solr.
     module Index
+      # @api private
+      #
       # A rudimentary representation of what is needed to reindex Solr documents
       class Document
         # A quick and dirty means of doing comparative logic

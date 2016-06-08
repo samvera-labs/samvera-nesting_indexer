@@ -1,5 +1,7 @@
 module Curate
   module Indexer
+    # @api private
+    #
     # A module mixin to expose rudimentary read/write capabilities
     #
     # @example

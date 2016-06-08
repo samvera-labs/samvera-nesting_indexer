@@ -13,7 +13,7 @@ require 'forwardable'
 module Curate
   module Indexer
     # :nodoc:
-    class Reindexer
+    class DescendantReindexer
       # This assumes a rather deep graph
       DEFAULT_TIME_TO_LIVE = 15
       def self.reindex_descendants(pid, time_to_live = DEFAULT_TIME_TO_LIVE)
@@ -183,7 +183,7 @@ module Curate
               # Perform the ActiveFedora "update_index"
               Index::Document.new(updated_attributes).write
 
-              Reindexer.reindex_descendants(updated_attributes.fetch(:pid))
+              DescendantReindexer.reindex_descendants(updated_attributes.fetch(:pid))
 
               # Verify the expected behavior
               ending_graph.fetch(:parents).keys.each do |pid|
@@ -209,7 +209,7 @@ module Curate
           }
           build_graph(starting_graph)
 
-          expect { Reindexer.reindex_descendants(:a) }.to raise_error(Exceptions::CycleDetectionError)
+          expect { DescendantReindexer.reindex_descendants(:a) }.to raise_error(Exceptions::CycleDetectionError)
         end
       end
     end

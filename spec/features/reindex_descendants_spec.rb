@@ -9,20 +9,6 @@ require 'forwardable'
 module Curate
   module Indexer
     # :nodoc:
-    class Queue
-      def initialize
-        @queue = []
-      end
-
-      def enqueue(object)
-        @queue << object
-      end
-
-      def dequeue
-        @queue.shift
-      end
-    end
-    # :nodoc:
     module Types
       include Dry::Types.module
     end
@@ -122,7 +108,7 @@ module Curate
       extend Dry::Initializer::Mixin
       option :pid, type: Types::Coercible::String
       option :time_to_live, type: Types::Coercible::Int
-      option :queue, default: proc { Queue.new }
+      option :queue, default: proc { [] }
 
       def call
         with_each_indexed_child_of(pid) { |child| enqueue(child.pid, time_to_live) }
@@ -137,10 +123,10 @@ module Curate
 
       private
 
-      def_delegator :queue, :dequeue
+      def_delegator :queue, :shift, :dequeue
 
       def enqueue(pid, time_to_live)
-        queue.enqueue(ProcessingDocument.new(pid, time_to_live))
+        queue.push(ProcessingDocument.new(pid, time_to_live))
       end
 
       def process_a_document(index_document)

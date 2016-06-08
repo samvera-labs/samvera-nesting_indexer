@@ -75,10 +75,6 @@ module Curate
       # :nodoc:
       module Storage
         extend StorageModule
-        def self.find_pathnames_for(pids)
-          pids.map { |pid| find(pid).pathnames }.flatten.uniq
-        end
-
         def self.find_children_of_pid(pid)
           cache.values.select { |document| document.parents.include?(pid) }
         end

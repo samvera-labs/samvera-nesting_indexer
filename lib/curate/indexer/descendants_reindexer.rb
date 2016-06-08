@@ -9,12 +9,6 @@ module Curate
     # Responsible for reindexing the descendants of the given PID.
     # @note There is cycle detection via the TIME_TO_LIVE counter
     class DescendantReindexer
-      # This assumes a rather deep graph
-      DEFAULT_TIME_TO_LIVE = 15
-      def self.reindex_descendants(pid, time_to_live = DEFAULT_TIME_TO_LIVE)
-        new(pid: pid, time_to_live: time_to_live).call
-      end
-
       def initialize(options = {})
         @pid = options.fetch(:pid).to_s
         @time_to_live = options.fetch(:time_to_live).to_i

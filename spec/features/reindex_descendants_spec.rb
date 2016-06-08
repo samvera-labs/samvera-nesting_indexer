@@ -3,7 +3,6 @@ require 'curate/indexer'
 require 'curate/indexer/exceptions'
 require 'curate/indexer/preservation'
 require 'curate/indexer/index'
-require 'curate/indexer/descendants_reindexer'
 
 # :nodoc:
 module Curate
@@ -95,7 +94,7 @@ module Curate
               # Perform the ActiveFedora "update_index"
               Index::Document.new(updated_attributes).write
 
-              DescendantReindexer.reindex_descendants(updated_attributes.fetch(:pid))
+              Indexer.reindex_descendants(updated_attributes.fetch(:pid))
 
               # Verify the expected behavior
               ending_graph.fetch(:parent_pids).keys.each do |pid|
@@ -121,7 +120,7 @@ module Curate
           }
           build_graph(starting_graph)
 
-          expect { DescendantReindexer.reindex_descendants(:a) }.to raise_error(Exceptions::CycleDetectionError)
+          expect { Indexer.reindex_descendants(:a) }.to raise_error(Exceptions::CycleDetectionError)
         end
       end
     end

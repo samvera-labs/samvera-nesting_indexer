@@ -43,6 +43,4 @@ Gem::Specification.new do |spec|
   # As a secondary dependency, listen is preventing bundling
   spec.add_development_dependency "listen", '~> 3.0.8'
   spec.add_dependency "dry-equalizer"
-  spec.add_dependency "dry-initializer"
-  spec.add_dependency "dry-types"
 end

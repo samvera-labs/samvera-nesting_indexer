@@ -1,10 +1,8 @@
-require 'set'
-require 'dry-initializer'
-require 'forwardable'
 require 'curate/indexer/exceptions'
 require 'curate/indexer/index'
 require 'curate/indexer/preservation'
 require 'forwardable'
+require 'set'
 
 module Curate
   module Indexer
@@ -16,10 +14,13 @@ module Curate
       def self.reindex_descendants(pid, time_to_live = DEFAULT_TIME_TO_LIVE)
         new(pid: pid, time_to_live: time_to_live).call
       end
-      extend Dry::Initializer::Mixin
-      option :pid, type: Types::Coercible::String
-      option :time_to_live, type: Types::Coercible::Int
-      option :queue, default: proc { [] }
+
+      def initialize(options = {})
+        @pid = options.fetch(:pid).to_s
+        @time_to_live = options.fetch(:time_to_live).to_i
+        @queue = options.fetch(:queue, [])
+      end
+      attr_reader :pid, :time_to_live, :queue
 
       def call
         with_each_indexed_child_of(pid) { |child| enqueue(child.pid, time_to_live) }

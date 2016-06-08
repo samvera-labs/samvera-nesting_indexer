@@ -1,4 +1,3 @@
-require 'dry-initializer'
 require 'dry-equalizer'
 require 'curate/indexer/storage_module'
 
@@ -11,11 +10,14 @@ module Curate
       class Document
         # A quick and dirty means of doing comparative logic
         include Dry::Equalizer(:pid, :sorted_parents, :sorted_pathnames, :sorted_ancestors)
-        extend Dry::Initializer::Mixin
-        option :pid, type: Types::Coercible::String
-        option :parents, type: Types::Coercible::Array
-        option :pathnames, type: Types::Coercible::Array
-        option :ancestors, type: Types::Coercible::Array
+
+        def initialize(keywords = {})
+          @pid = keywords.fetch(:pid).to_s
+          @parents = Array(keywords.fetch(:parents))
+          @pathnames = Array(keywords.fetch(:pathnames))
+          @ancestors = Array(keywords.fetch(:ancestors))
+        end
+        attr_reader :pid, :parents, :pathnames, :ancestors
 
         def write
           Storage.write(self)

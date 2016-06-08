@@ -6,10 +6,10 @@ require 'set'
 
 module Curate
   module Indexer
-    # Responsible for reindexing the descendants of the given PID.
+    # Responsible for reindexing the PID and its descendants
     # @note There is cycle detection via the TIME_TO_LIVE counter
     # @api private
-    class DescendantReindexer
+    class Reindexer
       def initialize(options = {})
         @pid = options.fetch(:pid).to_s
         @time_to_live = options.fetch(:time_to_live).to_i

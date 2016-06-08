@@ -7,7 +7,7 @@ require 'curate/indexer/index'
 # :nodoc:
 module Curate
   module Indexer
-    RSpec.describe 'Reindex descendants' do
+    RSpec.describe 'Reindex pid and descendants' do
       before do
         Preservation::Storage.clear_cache!
         Index::Storage.clear_cache!
@@ -92,7 +92,7 @@ module Curate
               # Perform the update to the Fedora document
               Preservation::Document.new(preservation_document_attributes).write
 
-              Indexer.reindex_descendants(preservation_document_attributes.fetch(:pid))
+              Indexer.reindex(preservation_document_attributes.fetch(:pid))
 
               # Verify the expected behavior
               ending_graph.fetch(:parent_pids).keys.each do |pid|
@@ -118,7 +118,7 @@ module Curate
           }
           build_graph(starting_graph)
 
-          expect { Indexer.reindex_descendants(:a) }.to raise_error(Exceptions::CycleDetectionError)
+          expect { Indexer.reindex(:a) }.to raise_error(Exceptions::CycleDetectionError)
         end
       end
     end

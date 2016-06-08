@@ -2,6 +2,7 @@ require 'spec_helper'
 require 'curate/indexer'
 require 'curate/indexer/exceptions'
 require 'curate/indexer/storage_module'
+require 'curate/indexer/preservation'
 require 'set'
 require 'dry-equalizer'
 require 'dry-initializer'
@@ -10,22 +11,6 @@ require 'forwardable'
 # :nodoc:
 module Curate
   module Indexer
-    # :nodoc:
-    module Preservation
-      class Document
-        extend Dry::Initializer::Mixin
-        option :pid, type: Types::Coercible::String
-        option :parents, type: Types::Coercible::Array
-
-        def write
-          Storage.write(self)
-        end
-      end
-      # :nodoc:
-      module Storage
-        extend StorageModule
-      end
-    end
     # :nodoc:
     module Index
       # :nodoc:

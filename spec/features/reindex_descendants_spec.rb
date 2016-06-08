@@ -1,18 +1,13 @@
 require 'spec_helper'
+require 'curate/indexer'
 require 'set'
 require 'dry-equalizer'
 require 'dry-initializer'
-require 'dry-types'
 require 'forwardable'
 
 # :nodoc:
 module Curate
   module Indexer
-    # :nodoc:
-    module Types
-      include Dry::Types.module
-    end
-
     # :nodoc:
     module StorageModule
       def write(doc)

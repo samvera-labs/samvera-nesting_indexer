@@ -18,7 +18,7 @@ module Curate
       attr_reader :pid, :time_to_live, :queue
 
       def call
-        with_each_indexed_child_of(pid) { |child| enqueue(child.pid, time_to_live) }
+        enqueue(pid, time_to_live)
         index_document = dequeue
         while index_document
           process_a_document(index_document)

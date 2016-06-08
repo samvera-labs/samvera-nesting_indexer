@@ -36,7 +36,7 @@ module Curate
               ancestors: { a: [], b: ['a'], c: ['a/b', 'a'], d: ['a', 'a/b', 'a/b/c', 'a/b/e', 'a/c'], e: ['a', 'a/b'] },
               pathnames: { a: ['a'], b: ['a/b'], c: ['a/c', 'a/b/c'], d: ['a/c/d', 'a/b/c/d', 'a/b/e/d'], e: ['a/b/e'] }
             },
-            updated_attributes: { pid: :c, parent_pids: ['a'], pathnames: ['a/c'], ancestors: ['a'] },
+            preservation_document_attributes: { pid: :c, parent_pids: ['a'] },
             ending_graph: {
               parent_pids: { a: [], b: ['a'], c: ['a'], d: ['c', 'e'], e: ['b'] },
               ancestors: { a: [], b: ['a'], c: ['a'], d: ['a', 'a/b', 'a/b/e', 'a/c'], e: ['a', 'a/b'] },
@@ -49,7 +49,7 @@ module Curate
               ancestors: { a: [], b: [], c: ['a', 'b'], d: ['a', 'b'] },
               pathnames: { a: ['a'], b: ['b'], c: ['a/c', 'b/c'], d: ['a/d', 'b/d'] }
             },
-            updated_attributes: { pid: :c, parent_pids: ['a'], pathnames: ['a/c'], ancestors: ['a'] },
+            preservation_document_attributes: { pid: :c, parent_pids: ['a'] },
             ending_graph: {
               parent_pids: { a: [], b: [], c: ['a'], d: ['a', 'b'] },
               ancestors: { a: [], b: [], c: ['a'], d: ['a', 'b'] },
@@ -68,7 +68,7 @@ module Curate
                 f: ['a/b/e/f', 'a/b/c/e/f', 'a/c/e/f'], g: ['g']
               }
             },
-            updated_attributes: { pid: :b, parent_pids: ['g'], pathnames: ['g/b'], ancestors: ['g'] },
+            preservation_document_attributes: { pid: :b, parent_pids: ['g'] },
             ending_graph: {
               parent_pids: { a: [], b: ['g'], c: ['a', 'b'], d: ['b', 'c'], e: ['b', 'c'], f: ['e'], g: [] },
               ancestors: {
@@ -84,17 +84,15 @@ module Curate
         ].each_with_index do |the_scenario, index|
           context "#{the_scenario.fetch(:name)} (Scenario #{index})" do
             let(:starting_graph) { the_scenario.fetch(:starting_graph) }
-            let(:updated_attributes) { the_scenario.fetch(:updated_attributes) }
+            let(:preservation_document_attributes) { the_scenario.fetch(:preservation_document_attributes) }
             let(:ending_graph) { the_scenario.fetch(:ending_graph) }
             it 'will update the graph' do
               build_graph(starting_graph)
 
               # Perform the update to the Fedora document
-              Preservation::Document.new(pid: updated_attributes.fetch(:pid), parent_pids: updated_attributes.fetch(:parent_pids)).write
-              # Perform the ActiveFedora "update_index"
-              Index::Document.new(updated_attributes).write
+              Preservation::Document.new(preservation_document_attributes).write
 
-              Indexer.reindex_descendants(updated_attributes.fetch(:pid))
+              Indexer.reindex_descendants(preservation_document_attributes.fetch(:pid))
 
               # Verify the expected behavior
               ending_graph.fetch(:parent_pids).keys.each do |pid|

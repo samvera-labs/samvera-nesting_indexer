@@ -1,6 +1,7 @@
 require 'spec_helper'
 require 'curate/indexer'
 require 'curate/indexer/exceptions'
+require 'curate/indexer/storage_module'
 require 'set'
 require 'dry-equalizer'
 require 'dry-initializer'
@@ -9,26 +10,6 @@ require 'forwardable'
 # :nodoc:
 module Curate
   module Indexer
-    # :nodoc:
-    module StorageModule
-      def write(doc)
-        cache[doc.pid] = doc
-      end
-
-      def find(pid)
-        cache.fetch(pid.to_s)
-      end
-
-      def clear_cache!
-        @cache = {}
-      end
-
-      def cache
-        @cache ||= {}
-      end
-      private :cache
-    end
-
     # :nodoc:
     module Preservation
       class Document

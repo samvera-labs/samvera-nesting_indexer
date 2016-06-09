@@ -91,21 +91,24 @@ module Curate
 
               # Perform the update to the Fedora document
               Preservation::Document.new(preservation_document_attributes).write
-
               Indexer.reindex_relationships(preservation_document_attributes.fetch(:pid))
 
               # Verify the expected behavior
-              ending_graph.fetch(:parent_pids).keys.each do |pid|
-                document = Index::Document.new(
-                  pid: pid,
-                  parent_pids: ending_graph.fetch(:parent_pids).fetch(pid),
-                  ancestors: ending_graph.fetch(:ancestors).fetch(pid),
-                  pathnames: ending_graph.fetch(:pathnames).fetch(pid)
-                )
-                expect(Index::Storage.find(pid)).to eq(document)
-              end
+              verify_graph_versus_storage(ending_graph)
             end
           end
+        end
+      end
+
+      def verify_graph_versus_storage(ending_graph)
+        ending_graph.fetch(:parent_pids).keys.each do |pid|
+          document = Index::Document.new(
+            pid: pid,
+            parent_pids: ending_graph.fetch(:parent_pids).fetch(pid),
+            ancestors: ending_graph.fetch(:ancestors).fetch(pid),
+            pathnames: ending_graph.fetch(:pathnames).fetch(pid)
+          )
+          expect(Index::Storage.find(pid)).to eq(document)
         end
       end
 

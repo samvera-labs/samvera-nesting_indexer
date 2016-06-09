@@ -77,6 +77,8 @@ module Curate
             parent_index_document = Index::Storage.find(parent_pid)
             compile_one!(parent_index_document)
           end
+          # Ensuring that an "orphan" has a path to get to it
+          @pathnames << @preservation_document.pid if @parent_pids.empty?
         end
 
         def compile_one!(parent_index_document)

@@ -5,11 +5,16 @@ require 'forwardable'
 require 'set'
 
 module Curate
+  # Establishing namespace
   module Indexer
     # Responsible for reindexing the PID and its descendants
     # @note There is cycle detection via the TIME_TO_LIVE counter
     # @api private
     class RelationshipReindexer
+      def self.call(options = {})
+        new(options).call
+      end
+
       def initialize(options = {})
         @pid = options.fetch(:pid).to_s
         @time_to_live = options.fetch(:time_to_live).to_i
@@ -93,5 +98,6 @@ module Curate
       end
       private_constant :ParentAndPathAndAncestorsBuilder
     end
+    private_constant :RelationshipReindexer
   end
 end

@@ -17,6 +17,10 @@ module Curate
         cache.fetch(pid.to_s)
       end
 
+      def each
+        cache.each { |_key, document| yield(document) }
+      end
+
       def clear_cache!
         @cache = {}
       end

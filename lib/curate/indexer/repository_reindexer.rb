@@ -2,6 +2,8 @@ module Curate
   # Establishing namespace
   module Indexer
     # Responsible for reindexing the entire repository
+    # @api private
+    # @note There is cycle detection logic for walking the graph prior to attempting relationship re-indexing
     class RepositoryReindexer
       def self.call(*args)
         new(*args).call

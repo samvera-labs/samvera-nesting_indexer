@@ -40,6 +40,19 @@ module Curate
       context "non-Cycle graphs" do
         [
           {
+            name: 'A graph without parents',
+            starting_graph: {
+              parent_pids: { a: [], b: [], c: [] },
+              ancestors: { a: [], b: [], c: [] },
+              pathnames: { a: ['a'], b: ['b'], c: ['c'] }
+            },
+            preservation_document_attributes: { pid: :d, parent_pids: [] },
+            ending_graph: {
+              parent_pids: { a: [], b: [], c: [], d: [] },
+              ancestors: { a: [], b: [], c: [], d: [] },
+              pathnames: { a: ['a'], b: ['b'], c: ['c'], d: ['d'] }
+            }
+          }, {
             name: 'A semi-complicated graph with diamonds and triangle relationships',
             starting_graph: {
               parent_pids: { a: [], b: ['a'], c: ['a', 'b'], d: ['c', 'e'], e: ['b'] },

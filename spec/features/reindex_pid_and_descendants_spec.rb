@@ -16,15 +16,25 @@ module Curate
       def build_graph(graph)
         # Create the starting_graph
         graph.fetch(:parent_pids).keys.each do |pid|
-          parent_pids = graph.fetch(:parent_pids).fetch(pid)
-          Preservation::Document.new(pid: pid, parent_pids: parent_pids).write
-          Index::Document.new(
-            pid: pid,
-            parent_pids: parent_pids,
-            ancestors: graph.fetch(:ancestors).fetch(pid),
-            pathnames: graph.fetch(:pathnames).fetch(pid)
-          ).write
+          build_preservation_document(pid, graph)
+          build_index_document(pid, graph)
         end
+      end
+
+      def build_preservation_document(pid, graph)
+        parent_pids = graph.fetch(:parent_pids).fetch(pid)
+        Preservation::Document.new(pid: pid, parent_pids: parent_pids).write
+      end
+
+      def build_index_document(pid, graph)
+        return unless graph.key?(:ancestors)
+        return unless graph.key?(:pathnames)
+        Index::Document.new(
+          pid: pid,
+          parent_pids: graph.fetch(:parent_pids).fetch(pid),
+          ancestors: graph.fetch(:ancestors).fetch(pid),
+          pathnames: graph.fetch(:pathnames).fetch(pid)
+        ).write
       end
 
       context "non-Cycle graphs" do
@@ -122,6 +132,48 @@ module Curate
           build_graph(starting_graph)
 
           expect { Indexer.reindex_relationships(:a) }.to raise_error(Exceptions::CycleDetectionError)
+        end
+      end
+
+      context "Bootstrapping a graph" do
+        it 'indexes a non-cyclical graph' do
+          starting_graph = {
+            parent_pids: { a: [], b: ['a'], c: ['a', 'b'], d: ['b'], e: ['c', 'd'], f: [] }
+          }
+          build_graph(starting_graph)
+
+          Indexer.reindex_all!
+
+          ending_graph = {
+            parent_pids: { a: [], b: ['a'], c: ['a', 'b'], d: ['b'], e: ['c', 'd'], f: [] },
+            ancestors: { a: [], b: ['a'], c: ['a/b', 'a'], d: ['a', 'a/b'], e: ['a', 'a/b', 'a/b/c', 'a/b/d', 'a/c'], f: [] },
+            pathnames: { a: ['a'], b: ['a/b'], c: ['a/c', 'a/b/c'], d: ['a/b/d'], e: ['a/c/e', 'a/b/c/e', 'a/b/d/e'], f: ['f'] }
+          }
+          verify_graph_versus_storage(ending_graph)
+        end
+
+        it 'indexes a non-cyclical graph not declared in parent order' do
+          starting_graph = {
+            parent_pids: { a: ['b'], b: ['c'], c: [] }
+          }
+          build_graph(starting_graph)
+
+          Indexer.reindex_all!
+
+          ending_graph = {
+            parent_pids: { a: ['b'], b: ['c'], c: [] },
+            ancestors: { a: ['c/b', 'c'], b: ['c'], c: [] },
+            pathnames: { a: ['c/b/a'], b: ['c/b'], c: ['c'] }
+          }
+          verify_graph_versus_storage(ending_graph)
+        end
+
+        it 'catches a cyclical graph definition' do
+          starting_graph = {
+            parent_pids: { a: [], b: ['a', 'd'], c: ['b'], d: ['c'] }
+          }
+          build_graph(starting_graph)
+          expect { Indexer.reindex_all! }.to raise_error(Exceptions::CycleDetectionError)
         end
       end
     end

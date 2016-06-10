@@ -3,7 +3,7 @@ require 'curate/indexer/relationship_reindexer'
 require 'curate/indexer/repository_reindexer'
 
 module Curate
-  # Responsible for the indexing strategy of related objects
+  # Responsible for the indexing strategy of related objects.
   module Indexer
     # This assumes a rather deep graph
     DEFAULT_TIME_TO_LIVE = 15
@@ -15,6 +15,8 @@ module Curate
     end
 
     class << self
+      # Here because I made a previous declaration that .reindex was part of the
+      # public API. Then I decided I didn't want to use that method.
       alias reindex reindex_relationships
     end
 

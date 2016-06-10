@@ -149,6 +149,26 @@ module Curate
       end
 
       context "Bootstrapping a graph" do
+        it 'indexes with a non-trivial graph' do
+          starting_graph = {
+            parent_pids: { a: [], b: ['a'], c: ['a', 'b'], d: ['b', 'c'], e: ['b', 'c'], f: ['e'], g: [] }
+          }
+          build_graph(starting_graph)
+          Indexer.reindex_all!
+          ending_graph = {
+            parent_pids: { a: [], b: ['a'], c: ['a', 'b'], d: ['b', 'c'], e: ['b', 'c'], f: ['e'], g: [] },
+            ancestors: {
+              a: [], b: ['a'], c: ['a', 'a/b'], d: ['a', 'a/b', 'a/b/c', 'a/c'], e: ['a', 'a/b', 'a/b/c', 'a/c'],
+              f: ['a', 'a/b', 'a/b/e', 'a/b/c', 'a/b/c/e', 'a/c', 'a/c/e'], g: []
+            },
+            pathnames: {
+              a: ['a'], b: ['a/b'], c: ['a/c', 'a/b/c'], d: ['a/b/d', 'a/b/c/d', 'a/c/d'], e: ['a/b/e', 'a/b/c/e', 'a/c/e'],
+              f: ['a/b/e/f', 'a/b/c/e/f', 'a/c/e/f'], g: ['g']
+            }
+          }
+          verify_graph_versus_storage(ending_graph)
+        end
+
         it 'indexes a non-cyclical graph' do
           starting_graph = {
             parent_pids: { a: [], b: ['a'], c: ['a', 'b'], d: ['b'], e: ['c', 'd'], f: [] }

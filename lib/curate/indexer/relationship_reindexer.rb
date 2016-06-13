@@ -79,7 +79,7 @@ module Curate
 
         def compile!
           @preservation_document.parent_pids.each do |parent_pid|
-            parent_index_document = Index::Storage.find(parent_pid)
+            parent_index_document = Indexer.find_index_document_by(parent_pid)
             compile_one!(parent_index_document)
           end
           # Ensuring that an "orphan" has a path to get to it

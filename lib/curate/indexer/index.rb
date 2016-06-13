@@ -8,6 +8,10 @@ module Curate
     # An abstract representation of the underlying index service. In the case of
     # CurateND this is an abstraction of Solr.
     module Index
+      def self.find(pid)
+        Storage.find(pid)
+      end
+
       # @api private
       #
       # A rudimentary representation of what is needed to reindex Solr documents

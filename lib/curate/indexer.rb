@@ -21,13 +21,18 @@ module Curate
     end
 
     # @api public
-    # @return Curate::Indexer::Document::Preservation
+    # @return Curate::Indexer::Document::PreservationDocument
     def self.find_preservation_document_by(pid)
       Preservation.find(pid)
     end
 
     # @api public
-    # @yield Curate::Indexer::Document::Preservation
+    def self.find_index_document_by(pid)
+      Index.find(pid)
+    end
+
+    # @api public
+    # @yield Curate::Indexer::Document::PreservationDocument
     def self.each_preservation_document
       Preservation.find_each { |document| yield(document) }
     end

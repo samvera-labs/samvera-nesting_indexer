@@ -64,5 +64,10 @@ module Curate
     def self.write_document_attributes_to_preservation_layer(attributes = {})
       Preservation.write_document(attributes)
     end
+
+    # @api private
+    def self.write_document_attributes_to_index_layer(attributes = {})
+      Index.write_document(attributes)
+    end
   end
 end

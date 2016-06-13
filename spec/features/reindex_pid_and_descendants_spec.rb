@@ -29,12 +29,12 @@ module Curate
       def build_index_document(pid, graph)
         return unless graph.key?(:ancestors)
         return unless graph.key?(:pathnames)
-        Index::Document.new(
+        Indexer.write_document_attributes_to_index_layer(
           pid: pid,
           parent_pids: graph.fetch(:parent_pids).fetch(pid),
           ancestors: graph.fetch(:ancestors).fetch(pid),
           pathnames: graph.fetch(:pathnames).fetch(pid)
-        ).write
+        )
       end
 
       context "non-Cycle graphs" do
@@ -125,7 +125,7 @@ module Curate
 
       def verify_graph_versus_storage(ending_graph)
         ending_graph.fetch(:parent_pids).keys.each do |pid|
-          document = Index::Document.new(
+          document = Documents::IndexDocument.new(
             pid: pid,
             parent_pids: ending_graph.fetch(:parent_pids).fetch(pid),
             ancestors: ending_graph.fetch(:ancestors).fetch(pid),

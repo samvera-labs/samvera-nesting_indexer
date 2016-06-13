@@ -49,7 +49,7 @@ module Curate
       def process_a_document(index_document)
         raise Exceptions::CycleDetectionError, pid if index_document.time_to_live <= 0
         preservation_document = Indexer.find_preservation_document_by(index_document.pid)
-        Index::Document.new(parent_pids_and_path_and_ancestors_for(preservation_document)).write
+        Indexer.write_document_attributes_to_index_layer(parent_pids_and_path_and_ancestors_for(preservation_document))
       end
 
       def parent_pids_and_path_and_ancestors_for(preservation_document)

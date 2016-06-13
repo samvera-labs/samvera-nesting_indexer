@@ -20,10 +20,25 @@ module Curate
       true
     end
 
+    # @api public
+    def self.find_preservation_document_by(pid)
+      Preservation.find(pid)
+    end
+
+    # @api public
+    def self.each_preservation_document
+      Preservation.find_each { |document| yield(document) }
+    end
+
     class << self
       # Here because I made a previous declaration that .reindex was part of the
       # public API. Then I decided I didn't want to use that method.
       alias reindex reindex_relationships
+    end
+
+    # @api private
+    def self.write_document_attributes_to_preservation_layer(attributes = {})
+      Preservation.write_document(attributes)
     end
 
     # @api public

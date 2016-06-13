@@ -16,7 +16,7 @@ module Curate
       end
 
       def call
-        Preservation::Storage.each { |document| recursive_reindex(document, max_time_to_live) }
+        Indexer.each_preservation_document { |document| recursive_reindex(document, max_time_to_live) }
       end
 
       private
@@ -32,7 +32,7 @@ module Curate
         return true if processed_pids.include?(document.pid)
         raise Exceptions::CycleDetectionError, document.pid if time_to_live <= 0
         document.parent_pids.each do |parent_pid|
-          parent_document = Preservation::Storage.find(parent_pid)
+          parent_document = Indexer.find_preservation_document_by(parent_pid)
           recursive_reindex(parent_document, time_to_live - 1)
         end
         reindex_a_pid(document.pid)

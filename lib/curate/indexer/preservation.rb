@@ -1,6 +1,7 @@
 require 'curate/indexer/storage_module'
 
 module Curate
+  # :nodoc:
   module Indexer
     # @api private
     #
@@ -8,6 +9,22 @@ module Curate
     # In the case of CurateND, there will need to be an adapter to get a Fedora
     # object coerced into a Curate::Indexer::Preservation::Document
     module Preservation
+      def self.find(pid, *)
+        MemoryStorage.find(pid)
+      end
+
+      def self.find_each(*, &block)
+        MemoryStorage.find_each(&block)
+      end
+
+      def self.clear_cache!
+        MemoryStorage.clear_cache!
+      end
+
+      def self.write_document(attributes = {})
+        Document.new(attributes).write
+      end
+
       # @api private
       #
       # A simplified document that reflects the necessary attributes for re-indexing
@@ -20,13 +37,16 @@ module Curate
         attr_reader :pid, :parent_pids
 
         def write
-          Storage.write(self)
+          MemoryStorage.write(self)
         end
       end
+
       # :nodoc:
-      module Storage
+      module MemoryStorage
         extend StorageModule
       end
+      private_constant :MemoryStorage
     end
+    private_constant :Preservation
   end
 end

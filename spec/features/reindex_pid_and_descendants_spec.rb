@@ -9,7 +9,7 @@ module Curate
   module Indexer
     RSpec.describe 'Reindex pid and descendants' do
       before do
-        Preservation::Storage.clear_cache!
+        Preservation.clear_cache!
         Index::Storage.clear_cache!
       end
 
@@ -23,7 +23,7 @@ module Curate
 
       def build_preservation_document(pid, graph)
         parent_pids = graph.fetch(:parent_pids).fetch(pid)
-        Preservation::Document.new(pid: pid, parent_pids: parent_pids).write
+        Indexer.write_document_attributes_to_preservation_layer(pid: pid, parent_pids: parent_pids)
       end
 
       def build_index_document(pid, graph)
@@ -113,7 +113,7 @@ module Curate
               build_graph(starting_graph)
 
               # Perform the update to the Fedora document
-              Preservation::Document.new(preservation_document_attributes).write
+              Indexer.write_document_attributes_to_preservation_layer(preservation_document_attributes)
               Indexer.reindex_relationships(preservation_document_attributes.fetch(:pid))
 
               # Verify the expected behavior

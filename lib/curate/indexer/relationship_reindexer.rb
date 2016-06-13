@@ -52,7 +52,7 @@ module Curate
 
       def process_a_document(index_document)
         raise Exceptions::CycleDetectionError, pid if index_document.time_to_live <= 0
-        preservation_document = Preservation::Storage.find(index_document.pid)
+        preservation_document = Indexer.find_preservation_document_by(index_document.pid)
         Index::Document.new(parent_pids_and_path_and_ancestors_for(preservation_document)).write
       end
 

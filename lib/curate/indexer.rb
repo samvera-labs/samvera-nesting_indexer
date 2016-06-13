@@ -21,11 +21,13 @@ module Curate
     end
 
     # @api public
+    # @return Curate::Indexer::Document::Preservation
     def self.find_preservation_document_by(pid)
       Preservation.find(pid)
     end
 
     # @api public
+    # @yield Curate::Indexer::Document::Preservation
     def self.each_preservation_document
       Preservation.find_each { |document| yield(document) }
     end
@@ -36,11 +38,6 @@ module Curate
       alias reindex reindex_relationships
     end
 
-    # @api private
-    def self.write_document_attributes_to_preservation_layer(attributes = {})
-      Preservation.write_document(attributes)
-    end
-
     # @api public
     # Responsible for reindexing the entire preservation layer.
     # @param time_to_live [Integer] - there to guard against cyclical graphs
@@ -49,6 +46,13 @@ module Curate
     def self.reindex_all!(time_to_live = DEFAULT_TIME_TO_LIVE)
       RepositoryReindexer.call(time_to_live: time_to_live, pid_reindexer: method(:reindex_relationships))
       true
+    end
+
+    # @api private
+    # This is not something that I envision using in the production environment;
+    # It is hear to keep the Preservation system isolated and accessible only through interfaces.
+    def self.write_document_attributes_to_preservation_layer(attributes = {})
+      Preservation.write_document(attributes)
     end
   end
 end

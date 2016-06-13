@@ -1,4 +1,5 @@
 require 'curate/indexer/storage_module'
+require 'curate/indexer/documents'
 
 module Curate
   # :nodoc:
@@ -22,22 +23,8 @@ module Curate
       end
 
       def self.write_document(attributes = {})
-        Document.new(attributes).write
-      end
-
-      # @api private
-      #
-      # A simplified document that reflects the necessary attributes for re-indexing
-      # the children of Fedora objects.
-      class Document
-        def initialize(keywords = {})
-          @pid = keywords.fetch(:pid).to_s
-          @parent_pids = Array(keywords.fetch(:parent_pids))
-        end
-        attr_reader :pid, :parent_pids
-
-        def write
-          MemoryStorage.write(self)
+        Documents::PreservationDocument.new(attributes).tap do |doc|
+          MemoryStorage.write(doc)
         end
       end
 

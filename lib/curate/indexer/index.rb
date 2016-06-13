@@ -8,8 +8,16 @@ module Curate
     # An abstract representation of the underlying index service. In the case of
     # CurateND this is an abstraction of Solr.
     module Index
+      def self.clear_cache!
+        Storage.clear_cache!
+      end
+
       def self.find(pid)
         Storage.find(pid)
+      end
+
+      def self.each_child_document_of(pid, &block)
+        Storage.find_children_of_pid(pid).each(&block)
       end
 
       # @api private
@@ -51,6 +59,7 @@ module Curate
           cache.values.select { |document| document.parent_pids.include?(pid) }
         end
       end
+      private_constant :Storage
     end
   end
 end

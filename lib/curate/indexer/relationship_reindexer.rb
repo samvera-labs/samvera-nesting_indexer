@@ -27,17 +27,13 @@ module Curate
         index_document = dequeue
         while index_document
           process_a_document(index_document)
-          with_each_indexed_child_of(index_document.pid) { |child| enqueue(child.pid, index_document.time_to_live - 1) }
+          Indexer.each_child_document_of(index_document.pid) { |child| enqueue(child.pid, index_document.time_to_live - 1) }
           index_document = dequeue
         end
         self
       end
 
       private
-
-      def with_each_indexed_child_of(pid)
-        Index::Storage.find_children_of_pid(pid).each { |child| yield(child) }
-      end
 
       attr_writer :document
 

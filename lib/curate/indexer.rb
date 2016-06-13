@@ -37,6 +37,11 @@ module Curate
       Preservation.find_each { |document| yield(document) }
     end
 
+    # @api public
+    def self.each_child_document_of(pid, &block)
+      Index.each_child_document_of(pid, &block)
+    end
+
     class << self
       # Here because I made a previous declaration that .reindex was part of the
       # public API. Then I decided I didn't want to use that method.

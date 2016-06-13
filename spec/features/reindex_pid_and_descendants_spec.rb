@@ -10,7 +10,7 @@ module Curate
     RSpec.describe 'Reindex pid and descendants' do
       before do
         Preservation.clear_cache!
-        Index::Storage.clear_cache!
+        Index.clear_cache!
       end
 
       def build_graph(graph)
@@ -131,7 +131,7 @@ module Curate
             ancestors: ending_graph.fetch(:ancestors).fetch(pid),
             pathnames: ending_graph.fetch(:pathnames).fetch(pid)
           )
-          expect(Index::Storage.find(pid)).to eq(document)
+          expect(Indexer.find_index_document_by(pid)).to eq(document)
         end
       end
 

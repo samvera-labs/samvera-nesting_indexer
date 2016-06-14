@@ -1,4 +1,5 @@
 require 'curate/indexer/storage_module'
+require 'curate/indexer/documents'
 
 module Curate
   # :nodoc:

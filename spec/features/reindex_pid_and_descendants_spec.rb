@@ -2,6 +2,7 @@ require 'spec_helper'
 require 'curate/indexer'
 require 'curate/indexer/exceptions'
 require 'curate/indexer/preservation'
+require 'curate/indexer/in_memory_adapter'
 require 'curate/indexer/index'
 
 # :nodoc:
@@ -9,6 +10,9 @@ module Curate
   module Indexer
     RSpec.describe 'Reindex pid and descendants' do
       before do
+        Indexer.configure do |config|
+          config.adapter = InMemoryAdapter
+        end
         Preservation.clear_cache!
         Index.clear_cache!
       end
@@ -23,13 +27,13 @@ module Curate
 
       def build_preservation_document(pid, graph)
         parent_pids = graph.fetch(:parent_pids).fetch(pid)
-        Indexer.write_document_attributes_to_preservation_layer(pid: pid, parent_pids: parent_pids)
+        Indexer::InMemoryAdapter.write_document_attributes_to_preservation_layer(pid: pid, parent_pids: parent_pids)
       end
 
       def build_index_document(pid, graph)
         return unless graph.key?(:ancestors)
         return unless graph.key?(:pathnames)
-        Indexer.write_document_attributes_to_index_layer(
+        Indexer::InMemoryAdapter.write_document_attributes_to_index_layer(
           pid: pid,
           parent_pids: graph.fetch(:parent_pids).fetch(pid),
           ancestors: graph.fetch(:ancestors).fetch(pid),
@@ -113,7 +117,7 @@ module Curate
               build_graph(starting_graph)
 
               # Perform the update to the Fedora document
-              Indexer.write_document_attributes_to_preservation_layer(preservation_document_attributes)
+              Indexer::InMemoryAdapter.write_document_attributes_to_preservation_layer(preservation_document_attributes)
               Indexer.reindex_relationships(preservation_document_attributes.fetch(:pid))
 
               # Verify the expected behavior
@@ -131,7 +135,7 @@ module Curate
             ancestors: ending_graph.fetch(:ancestors).fetch(pid),
             pathnames: ending_graph.fetch(:pathnames).fetch(pid)
           )
-          expect(Indexer.find_index_document_by(pid)).to eq(document)
+          expect(Indexer::InMemoryAdapter.find_index_document_by(pid)).to eq(document)
         end
       end
 

@@ -1,6 +1,7 @@
 require "curate/indexer/version"
 require 'curate/indexer/relationship_reindexer'
 require 'curate/indexer/repository_reindexer'
+require 'curate/indexer/configuration'
 
 module Curate
   # Responsible for performign the indexing of an object and its related child objects.
@@ -15,36 +16,9 @@ module Curate
     # @param time_to_live [Integer] - there to guard against cyclical graphs
     # @return [Boolean] - It was successful
     # @raise Curate::Exceptions::CycleDetectionError - A potential cycle was detected
-    def self.reindex_relationships(pid, adapter = default_adapter, time_to_live = DEFAULT_TIME_TO_LIVE)
-      RelationshipReindexer.call(pid: pid, time_to_live: time_to_live, adapter: adapter)
+    def self.reindex_relationships(pid, time_to_live = DEFAULT_TIME_TO_LIVE)
+      RelationshipReindexer.call(pid: pid, time_to_live: time_to_live, adapter: configuration.adapter)
       true
-    end
-
-    # @api public
-    # @param pid [String]
-    # @return Curate::Indexer::Document::PreservationDocument
-    def self.find_preservation_document_by(pid)
-      Preservation.find(pid)
-    end
-
-    # @api public
-    # @param pid [String]
-    # @return Curate::Indexer::Documents::IndexDocument
-    def self.find_index_document_by(pid)
-      Index.find(pid)
-    end
-
-    # @api public
-    # @yield Curate::Indexer::Document::PreservationDocument
-    def self.each_preservation_document
-      Preservation.find_each { |document| yield(document) }
-    end
-
-    # @api public
-    # @param pid [String]
-    # @yield Curate::Indexer::Documents::IndexDocument
-    def self.each_child_document_of(pid, &block)
-      Index.each_child_document_of(pid, &block)
     end
 
     class << self
@@ -58,29 +32,34 @@ module Curate
     # @param time_to_live [Integer] - there to guard against cyclical graphs
     # @return [Boolean] - It was successful
     # @raise Curate::Exceptions::CycleDetectionError - A potential cycle was detected
-    def self.reindex_all!(adapter = default_adapter, time_to_live = DEFAULT_TIME_TO_LIVE)
-      RepositoryReindexer.call(time_to_live: time_to_live, pid_reindexer: method(:reindex_relationships), adapter: adapter)
+    def self.reindex_all!(time_to_live = DEFAULT_TIME_TO_LIVE)
+      RepositoryReindexer.call(time_to_live: time_to_live, pid_reindexer: method(:reindex_relationships), adapter: configuration.adapter)
       true
     end
 
-    # @api private
-    def self.default_adapter
-      self
-    end
-    private_class_method :default_adapter
-
-    # @api private
-    # This is not something that I envision using in the production environment;
-    # It is hear to keep the Preservation system isolated and accessible only through interfaces.
-    # @return Curate::Indexer::Documents::PreservationDocument
-    def self.write_document_attributes_to_preservation_layer(attributes = {})
-      Preservation.write_document(attributes)
+    # Contains the Curate::Indexer configuration information that is referenceable from wit
+    # @see Curate::Indexer::Configuration
+    def self.configuration
+      @configuration ||= Configuration.new
     end
 
-    # @api private
-    # @return Curate::Indexer::Documents::IndexDocument
-    def self.write_document_attributes_to_index_layer(attributes = {})
-      Index.write_document(attributes)
+    # @api public
+    # @see Curate::Indexer::Configuration
+    # @see .configuration
+    def self.configure(&block)
+      @configuration_block = block
+      configure!
+      # # The Rails load sequence means that some of the configured Targets may
+      # # not be loaded; As such I am not calling configure! instead relying on
+      # # Curate::Indexer::Railtie to handle the configure! call
+      # configure! unless defined?(Rails)
+    end
+
+    # @api public
+    def self.configure!
+      return false unless @configuration_block.respond_to?(:call)
+      @configuration_block.call(configuration)
+      @configuration_block = nil
     end
   end
 end

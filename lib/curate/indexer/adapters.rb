@@ -33,7 +33,7 @@ module Curate
           Index.each_child_document_of(pid, &block)
         end
 
-        # @api private
+        # @api public
         # This is not something that I envision using in the production environment;
         # It is hear to keep the Preservation system isolated and accessible only through interfaces.
         # @return Curate::Indexer::Documents::PreservationDocument
@@ -41,7 +41,7 @@ module Curate
           Preservation.write_document(attributes)
         end
 
-        # @api private
+        # @api public
         # @return Curate::Indexer::Documents::IndexDocument
         def self.write_document_attributes_to_index_layer(attributes = {})
           Index.write_document(attributes)

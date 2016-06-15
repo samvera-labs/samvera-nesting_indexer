@@ -2,6 +2,7 @@ require "curate/indexer/version"
 require 'curate/indexer/relationship_reindexer'
 require 'curate/indexer/repository_reindexer'
 require 'curate/indexer/configuration'
+require 'curate/indexer/railtie' if defined?(Rails)
 
 module Curate
   # Responsible for performign the indexing of an object and its related child objects.
@@ -54,10 +55,10 @@ module Curate
     def self.configure(&block)
       @configuration_block = block
       configure!
-      # # The Rails load sequence means that some of the configured Targets may
-      # # not be loaded; As such I am not calling configure! instead relying on
-      # # Curate::Indexer::Railtie to handle the configure! call
-      # configure! unless defined?(Rails)
+      # The Rails load sequence means that some of the configured Targets may
+      # not be loaded; As such I am not calling configure! instead relying on
+      # Curate::Indexer::Railtie to handle the configure! call
+      configure! unless defined?(Rails)
     end
 
     # @api public

@@ -40,6 +40,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "codeclimate-test-reporter"
   spec.add_development_dependency "json"
   spec.add_development_dependency "byebug"
+  spec.add_development_dependency "railtie", '~>4.0'
   # As a secondary dependency, listen is preventing bundling
   spec.add_development_dependency "listen", '~> 3.0.8'
   spec.add_dependency "dry-equalizer"

@@ -12,11 +12,12 @@ module Curate
       def initialize(options = {})
         @max_time_to_live = options.fetch(:time_to_live).to_i
         @pid_reindexer = options.fetch(:pid_reindexer)
+        @adapter = options.fetch(:adapter)
         @processed_pids = []
       end
 
       def call
-        Indexer.each_preservation_document { |document| recursive_reindex(document, max_time_to_live) }
+        @adapter.each_preservation_document { |document| recursive_reindex(document, max_time_to_live) }
       end
 
       private
@@ -32,7 +33,7 @@ module Curate
         return true if processed_pids.include?(document.pid)
         raise Exceptions::CycleDetectionError, document.pid if time_to_live <= 0
         document.parent_pids.each do |parent_pid|
-          parent_document = Indexer.find_preservation_document_by(parent_pid)
+          parent_document = @adapter.find_preservation_document_by(parent_pid)
           recursive_reindex(parent_document, time_to_live - 1)
         end
         reindex_a_pid(document.pid)

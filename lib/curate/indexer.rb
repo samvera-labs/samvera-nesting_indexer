@@ -15,8 +15,8 @@ module Curate
     # @param time_to_live [Integer] - there to guard against cyclical graphs
     # @return [Boolean] - It was successful
     # @raise Curate::Exceptions::CycleDetectionError - A potential cycle was detected
-    def self.reindex_relationships(pid, time_to_live = DEFAULT_TIME_TO_LIVE)
-      RelationshipReindexer.call(pid: pid, time_to_live: time_to_live)
+    def self.reindex_relationships(pid, adapter = default_adapter, time_to_live = DEFAULT_TIME_TO_LIVE)
+      RelationshipReindexer.call(pid: pid, time_to_live: time_to_live, adapter: adapter)
       true
     end
 
@@ -58,10 +58,16 @@ module Curate
     # @param time_to_live [Integer] - there to guard against cyclical graphs
     # @return [Boolean] - It was successful
     # @raise Curate::Exceptions::CycleDetectionError - A potential cycle was detected
-    def self.reindex_all!(time_to_live = DEFAULT_TIME_TO_LIVE)
-      RepositoryReindexer.call(time_to_live: time_to_live, pid_reindexer: method(:reindex_relationships))
+    def self.reindex_all!(adapter = default_adapter, time_to_live = DEFAULT_TIME_TO_LIVE)
+      RepositoryReindexer.call(time_to_live: time_to_live, pid_reindexer: method(:reindex_relationships), adapter: adapter)
       true
     end
+
+    # @api private
+    def self.default_adapter
+      self
+    end
+    private_class_method :default_adapter
 
     # @api private
     # This is not something that I envision using in the production environment;

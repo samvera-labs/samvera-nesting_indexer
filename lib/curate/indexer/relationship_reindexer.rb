@@ -18,16 +18,17 @@ module Curate
       def initialize(options = {})
         @pid = options.fetch(:pid).to_s
         @time_to_live = options.fetch(:time_to_live).to_i
+        @adapter = options.fetch(:adapter)
         @queue = options.fetch(:queue, [])
       end
-      attr_reader :pid, :time_to_live, :queue
+      attr_reader :pid, :time_to_live, :queue, :adapter
 
       def call
         enqueue(pid, time_to_live)
         index_document = dequeue
         while index_document
           process_a_document(index_document)
-          Indexer.each_child_document_of(index_document.pid) { |child| enqueue(child.pid, index_document.time_to_live - 1) }
+          adapter.each_child_document_of(index_document.pid) { |child| enqueue(child.pid, index_document.time_to_live - 1) }
           index_document = dequeue
         end
         self
@@ -48,22 +49,23 @@ module Curate
 
       def process_a_document(index_document)
         raise Exceptions::CycleDetectionError, pid if index_document.time_to_live <= 0
-        preservation_document = Indexer.find_preservation_document_by(index_document.pid)
+        preservation_document = adapter.find_preservation_document_by(index_document.pid)
         Indexer.write_document_attributes_to_index_layer(parent_pids_and_path_and_ancestors_for(preservation_document))
       end
 
       def parent_pids_and_path_and_ancestors_for(preservation_document)
-        ParentAndPathAndAncestorsBuilder.new(preservation_document).to_hash
+        ParentAndPathAndAncestorsBuilder.new(preservation_document, adapter).to_hash
       end
 
       # A small object that helps encapsulate the logic of building the hash of information regarding
       # the initialization of an Index::Document
       class ParentAndPathAndAncestorsBuilder
-        def initialize(preservation_document)
+        def initialize(preservation_document, adapter)
           @preservation_document = preservation_document
           @parent_pids = Set.new
           @pathnames = Set.new
           @ancestors = Set.new
+          @adapter = adapter
           compile!
         end
 
@@ -73,9 +75,11 @@ module Curate
 
         private
 
+        attr_reader :adapter
+
         def compile!
           @preservation_document.parent_pids.each do |parent_pid|
-            parent_index_document = Indexer.find_index_document_by(parent_pid)
+            parent_index_document = adapter.find_index_document_by(parent_pid)
             compile_one!(parent_index_document)
           end
           # Ensuring that an "orphan" has a path to get to it

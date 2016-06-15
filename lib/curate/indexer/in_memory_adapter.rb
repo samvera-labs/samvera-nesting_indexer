@@ -45,6 +45,12 @@ module Curate
       def self.write_document_attributes_to_index_layer(attributes = {})
         Index.write_document(attributes)
       end
+
+      # @api private
+      def self.clear_cache!
+        Preservation.clear_cache!
+        Index.clear_cache!
+      end
     end
   end
 end

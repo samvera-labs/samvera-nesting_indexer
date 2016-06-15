@@ -13,8 +13,7 @@ module Curate
         Indexer.configure do |config|
           config.adapter = InMemoryAdapter
         end
-        Preservation.clear_cache!
-        Index.clear_cache!
+        Indexer.adapter.clear_cache!
       end
 
       def build_graph(graph)

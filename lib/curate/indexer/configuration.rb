@@ -12,8 +12,8 @@ module Curate
       private
 
       def default_adapter
-        require 'curate/indexer/in_memory_adapter'
-        InMemoryAdapter
+        require 'curate/indexer/adapters'
+        Adapters::InMemoryAdapter
       end
     end
     private_constant :Configuration

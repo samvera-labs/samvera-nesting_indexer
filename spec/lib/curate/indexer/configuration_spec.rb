@@ -1,5 +1,5 @@
 require 'spec_helper'
-require 'curate/indexer/in_memory_adapter'
+require 'curate/indexer/adapters'
 
 module Curate
   module Indexer
@@ -8,11 +8,11 @@ module Curate
       context '#adapter' do
         context 'with explicit configuring' do
           subject { configuration.tap { |config| config.adapter = :mock_adapter } }
-          it { is_expected.to_not eq(InMemoryAdapter) }
+          it { is_expected.to_not eq(Adapters::InMemoryAdapter) }
         end
         context 'without explicit configuring' do
           subject { configuration.adapter }
-          it { is_expected.to eq(InMemoryAdapter) }
+          it { is_expected.to eq(Adapters::InMemoryAdapter) }
         end
       end
     end

@@ -2,7 +2,7 @@ require 'spec_helper'
 require 'curate/indexer'
 require 'curate/indexer/exceptions'
 require 'curate/indexer/preservation'
-require 'curate/indexer/in_memory_adapter'
+require 'curate/indexer/adapters'
 require 'curate/indexer/index'
 
 # :nodoc:
@@ -10,9 +10,8 @@ module Curate
   module Indexer
     RSpec.describe 'Reindex pid and descendants' do
       before do
-        Indexer.configure do |config|
-          config.adapter = InMemoryAdapter
-        end
+        # Ensuring we have a clear configuration each time; Also assists with code coverage.
+        Indexer.configure { |config| config.adapter = Adapters::InMemoryAdapter }
         Indexer.adapter.clear_cache!
       end
 

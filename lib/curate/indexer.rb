@@ -44,6 +44,11 @@ module Curate
     end
 
     # @api public
+    def self.adapter
+      configuration.adapter
+    end
+
+    # @api public
     # @see Curate::Indexer::Configuration
     # @see .configuration
     def self.configure(&block)

@@ -27,13 +27,13 @@ module Curate
 
       def build_preservation_document(pid, graph)
         parent_pids = graph.fetch(:parent_pids).fetch(pid)
-        Indexer::InMemoryAdapter.write_document_attributes_to_preservation_layer(pid: pid, parent_pids: parent_pids)
+        Indexer.adapter.write_document_attributes_to_preservation_layer(pid: pid, parent_pids: parent_pids)
       end
 
       def build_index_document(pid, graph)
         return unless graph.key?(:ancestors)
         return unless graph.key?(:pathnames)
-        Indexer::InMemoryAdapter.write_document_attributes_to_index_layer(
+        Indexer.adapter.write_document_attributes_to_index_layer(
           pid: pid,
           parent_pids: graph.fetch(:parent_pids).fetch(pid),
           ancestors: graph.fetch(:ancestors).fetch(pid),
@@ -117,7 +117,7 @@ module Curate
               build_graph(starting_graph)
 
               # Perform the update to the Fedora document
-              Indexer::InMemoryAdapter.write_document_attributes_to_preservation_layer(preservation_document_attributes)
+              Indexer.adapter.write_document_attributes_to_preservation_layer(preservation_document_attributes)
               Indexer.reindex_relationships(preservation_document_attributes.fetch(:pid))
 
               # Verify the expected behavior
@@ -129,14 +129,18 @@ module Curate
 
       def verify_graph_versus_storage(ending_graph)
         ending_graph.fetch(:parent_pids).keys.each do |pid|
-          document = Documents::IndexDocument.new(
-            pid: pid,
-            parent_pids: ending_graph.fetch(:parent_pids).fetch(pid),
-            ancestors: ending_graph.fetch(:ancestors).fetch(pid),
-            pathnames: ending_graph.fetch(:pathnames).fetch(pid)
-          )
-          expect(Indexer::InMemoryAdapter.find_index_document_by(pid)).to eq(document)
+          verify_graph_item_versus_storage(pid, ending_graph)
         end
+      end
+
+      def verify_graph_item_versus_storage(pid, ending_graph)
+        document = Documents::IndexDocument.new(
+          pid: pid,
+          parent_pids: ending_graph.fetch(:parent_pids).fetch(pid),
+          ancestors: ending_graph.fetch(:ancestors).fetch(pid),
+          pathnames: ending_graph.fetch(:pathnames).fetch(pid)
+        )
+        expect(Indexer.adapter.find_index_document_by(pid)).to eq(document)
       end
 
       context "Cyclical graphs" do

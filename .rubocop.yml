@@ -44,5 +44,5 @@ Documentation:
   - spec/**/*
   - test/**/*
 
-Sytle/WordArray:
+Style/WordArray:
   Enabled: false

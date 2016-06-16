@@ -48,7 +48,7 @@ module Curate
               ancestors: { a: [], b: [], c: [] },
               pathnames: { a: ['a'], b: ['b'], c: ['c'] }
             },
-            preservation_document_attributes: { pid: :d, parent_pids: [] },
+            preservation_document_attributes_to_update: { pid: :d, parent_pids: [] },
             ending_graph: {
               parent_pids: { a: [], b: [], c: [], d: [] },
               ancestors: { a: [], b: [], c: [], d: [] },
@@ -61,7 +61,7 @@ module Curate
               ancestors: { a: [], b: ['a'], c: ['a/b', 'a'], d: ['a', 'a/b', 'a/b/c', 'a/b/e', 'a/c'], e: ['a', 'a/b'] },
               pathnames: { a: ['a'], b: ['a/b'], c: ['a/c', 'a/b/c'], d: ['a/c/d', 'a/b/c/d', 'a/b/e/d'], e: ['a/b/e'] }
             },
-            preservation_document_attributes: { pid: :c, parent_pids: ['a'] },
+            preservation_document_attributes_to_update: { pid: :c, parent_pids: ['a'] },
             ending_graph: {
               parent_pids: { a: [], b: ['a'], c: ['a'], d: ['c', 'e'], e: ['b'] },
               ancestors: { a: [], b: ['a'], c: ['a'], d: ['a', 'a/b', 'a/b/e', 'a/c'], e: ['a', 'a/b'] },
@@ -74,7 +74,7 @@ module Curate
               ancestors: { a: [], b: [], c: ['a', 'b'], d: ['a', 'b'] },
               pathnames: { a: ['a'], b: ['b'], c: ['a/c', 'b/c'], d: ['a/d', 'b/d'] }
             },
-            preservation_document_attributes: { pid: :c, parent_pids: ['a'] },
+            preservation_document_attributes_to_update: { pid: :c, parent_pids: ['a'] },
             ending_graph: {
               parent_pids: { a: [], b: [], c: ['a'], d: ['a', 'b'] },
               ancestors: { a: [], b: [], c: ['a'], d: ['a', 'b'] },
@@ -93,7 +93,7 @@ module Curate
                 f: ['a/b/e/f', 'a/b/c/e/f', 'a/c/e/f'], g: ['g']
               }
             },
-            preservation_document_attributes: { pid: :b, parent_pids: ['g'] },
+            preservation_document_attributes_to_update: { pid: :b, parent_pids: ['g'] },
             ending_graph: {
               parent_pids: { a: [], b: ['g'], c: ['a', 'b'], d: ['b', 'c'], e: ['b', 'c'], f: ['e'], g: [] },
               ancestors: {
@@ -109,14 +109,14 @@ module Curate
         ].each_with_index do |the_scenario, index|
           context "#{the_scenario.fetch(:name)} (Scenario #{index})" do
             let(:starting_graph) { the_scenario.fetch(:starting_graph) }
-            let(:preservation_document_attributes) { the_scenario.fetch(:preservation_document_attributes) }
+            let(:preservation_document_attributes_to_update) { the_scenario.fetch(:preservation_document_attributes_to_update) }
             let(:ending_graph) { the_scenario.fetch(:ending_graph) }
             it 'will update the graph' do
               build_graph(starting_graph)
 
               # Perform the update to the Fedora document
-              Indexer.adapter.write_document_attributes_to_preservation_layer(preservation_document_attributes)
-              Indexer.reindex_relationships(preservation_document_attributes.fetch(:pid))
+              Indexer.adapter.write_document_attributes_to_preservation_layer(preservation_document_attributes_to_update)
+              Indexer.reindex_relationships(preservation_document_attributes_to_update.fetch(:pid))
 
               # Verify the expected behavior
               verify_graph_versus_storage(ending_graph)

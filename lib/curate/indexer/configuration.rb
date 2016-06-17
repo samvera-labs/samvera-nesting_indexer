@@ -12,7 +12,7 @@ module Curate
       private
 
       def default_adapter
-        require 'curate/indexer/adapters'
+        require 'curate/indexer/adapters/in_memory_adapter'
         Adapters::InMemoryAdapter
       end
     end

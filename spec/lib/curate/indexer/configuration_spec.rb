@@ -1,5 +1,5 @@
 require 'spec_helper'
-require 'curate/indexer/adapters'
+require 'curate/indexer/adapters/in_memory_adapter'
 
 module Curate
   module Indexer

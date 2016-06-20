@@ -25,7 +25,7 @@ module Curate
         end
 
         # @api public
-        # @param pid [String]
+        # @param document [Curate::Indexer::Documents::IndexDocument]
         # @yield Curate::Indexer::Documents::IndexDocument
         def self.each_child_document_of(*, &_block)
           raise NotImplementedError

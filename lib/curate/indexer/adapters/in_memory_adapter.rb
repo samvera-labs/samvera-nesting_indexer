@@ -29,10 +29,10 @@ module Curate
         end
 
         # @api public
-        # @param pid [String]
+        # @param document [Curate::Indexer::Documents::IndexDocument]
         # @yield Curate::Indexer::Documents::IndexDocument
-        def self.each_child_document_of(pid, &block)
-          Index.each_child_document_of(pid, &block)
+        def self.each_child_document_of(document, &block)
+          Index.each_child_document_of(document, &block)
         end
 
         # @api public

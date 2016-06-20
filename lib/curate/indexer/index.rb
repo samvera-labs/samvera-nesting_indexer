@@ -17,8 +17,8 @@ module Curate
         Storage.find(pid)
       end
 
-      def self.each_child_document_of(pid, &block)
-        Storage.find_children_of_pid(pid).each(&block)
+      def self.each_child_document_of(document, &block)
+        Storage.find_children_of_pid(document.pid).each(&block)
       end
 
       def self.write_document(attributes = {})

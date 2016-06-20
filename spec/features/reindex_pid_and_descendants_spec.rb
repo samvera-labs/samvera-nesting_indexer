@@ -29,13 +29,11 @@ module Curate
       end
 
       def build_index_document(pid, graph)
-        return unless graph.key?(:ancestors)
-        return unless graph.key?(:pathnames)
         Indexer.adapter.write_document_attributes_to_index_layer(
           pid: pid,
           parent_pids: graph.fetch(:parent_pids).fetch(pid),
-          ancestors: graph.fetch(:ancestors).fetch(pid),
-          pathnames: graph.fetch(:pathnames).fetch(pid)
+          ancestors: graph.fetch(:ancestors, {})[pid],
+          pathnames: graph.fetch(:pathnames, {})[pid]
         )
       end
 
@@ -116,8 +114,10 @@ module Curate
 
               # Perform the update to the Fedora document
               Indexer.adapter.write_document_attributes_to_preservation_layer(preservation_document_attributes_to_update)
+              Indexer.adapter.write_document_attributes_to_index_layer(
+                { pathnames: [], ancestors: [] }.merge(preservation_document_attributes_to_update)
+              )
               Indexer.reindex_relationships(preservation_document_attributes_to_update.fetch(:pid))
-
               # Verify the expected behavior
               verify_graph_versus_storage(ending_graph)
             end

@@ -24,12 +24,12 @@ module Curate
       attr_reader :pid, :time_to_live, :queue, :adapter
 
       def call
-        enqueue(pid, time_to_live)
-        index_document = dequeue
-        while index_document
-          process_a_document(index_document)
-          adapter.each_child_document_of(index_document.pid) { |child| enqueue(child.pid, index_document.time_to_live - 1) }
-          index_document = dequeue
+        enqueue(initial_index_document, time_to_live)
+        processing_document = dequeue
+        while processing_document
+          process_a_document(processing_document)
+          adapter.each_child_document_of(processing_document) { |child| enqueue(child, processing_document.time_to_live - 1) }
+          processing_document = dequeue
         end
         self
       end
@@ -38,13 +38,25 @@ module Curate
 
       attr_writer :document
 
+      def initial_index_document
+        adapter.find_index_document_by(pid)
+      end
+
       extend Forwardable
       def_delegator :queue, :shift, :dequeue
 
-      ProcessingDocument = Struct.new(:pid, :time_to_live)
+      require 'delegate'
+      # A small object to help track time to live concerns
+      class ProcessingDocument < SimpleDelegator
+        def initialize(document, time_to_live)
+          @time_to_live = time_to_live
+          super(document)
+        end
+        attr_reader :time_to_live
+      end
       private_constant :ProcessingDocument
-      def enqueue(pid, time_to_live)
-        queue.push(ProcessingDocument.new(pid, time_to_live))
+      def enqueue(document, time_to_live)
+        queue.push(ProcessingDocument.new(document, time_to_live))
       end
 
       def process_a_document(index_document)

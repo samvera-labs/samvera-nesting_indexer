@@ -9,7 +9,7 @@ module Curate
         let(:config) { railtie.config }
         context '.eager_load_namespaces' do
           subject { config.eager_load_namespaces }
-          it { is_expected.to include(Curate::Indexer) }
+          it { is_expected.to_not include(Curate::Indexer) }
         end
         context '.to_prepare_blocks' do
           subject { config.to_prepare_blocks }

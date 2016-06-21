@@ -44,7 +44,7 @@ module Curate
         end
 
         # @api public
-        # @return Curate::Indexer::Documents::IndexDocument
+        # @return Hash - the attributes written to the indexing layer
         def self.write_document_attributes_to_index_layer(attributes = {})
           Index.write_document(attributes)
         end

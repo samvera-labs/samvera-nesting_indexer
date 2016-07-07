@@ -212,7 +212,7 @@ module Curate
             parent_pids: { a: [], b: ['a', 'd'], c: ['b'], d: ['c'] }
           }
           build_graph(starting_graph)
-          expect { Indexer.reindex_all! }.to raise_error(Exceptions::CycleDetectionError)
+          expect { Indexer.reindex_all! }.to raise_error(Exceptions::ReindexingError)
         end
       end
     end

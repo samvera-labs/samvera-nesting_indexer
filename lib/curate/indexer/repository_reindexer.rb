@@ -42,6 +42,8 @@ module Curate
       def reindex_a_pid(pid)
         pid_reindexer.call(pid)
         processed_pids << pid
+      rescue StandardError => e
+        raise Exceptions::ReindexingError.new(pid, e)
       end
     end
     private_constant :RepositoryReindexer

@@ -12,6 +12,7 @@ module Curate
       private
 
       def default_adapter
+        $stdout.puts "WARNING: You are using the default Curate::Indexer::Adapters::InMemoryAdapter for the Curate::Indexer.adapter."
         require 'curate/indexer/adapters/in_memory_adapter'
         Adapters::InMemoryAdapter
       end

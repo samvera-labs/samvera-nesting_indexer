@@ -1,4 +1,6 @@
 require 'curate/indexer/adapters/abstract_adapter'
+require 'curate/indexer/documents'
+
 module Curate
   module Indexer
     module Adapters
@@ -54,6 +56,101 @@ module Curate
           Preservation.clear_cache!
           Index.clear_cache!
         end
+
+        # @api private
+        #
+        # A module mixin to expose rudimentary read/write capabilities
+        #
+        # @example
+        #   module Foo
+        #     extend Curate::Indexer::StorageModule
+        #   end
+        module StorageModule
+          def write(doc)
+            cache[doc.pid] = doc
+          end
+
+          def find(pid)
+            cache.fetch(pid.to_s)
+          end
+
+          def find_each
+            cache.each { |_key, document| yield(document) }
+          end
+
+          def clear_cache!
+            @cache = {}
+          end
+
+          def cache
+            @cache ||= {}
+          end
+          private :cache
+        end
+
+        # @api private
+        #
+        # A module responsible for containing the "preservation interface" logic.
+        # In the case of CurateND, there will need to be an adapter to get a Fedora
+        # object coerced into a Curate::Indexer::Preservation::Document
+        module Preservation
+          def self.find(pid, *)
+            MemoryStorage.find(pid)
+          end
+
+          def self.find_each(*, &block)
+            MemoryStorage.find_each(&block)
+          end
+
+          def self.clear_cache!
+            MemoryStorage.clear_cache!
+          end
+
+          def self.write_document(attributes = {})
+            Documents::PreservationDocument.new(attributes).tap do |doc|
+              MemoryStorage.write(doc)
+            end
+          end
+
+          # :nodoc:
+          module MemoryStorage
+            extend StorageModule
+          end
+          private_constant :MemoryStorage
+        end
+        private_constant :Preservation
+
+        # @api private
+        #
+        # An abstract representation of the underlying index service. In the case of
+        # CurateND this is an abstraction of Solr.
+        module Index
+          def self.clear_cache!
+            Storage.clear_cache!
+          end
+
+          def self.find(pid)
+            Storage.find(pid)
+          end
+
+          def self.each_child_document_of(document, &block)
+            Storage.find_children_of_pid(document.pid).each(&block)
+          end
+
+          def self.write_document(attributes = {})
+            Documents::IndexDocument.new(attributes).tap { |doc| Storage.write(doc) }
+          end
+
+          # :nodoc:
+          module Storage
+            extend StorageModule
+            def self.find_children_of_pid(pid)
+              cache.values.select { |document| document.parent_pids.include?(pid) }
+            end
+          end
+          private_constant :Storage
+        end
+        private_constant :Index
       end
     end
   end

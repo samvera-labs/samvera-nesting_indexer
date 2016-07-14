@@ -1,6 +1,4 @@
 require 'curate/indexer/exceptions'
-require 'curate/indexer/index'
-require 'curate/indexer/preservation'
 require 'forwardable'
 require 'set'
 

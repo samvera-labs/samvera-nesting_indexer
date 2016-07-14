@@ -1,9 +1,7 @@
 require 'spec_helper'
 require 'curate/indexer'
 require 'curate/indexer/exceptions'
-require 'curate/indexer/preservation'
 require 'curate/indexer/adapters'
-require 'curate/indexer/index'
 
 # :nodoc:
 module Curate

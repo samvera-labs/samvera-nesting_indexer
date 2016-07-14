@@ -37,6 +37,14 @@ module Curate
         )
       end
 
+      # Logic that mirrors the behavior of updating an ActiveFedora object.
+      def write_document_to_persistence_layers(preservation_document_attributes_to_update)
+        Indexer.adapter.write_document_attributes_to_preservation_layer(preservation_document_attributes_to_update)
+        Indexer.adapter.write_document_attributes_to_index_layer(
+          { pathnames: [], ancestors: [] }.merge(preservation_document_attributes_to_update)
+        )
+      end
+
       context "non-Cycle graphs" do
         [
           {
@@ -110,15 +118,18 @@ module Curate
             let(:preservation_document_attributes_to_update) { the_scenario.fetch(:preservation_document_attributes_to_update) }
             let(:ending_graph) { the_scenario.fetch(:ending_graph) }
             it 'will update the graph' do
+              # A custom test helper method that builds the starting graph in the indexing and persistence layer.
+              # This builds the "initial" data state
               build_graph(starting_graph)
 
-              # Perform the update to the Fedora document
-              Indexer.adapter.write_document_attributes_to_preservation_layer(preservation_document_attributes_to_update)
-              Indexer.adapter.write_document_attributes_to_index_layer(
-                { pathnames: [], ancestors: [] }.merge(preservation_document_attributes_to_update)
-              )
+              # Logic that mirrors the behavior of updating an ActiveFedora object.
+              write_document_to_persistence_layers(preservation_document_attributes_to_update)
+
+              # Run the "job" that will reindex the relationships for the given pid.
               Indexer.reindex_relationships(preservation_document_attributes_to_update.fetch(:pid))
-              # Verify the expected behavior
+
+              # A custom spec helper that verifies the expected ending graph versus the actual graph as retrieved
+              # This verifies the "ending" data state
               verify_graph_versus_storage(ending_graph)
             end
           end

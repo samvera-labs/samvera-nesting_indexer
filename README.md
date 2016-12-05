@@ -61,3 +61,12 @@ An [AbstractAdapter](./lib/curate/indexer/adapters/abstract_adapter.rb) provides
 The [InMemory adapter](./lib/curate/indexer/adapters/in_memory_adapter.rb) is a reference implementation (and used to ease testing overhead).
 
 CurateND has implemented the [following adapter](https://github.com/ndlib/curate_nd/blob/master/lib/curate/library_collection_indexing_adapter.rb) for its LibraryCollection indexing.
+
+```ruby
+# In an application initializer (e.g. config/curate_indexer_config.rb)
+Curate::Indexer.configure do |config|
+  config.adapter = MyCustomAdapter
+end
+```
+
+[See CurateND for our adaptor configuration](https://github.com/ndlib/curate_nd/blob/6fbe79c9725c0f8b4641981044ec250c5163053b/config/initializers/curate_config.rb#L32-L35).

@@ -21,6 +21,7 @@ module Curate
       end
       attr_reader :pid, :time_to_live, :queue, :adapter
 
+      # Perform a bread-first tree traversal of the initial document and its descendants.
       def call
         enqueue(initial_index_document, time_to_live)
         processing_document = dequeue
@@ -68,7 +69,9 @@ module Curate
       end
 
       # A small object that helps encapsulate the logic of building the hash of information regarding
-      # the initialization of an Index::Document
+      # the initialization of an Curate::Indexer::Documents::IndexDocument
+      #
+      # @see Curate::Indexer::Documents::IndexDocument for details on pathnames, ancestors, and parent_pids.
       class ParentAndPathAndAncestorsBuilder
         def initialize(preservation_document, adapter)
           @preservation_document = preservation_document

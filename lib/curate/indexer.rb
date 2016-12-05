@@ -5,7 +5,7 @@ require 'curate/indexer/configuration'
 require 'curate/indexer/railtie' if defined?(Rails)
 
 module Curate
-  # Responsible for performign the indexing of an object and its related child objects.
+  # Responsible for indexing an object and its related child objects.
   module Indexer
     # This assumes a rather deep graph
     DEFAULT_TIME_TO_LIVE = 15

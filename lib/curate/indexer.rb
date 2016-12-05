@@ -65,7 +65,6 @@ module Curate
     # @see Curate::Indexer::Railtie
     def self.configure(&block)
       @configuration_block = block
-      configure!
       # The Rails load sequence means that some of the configured Targets may
       # not be loaded; As such I am not calling configure! instead relying on
       # Curate::Indexer::Railtie to handle the configure! call

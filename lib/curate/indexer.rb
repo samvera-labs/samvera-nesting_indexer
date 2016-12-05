@@ -18,7 +18,7 @@ module Curate
     # @return [Boolean] - It was successful
     # @raise Curate::Exceptions::CycleDetectionError - A potential cycle was detected
     def self.reindex_relationships(pid, time_to_live = DEFAULT_TIME_TO_LIVE)
-      RelationshipReindexer.call(pid: pid, time_to_live: time_to_live, adapter: configuration.adapter)
+      RelationshipReindexer.call(pid: pid, time_to_live: time_to_live, adapter: adapter)
       true
     end
 
@@ -34,7 +34,10 @@ module Curate
     # @return [Boolean] - It was successful
     # @raise Curate::Exceptions::CycleDetectionError - A potential cycle was detected
     def self.reindex_all!(time_to_live = DEFAULT_TIME_TO_LIVE)
-      RepositoryReindexer.call(time_to_live: time_to_live, pid_reindexer: method(:reindex_relationships), adapter: configuration.adapter)
+      # While the RepositoryReindexer is responsible for reindexing everything, I
+      # want to inject the lambda that will reindex a single item.
+      pid_reindexer = method(:reindex_relationships)
+      RepositoryReindexer.call(time_to_live: time_to_live, pid_reindexer: pid_reindexer, adapter: adapter)
       true
     end
 

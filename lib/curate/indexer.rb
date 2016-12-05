@@ -38,6 +38,8 @@ module Curate
       true
     end
 
+    # @api public
+    #
     # Contains the Curate::Indexer configuration information that is referenceable from wit
     # @see Curate::Indexer::Configuration
     def self.configuration
@@ -45,13 +47,22 @@ module Curate
     end
 
     # @api public
+    #
+    # Exposes the data adapter to use for the reindexing process.
+    #
+    # @see Curate::Indexer::Adapters::AbstractAdapter
+    # @return Object that implementes the Curate::Indexer::Adapters::AbstractAdapter method interface
     def self.adapter
       configuration.adapter
     end
 
     # @api public
+    #
+    # Capture the configuration information
+    #
     # @see Curate::Indexer::Configuration
     # @see .configuration
+    # @see Curate::Indexer::Railtie
     def self.configure(&block)
       @configuration_block = block
       configure!
@@ -61,7 +72,7 @@ module Curate
       configure! unless defined?(Rails)
     end
 
-    # @api public
+    # @api private
     def self.configure!
       return false unless @configuration_block.respond_to?(:call)
       @configuration_block.call(configuration)

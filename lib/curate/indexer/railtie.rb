@@ -5,7 +5,7 @@ module Curate
     # Connect into the boot sequence of a Rails application
     class Railtie < Rails::Railtie
       config.to_prepare do
-        Curate::Indexer.send(:configure!)
+        Curate::Indexer.configure!
       end
     end
   end

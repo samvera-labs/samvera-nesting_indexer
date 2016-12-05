@@ -18,7 +18,7 @@ module Curate
     # @return [Boolean] - It was successful
     # @raise Curate::Exceptions::CycleDetectionError - A potential cycle was detected
     def self.reindex_relationships(pid, time_to_live = DEFAULT_TIME_TO_LIVE)
-      RelationshipReindexer.call(pid: pid, time_to_live: time_to_live, adapter: configuration.adapter)
+      RelationshipReindexer.call(pid: pid, time_to_live: time_to_live, adapter: adapter)
       true
     end
 
@@ -34,10 +34,15 @@ module Curate
     # @return [Boolean] - It was successful
     # @raise Curate::Exceptions::CycleDetectionError - A potential cycle was detected
     def self.reindex_all!(time_to_live = DEFAULT_TIME_TO_LIVE)
-      RepositoryReindexer.call(time_to_live: time_to_live, pid_reindexer: method(:reindex_relationships), adapter: configuration.adapter)
+      # While the RepositoryReindexer is responsible for reindexing everything, I
+      # want to inject the lambda that will reindex a single item.
+      pid_reindexer = method(:reindex_relationships)
+      RepositoryReindexer.call(time_to_live: time_to_live, pid_reindexer: pid_reindexer, adapter: adapter)
       true
     end
 
+    # @api public
+    #
     # Contains the Curate::Indexer configuration information that is referenceable from wit
     # @see Curate::Indexer::Configuration
     def self.configuration
@@ -45,23 +50,31 @@ module Curate
     end
 
     # @api public
+    #
+    # Exposes the data adapter to use for the reindexing process.
+    #
+    # @see Curate::Indexer::Adapters::AbstractAdapter
+    # @return Object that implementes the Curate::Indexer::Adapters::AbstractAdapter method interface
     def self.adapter
       configuration.adapter
     end
 
     # @api public
+    #
+    # Capture the configuration information
+    #
     # @see Curate::Indexer::Configuration
     # @see .configuration
+    # @see Curate::Indexer::Railtie
     def self.configure(&block)
       @configuration_block = block
-      configure!
       # The Rails load sequence means that some of the configured Targets may
       # not be loaded; As such I am not calling configure! instead relying on
       # Curate::Indexer::Railtie to handle the configure! call
       configure! unless defined?(Rails)
     end
 
-    # @api public
+    # @api private
     def self.configure!
       return false unless @configuration_block.respond_to?(:call)
       @configuration_block.call(configuration)

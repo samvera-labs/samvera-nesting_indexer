@@ -5,6 +5,17 @@ module Curate
     # @api private
     # @note There is cycle detection logic for walking the graph prior to attempting relationship re-indexing
     class RepositoryReindexer
+      # @api private
+      #
+      # A convenience method to reindex all documents.
+      #
+      # @note This could crush your system as it will loop through ALL the documents
+      #
+      # @param options [Hash]
+      # @option options [Integer] pid_reindexer Curate::Indexer.method(:reindex_relationships) Responsible for reindexing a single object
+      # @option options [Integer] time_to_live Curate::Indexer::TIME_TO_LIVE to detect cycles in the graph
+      # @option options [Curate::Indexer::Adapters::AbstractAdapter] adapter
+      # @return Curate::Indexer::RepositoryReindexer
       def self.call(*args)
         new(*args).call
       end
@@ -16,6 +27,7 @@ module Curate
         @processed_pids = []
       end
 
+      # @todo Would it make sense to leverage an each_preservation_pid instead?
       def call
         @adapter.each_preservation_document { |document| recursive_reindex(document, max_time_to_live) }
       end
@@ -24,7 +36,9 @@ module Curate
 
       attr_reader :max_time_to_live, :processed_pids, :pid_reindexer
 
-      # Given that we are attempting to reindex the parents before we reindex, we can't rely on
+      # When we find a document, reindex it if it doesn't have a parent. If it has a parent, reindex the parent first.
+      #
+      # Given that we are attempting to reindex the parents before we reindex a document, we can't rely on
       # the reindex time_to_live but instead must have a separate time to live.
       #
       # The reindexing process assumes that an object's parents have been indexed; Thus we need to

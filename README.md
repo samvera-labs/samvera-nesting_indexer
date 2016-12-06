@@ -8,11 +8,17 @@
 
 The Curate::Indexer gem is responsible for indexing the graph relationship of objects. It maps a PreservationDocument to an IndexDocument by mapping a PreservationDocument's direct parents into the paths to get from a root document to the given PreservationDocument.
 
-# Background
+* [Background](#background)
+* [Concepts](#concepts)
+* [Examples](#examples)
+* [Adapters](#adapters)
+* [Considerations](#considerations)
+
+## Background
 
 This is a sandbox to work through the reindexing strategy as it relates to [CurateND Collections](https://github.com/ndlib/curate_nd/issues/420). At this point the code is separate to allow for rapid testing and prototyping (no sense spinning up SOLR and Fedora to walk an arbitrary graph).
 
-# Concepts
+## Concepts
 
 As we are indexing objects, we have two types of documents:
 
@@ -30,7 +36,7 @@ See [Curate::Indexer::Documents::IndexDocument](./lib/curate/indexer/documents.r
 
 To reindex a single document, we leverage the [`Curate::Indexer.reindex_relationships`](./lib/curate/indexer.rb) method.
 
-# Examples
+## Examples
 
 Given the following PreservationDocuments:
 
@@ -54,13 +60,15 @@ If we were to reindex the above PreservationDocuments, we will generate the foll
 
 For more scenarios, look at the [Reindex PID and Descendants specs](./spec/features/reindex_pid_and_descendants_spec.rb).
 
-# Adapters
+## Adapters
 
 An [AbstractAdapter](./lib/curate/indexer/adapters/abstract_adapter.rb) provides the method interface for others to build against.
 
 The [InMemory adapter](./lib/curate/indexer/adapters/in_memory_adapter.rb) is a reference implementation (and used to ease testing overhead).
 
 CurateND has implemented the [following adapter](https://github.com/ndlib/curate_nd/blob/master/lib/curate/library_collection_indexing_adapter.rb) for its LibraryCollection indexing.
+
+To define the adapter for your application:
 
 ```ruby
 # In an application initializer (e.g. config/curate_indexer_config.rb)
@@ -70,3 +78,12 @@ end
 ```
 
 [See CurateND for our adaptor configuration](https://github.com/ndlib/curate_nd/blob/6fbe79c9725c0f8b4641981044ec250c5163053b/config/initializers/curate_config.rb#L32-L35).
+
+## Considerations
+
+Given a single object A, when we reindex A, we:
+
+* Find the parent objects of A to calculate the ancestors and pathnames
+* Iterate through each descendant, in a breadth-first process, to reindex it (and each descendant's descendants).
+
+This is a potentially time consumptive process and should not be run within the request cycle.

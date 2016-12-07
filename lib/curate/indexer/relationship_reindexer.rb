@@ -9,6 +9,16 @@ module Curate
     # @note There is cycle detection via the TIME_TO_LIVE counter
     # @api private
     class RelationshipReindexer
+      # @api private
+      #
+      # A convenience method that coordinate the relationship reindexing of the given pid.
+      #
+      # @param options [Hash]
+      # @option options [String] pid
+      # @option options [Integer] time_to_live Curate::Indexer::TIME_TO_LIVE to detect cycles in the graph
+      # @option options [Curate::Indexer::Adapters::AbstractAdapter] adapter
+      # @option options [#shift, #push] queue
+      # @return Curate::Indexer::RelationshipReindexer
       def self.call(options = {})
         new(options).call
       end

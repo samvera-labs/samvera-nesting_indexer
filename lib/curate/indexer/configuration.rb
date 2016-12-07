@@ -1,13 +1,26 @@
+require 'curate/indexer/adapters/abstract_adapter'
+require 'curate/indexer/exceptions'
+
 module Curate
   # :nodoc:
   module Indexer
+    # @api public
     # Responsible for the configuration of the Curate::Indexer
     class Configuration
+      # @api public
+      # @return Curate::Indexer::Adapters::AbstractAdapter
       def adapter
         @adapter || default_adapter
       end
-      # TODO: Should we guard against a bad adapter?
-      attr_writer :adapter
+
+      # @raise AdapterConfigurationError if the given adapter does not implement the correct interface
+      def adapter=(object)
+        object_methods = object.methods
+        adapter_methods = Adapters::AbstractAdapter.methods(false)
+        # Making sure that the adapter methods are all available in the object_methods
+        raise Exceptions::AdapterConfigurationError.new(object, adapter_methods) unless adapter_methods & object_methods == adapter_methods
+        @adapter = object
+      end
 
       private
 

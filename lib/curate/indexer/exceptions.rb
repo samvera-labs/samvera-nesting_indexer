@@ -3,6 +3,16 @@ module Curate
     module Exceptions
       class RuntimeError < ::RuntimeError
       end
+
+      # Raised when we have a misconfigured adapter
+      class AdapterConfigurationError < RuntimeError
+        attr_reader :expected_methods
+        def initialize(object, expected_methods)
+          @expected_methods = expected_methods
+          super "Expected #{object.inspect} to implement #{expected_methods.inspect} methods"
+        end
+      end
+
       # Raised when we may have detected a cycle within the graph
       class CycleDetectionError < RuntimeError
         attr_reader :pid

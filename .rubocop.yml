@@ -20,10 +20,13 @@ AllCops:
     - 'vendor/**/*'
     - 'tmp/**/*'
     - 'bin/**/*'
+    - Gemfile
+    - Guardfile
+    - samvera-nesting_indexer.gemspec
   TargetRubyVersion: 2.0
 LineLength:
-  Description: 'Limit lines to 140 characters.'
-  Max: 140
+  Description: 'Limit lines to 160 characters.'
+  Max: 160
   Enabled: true
 
 ModuleLength:

@@ -11,6 +11,55 @@ module Samvera
         subject { configuration.maximum_nesting_depth }
         it { is_expected.to be_a(Integer) }
       end
+
+      describe '#solr_key_suffix_for_parent_ids' do
+        subject { configuration.solr_key_suffix_for_parent_ids }
+
+        describe 'when set' do
+          before { configuration.solr_key_suffix_for_parent_ids = :the_key }
+
+          it { is_expected.to be_a(String) }
+        end
+
+        describe 'when not set' do
+          it 'raises Exceptions::SolrKeyConfigurationError' do
+            expect { subject }.to raise_error(Exceptions::SolrKeyConfigurationError)
+          end
+        end
+      end
+
+      describe '#solr_key_suffix_for_ancestors' do
+        subject { configuration.solr_key_suffix_for_ancestors }
+
+        describe 'when set' do
+          before { configuration.solr_key_suffix_for_ancestors = :the_key }
+
+          it { is_expected.to be_a(String) }
+        end
+
+        describe 'when not set' do
+          it 'raises Exceptions::SolrKeyConfigurationError' do
+            expect { subject }.to raise_error(Exceptions::SolrKeyConfigurationError)
+          end
+        end
+      end
+
+      describe '#solr_key_suffix_for_pathnames' do
+        subject { configuration.solr_key_suffix_for_pathnames }
+
+        describe 'when set' do
+          before { configuration.solr_key_suffix_for_pathnames = :the_key }
+
+          it { is_expected.to be_a(String) }
+        end
+
+        describe 'when not set' do
+          it 'raises Exceptions::SolrKeyConfigurationError' do
+            expect { subject }.to raise_error(Exceptions::SolrKeyConfigurationError)
+          end
+        end
+      end
+
       context '#adapter' do
         it 'is not set when initialized (and thus does not send a logging message)' do
           expect do

@@ -4,8 +4,22 @@ module Samvera
       class RuntimeError < ::RuntimeError
       end
 
+      # There is some kind configuration error.
+      class ConfigurationError < RuntimeError
+      end
+
+      # Danger, the SolrKey may not be configured correctly.
+      class SolrKeyConfigurationError < ConfigurationError
+        attr_reader :name, :config
+        def initialize(name:, config:)
+          @name = name
+          @config = config
+          super "Expected #{name.inspect} to be set in Config #{config.inspect}"
+        end
+      end
+
       # Raised when we have a misconfigured adapter
-      class AdapterConfigurationError < RuntimeError
+      class AdapterConfigurationError < ConfigurationError
         attr_reader :expected_methods
         def initialize(object, expected_methods)
           @expected_methods = expected_methods

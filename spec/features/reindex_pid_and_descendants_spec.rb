@@ -147,7 +147,7 @@ module Samvera
           ancestors: ending_graph.fetch(:ancestors).fetch(id),
           pathnames: ending_graph.fetch(:pathnames).fetch(id)
         )
-        expect(NestingIndexer.adapter.find_index_document_by(id)).to eq(document)
+        expect(NestingIndexer.adapter.find_index_document_by(id: id)).to eq(document)
       end
 
       context "Cyclical graphs" do

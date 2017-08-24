@@ -47,7 +47,7 @@ module Samvera
         return true if processed_ids.include?(document.id)
         raise Exceptions::CycleDetectionError, document.id if maximum_nesting_depth <= 0
         document.parent_ids.each do |parent_id|
-          parent_document = @adapter.find_preservation_document_by(parent_id)
+          parent_document = @adapter.find_preservation_document_by(id: parent_id)
           recursive_reindex(parent_document, maximum_nesting_depth - 1)
         end
         reindex_a_id(document.id)

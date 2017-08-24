@@ -48,7 +48,7 @@ module Samvera
       attr_writer :document
 
       def initial_index_document
-        adapter.find_index_document_by(id)
+        adapter.find_index_document_by(id: id)
       end
 
       extend Forwardable
@@ -70,7 +70,7 @@ module Samvera
 
       def process_a_document(index_document)
         raise Exceptions::CycleDetectionError, id if index_document.maximum_nesting_depth <= 0
-        preservation_document = adapter.find_preservation_document_by(index_document.id)
+        preservation_document = adapter.find_preservation_document_by(id: index_document.id)
         parent_ids_and_path_and_ancestors = parent_ids_and_path_and_ancestors_for(preservation_document)
         adapter.write_document_attributes_to_index_layer(parent_ids_and_path_and_ancestors)
       end
@@ -103,7 +103,7 @@ module Samvera
 
         def compile!
           @preservation_document.parent_ids.each do |parent_id|
-            parent_index_document = adapter.find_index_document_by(parent_id)
+            parent_index_document = adapter.find_index_document_by(id: parent_id)
             compile_one!(parent_index_document)
           end
           # Ensuring that an "orphan" has a path to get to it

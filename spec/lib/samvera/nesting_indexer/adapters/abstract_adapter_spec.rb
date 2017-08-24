@@ -5,11 +5,38 @@ module Samvera
   module NestingIndexer
     module Adapters
       RSpec.describe AbstractAdapter do
-        AbstractAdapter.methods(false).each do |method_name|
-          context ".#{method_name}" do
-            it 'requires implementation (see documentation)' do
-              expect { described_class.public_send(method_name) }.to raise_error(NotImplementedError)
-            end
+        describe '.find_preservation_document_by(id:)' do
+          subject { described_class.find_preservation_document_by(id: 1) }
+          it 'requires implementation (see documentation)' do
+            expect { subject }.to raise_error(NotImplementedError)
+          end
+        end
+
+        describe '.find_index_document_by' do
+          subject { described_class.find_index_document_by(id: 1) }
+          it 'requires implementation (see documentation)' do
+            expect { subject }.to raise_error(NotImplementedError)
+          end
+        end
+
+        describe '.each_preservation_document' do
+          subject { described_class.each_preservation_document }
+          it 'requires implementation (see documentation)' do
+            expect { subject }.to raise_error(NotImplementedError)
+          end
+        end
+
+        describe '.each_child_document_of' do
+          subject { described_class.each_child_document_of(double) }
+          it 'requires implementation (see documentation)' do
+            expect { subject }.to raise_error(NotImplementedError)
+          end
+        end
+
+        describe '.write_document_attributes_to_index_layer' do
+          subject { described_class.write_document_attributes_to_index_layer({}) }
+          it 'requires implementation (see documentation)' do
+            expect { subject }.to raise_error(NotImplementedError)
           end
         end
       end

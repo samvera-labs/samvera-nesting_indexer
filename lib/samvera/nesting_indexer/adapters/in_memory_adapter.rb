@@ -13,14 +13,14 @@ module Samvera
         # @api public
         # @param id [String]
         # @return Samvera::NestingIndexer::Document::PreservationDocument
-        def self.find_preservation_document_by(id)
+        def self.find_preservation_document_by(id:)
           Preservation.find(id)
         end
 
         # @api public
         # @param id [String]
         # @return Samvera::NestingIndexer::Documents::IndexDocument
-        def self.find_index_document_by(id)
+        def self.find_index_document_by(id:)
           Index.find(id)
         end
 

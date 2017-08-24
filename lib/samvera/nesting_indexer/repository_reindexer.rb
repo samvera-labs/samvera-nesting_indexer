@@ -11,19 +11,19 @@ module Samvera
       #
       # @note This could crush your system as it will loop through ALL the documents
       #
-      # @param options [Hash]
-      # @option options [Integer] id_reindexer Samvera::NestingIndexer.method(:reindex_relationships) Responsible for reindexing a single object
-      # @option options [Integer] maximum_nesting_depth Samvera::NestingIndexer::TIME_TO_LIVE to detect cycles in the graph
-      # @option options [Samvera::NestingIndexer::Adapters::AbstractAdapter] adapter
+      # @see #initialize
       # @return Samvera::NestingIndexer::RepositoryReindexer
       def self.call(*args)
         new(*args).call
       end
 
-      def initialize(options = {})
-        @max_maximum_nesting_depth = options.fetch(:maximum_nesting_depth).to_i
-        @id_reindexer = options.fetch(:id_reindexer)
-        @adapter = options.fetch(:adapter)
+      # @param id_reindexer [#call] Samvera::NestingIndexer.method(:reindex_relationships) Responsible for reindexing a single object
+      # @param maximum_nesting_depth [Integer] detect cycles in the graph
+      # @param adapter [Samvera::NestingIndexer::Adapters::AbstractAdapter] Conforms to the Samvera::NestingIndexer::Adapters::AbstractAdapter interface
+      def initialize(maximum_nesting_depth:, id_reindexer:, adapter:)
+        @max_maximum_nesting_depth = maximum_nesting_depth.to_i
+        @id_reindexer = id_reindexer
+        @adapter = adapter
         @processed_ids = []
       end
 

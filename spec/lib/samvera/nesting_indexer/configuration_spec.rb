@@ -12,6 +12,12 @@ module Samvera
         it { is_expected.to be_a(Integer) }
       end
       context '#adapter' do
+        it 'is not set when initialized (and thus does not send a logging message)' do
+          expect do
+            subject.adapter = Adapters::AbstractAdapter
+          end.to change { subject.instance_variable_get("@adapter") }.from(nil).to(Adapters::AbstractAdapter)
+        end
+
         context 'with explicit configuring' do
           subject { configuration.tap { |config| config.adapter = Adapters::AbstractAdapter } }
           it { is_expected.to_not eq(Adapters::InMemoryAdapter) }

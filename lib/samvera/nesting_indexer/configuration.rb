@@ -9,8 +9,7 @@ module Samvera
     class Configuration
       DEFAULT_MAXIMUM_NESTING_DEPTH = 15
 
-      def initialize(adapter: default_adapter, maximum_nesting_depth: DEFAULT_MAXIMUM_NESTING_DEPTH)
-        self.adapter = adapter
+      def initialize(maximum_nesting_depth: DEFAULT_MAXIMUM_NESTING_DEPTH)
         self.maximum_nesting_depth = maximum_nesting_depth
       end
 

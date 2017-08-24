@@ -7,8 +7,6 @@ require 'samvera/nesting_indexer/railtie' if defined?(Rails)
 module Samvera
   # Responsible for indexing an object and its related child objects.
   module NestingIndexer
-    # This assumes a rather deep graph
-    DEFAULT_MAXIMUM_NESTING_DEPTH = 15
     # @api public
     # Responsible for reindexing the associated document for the given :pid and the descendants of that :pid.
     # In a perfect world we could reindex the pid as well; But that is for another test.
@@ -17,7 +15,7 @@ module Samvera
     # @param maximum_nesting_depth [Integer] - there to guard against cyclical graphs
     # @return [Boolean] - It was successful
     # @raise Samvera::Exceptions::CycleDetectionError - A potential cycle was detected
-    def self.reindex_relationships(pid, maximum_nesting_depth = DEFAULT_MAXIMUM_NESTING_DEPTH)
+    def self.reindex_relationships(pid, maximum_nesting_depth = configuration.maximum_nesting_depth)
       RelationshipReindexer.call(pid: pid, maximum_nesting_depth: maximum_nesting_depth, adapter: adapter)
       true
     end
@@ -33,7 +31,7 @@ module Samvera
     # @param maximum_nesting_depth [Integer] - there to guard against cyclical graphs
     # @return [Boolean] - It was successful
     # @raise Samvera::Exceptions::CycleDetectionError - A potential cycle was detected
-    def self.reindex_all!(maximum_nesting_depth = DEFAULT_MAXIMUM_NESTING_DEPTH)
+    def self.reindex_all!(maximum_nesting_depth = configuration.maximum_nesting_depth)
       # While the RepositoryReindexer is responsible for reindexing everything, I
       # want to inject the lambda that will reindex a single item.
       pid_reindexer = method(:reindex_relationships)

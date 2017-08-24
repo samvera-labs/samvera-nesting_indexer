@@ -13,21 +13,21 @@ module Samvera
       #
       # A convenience method that coordinate the relationship reindexing of the given id.
       #
-      # @param options [Hash]
-      # @option options [String] id
-      # @option options [Integer] maximum_nesting_depth Samvera::NestingIndexer::TIME_TO_LIVE to detect cycles in the graph
-      # @option options [Samvera::NestingIndexer::Adapters::AbstractAdapter] adapter
-      # @option options [#shift, #push] queue
+      # @see #initialize
       # @return Samvera::NestingIndexer::RelationshipReindexer
-      def self.call(options = {})
-        new(options).call
+      def self.call(**kwargs)
+        new(**kwargs).call
       end
 
-      def initialize(options = {})
-        @id = options.fetch(:id).to_s
-        @maximum_nesting_depth = options.fetch(:maximum_nesting_depth).to_i
-        @adapter = options.fetch(:adapter)
-        @queue = options.fetch(:queue, [])
+      # @param id [String]
+      # @param maximum_nesting_depth [Integer] Samvera::NestingIndexer::TIME_TO_LIVE to detect cycles in the graph
+      # @param adapter [Samvera::NestingIndexer::Adapters::AbstractAdapter] Conforms to the Samvera::NestingIndexer::Adapters::AbstractAdapter interface
+      # @param queue [#shift, #push] queue
+      def initialize(id:, maximum_nesting_depth:, adapter:, queue: [])
+        @id = id.to_s
+        @maximum_nesting_depth = maximum_nesting_depth.to_i
+        @adapter = adapter
+        @queue = queue
       end
       attr_reader :id, :maximum_nesting_depth, :queue, :adapter
 

@@ -5,14 +5,14 @@ module Samvera
       # A module that defines the interface of methods required to interact with Samvera::NestingIndexer operations
       module AbstractAdapter
         # @api public
-        # @param pid [String]
+        # @param id [String]
         # @return Samvera::NestingIndexer::Document::PreservationDocument
         def self.find_preservation_document_by(*)
           raise NotImplementedError
         end
 
         # @api public
-        # @param pid [String]
+        # @param id [String]
         # @return Samvera::NestingIndexer::Documents::IndexDocument
         def self.find_index_document_by(*)
           raise NotImplementedError

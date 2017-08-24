@@ -11,10 +11,10 @@ module Samvera
     class RelationshipReindexer
       # @api private
       #
-      # A convenience method that coordinate the relationship reindexing of the given pid.
+      # A convenience method that coordinate the relationship reindexing of the given id.
       #
       # @param options [Hash]
-      # @option options [String] pid
+      # @option options [String] id
       # @option options [Integer] maximum_nesting_depth Samvera::NestingIndexer::TIME_TO_LIVE to detect cycles in the graph
       # @option options [Samvera::NestingIndexer::Adapters::AbstractAdapter] adapter
       # @option options [#shift, #push] queue
@@ -24,12 +24,12 @@ module Samvera
       end
 
       def initialize(options = {})
-        @pid = options.fetch(:pid).to_s
+        @id = options.fetch(:id).to_s
         @maximum_nesting_depth = options.fetch(:maximum_nesting_depth).to_i
         @adapter = options.fetch(:adapter)
         @queue = options.fetch(:queue, [])
       end
-      attr_reader :pid, :maximum_nesting_depth, :queue, :adapter
+      attr_reader :id, :maximum_nesting_depth, :queue, :adapter
 
       # Perform a bread-first tree traversal of the initial document and its descendants.
       def call
@@ -48,7 +48,7 @@ module Samvera
       attr_writer :document
 
       def initial_index_document
-        adapter.find_index_document_by(pid)
+        adapter.find_index_document_by(id)
       end
 
       extend Forwardable
@@ -69,24 +69,24 @@ module Samvera
       end
 
       def process_a_document(index_document)
-        raise Exceptions::CycleDetectionError, pid if index_document.maximum_nesting_depth <= 0
-        preservation_document = adapter.find_preservation_document_by(index_document.pid)
-        parent_pids_and_path_and_ancestors = parent_pids_and_path_and_ancestors_for(preservation_document)
-        adapter.write_document_attributes_to_index_layer(parent_pids_and_path_and_ancestors)
+        raise Exceptions::CycleDetectionError, id if index_document.maximum_nesting_depth <= 0
+        preservation_document = adapter.find_preservation_document_by(index_document.id)
+        parent_ids_and_path_and_ancestors = parent_ids_and_path_and_ancestors_for(preservation_document)
+        adapter.write_document_attributes_to_index_layer(parent_ids_and_path_and_ancestors)
       end
 
-      def parent_pids_and_path_and_ancestors_for(preservation_document)
+      def parent_ids_and_path_and_ancestors_for(preservation_document)
         ParentAndPathAndAncestorsBuilder.new(preservation_document, adapter).to_hash
       end
 
       # A small object that helps encapsulate the logic of building the hash of information regarding
       # the initialization of an Samvera::NestingIndexer::Documents::IndexDocument
       #
-      # @see Samvera::NestingIndexer::Documents::IndexDocument for details on pathnames, ancestors, and parent_pids.
+      # @see Samvera::NestingIndexer::Documents::IndexDocument for details on pathnames, ancestors, and parent_ids.
       class ParentAndPathAndAncestorsBuilder
         def initialize(preservation_document, adapter)
           @preservation_document = preservation_document
-          @parent_pids = Set.new
+          @parent_ids = Set.new
           @pathnames = Set.new
           @ancestors = Set.new
           @adapter = adapter
@@ -94,7 +94,7 @@ module Samvera
         end
 
         def to_hash
-          { pid: @preservation_document.pid, parent_pids: @parent_pids.to_a, pathnames: @pathnames.to_a, ancestors: @ancestors.to_a }
+          { id: @preservation_document.id, parent_ids: @parent_ids.to_a, pathnames: @pathnames.to_a, ancestors: @ancestors.to_a }
         end
 
         private
@@ -102,18 +102,18 @@ module Samvera
         attr_reader :adapter
 
         def compile!
-          @preservation_document.parent_pids.each do |parent_pid|
-            parent_index_document = adapter.find_index_document_by(parent_pid)
+          @preservation_document.parent_ids.each do |parent_id|
+            parent_index_document = adapter.find_index_document_by(parent_id)
             compile_one!(parent_index_document)
           end
           # Ensuring that an "orphan" has a path to get to it
-          @pathnames << @preservation_document.pid if @parent_pids.empty?
+          @pathnames << @preservation_document.id if @parent_ids.empty?
         end
 
         def compile_one!(parent_index_document)
-          @parent_pids << parent_index_document.pid
+          @parent_ids << parent_index_document.id
           parent_index_document.pathnames.each do |pathname|
-            @pathnames << File.join(pathname, @preservation_document.pid)
+            @pathnames << File.join(pathname, @preservation_document.id)
             slugs = pathname.split("/")
             slugs.each_index { |i| @ancestors << slugs[0..i].join('/') }
           end

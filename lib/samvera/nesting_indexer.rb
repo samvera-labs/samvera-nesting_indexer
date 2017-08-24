@@ -8,15 +8,15 @@ module Samvera
   # Responsible for indexing an object and its related child objects.
   module NestingIndexer
     # @api public
-    # Responsible for reindexing the associated document for the given :pid and the descendants of that :pid.
-    # In a perfect world we could reindex the pid as well; But that is for another test.
+    # Responsible for reindexing the associated document for the given :id and the descendants of that :id.
+    # In a perfect world we could reindex the id as well; But that is for another test.
     #
-    # @param pid [String] - The permanent identifier of the object that will be reindexed along with its children.
+    # @param id [String] - The permanent identifier of the object that will be reindexed along with its children.
     # @param maximum_nesting_depth [Integer] - there to guard against cyclical graphs
     # @return [Boolean] - It was successful
     # @raise Samvera::Exceptions::CycleDetectionError - A potential cycle was detected
-    def self.reindex_relationships(pid, maximum_nesting_depth = configuration.maximum_nesting_depth)
-      RelationshipReindexer.call(pid: pid, maximum_nesting_depth: maximum_nesting_depth, adapter: adapter)
+    def self.reindex_relationships(id, maximum_nesting_depth = configuration.maximum_nesting_depth)
+      RelationshipReindexer.call(id: id, maximum_nesting_depth: maximum_nesting_depth, adapter: adapter)
       true
     end
 
@@ -34,8 +34,8 @@ module Samvera
     def self.reindex_all!(maximum_nesting_depth = configuration.maximum_nesting_depth)
       # While the RepositoryReindexer is responsible for reindexing everything, I
       # want to inject the lambda that will reindex a single item.
-      pid_reindexer = method(:reindex_relationships)
-      RepositoryReindexer.call(maximum_nesting_depth: maximum_nesting_depth, pid_reindexer: pid_reindexer, adapter: adapter)
+      id_reindexer = method(:reindex_relationships)
+      RepositoryReindexer.call(maximum_nesting_depth: maximum_nesting_depth, id_reindexer: id_reindexer, adapter: adapter)
       true
     end
 

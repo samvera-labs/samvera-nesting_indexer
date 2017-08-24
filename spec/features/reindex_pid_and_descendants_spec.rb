@@ -6,7 +6,7 @@ require 'samvera/nesting_indexer/adapters'
 # :nodoc:
 module Samvera
   module NestingIndexer
-    RSpec.describe 'Reindex pid and descendants' do
+    RSpec.describe 'Reindex id and descendants' do
       before do
         # Ensuring we have a clear configuration each time; Also assists with code coverage.
         NestingIndexer.configure { |config| config.adapter = Adapters::InMemoryAdapter }
@@ -15,23 +15,23 @@ module Samvera
 
       def build_graph(graph)
         # Create the starting_graph
-        graph.fetch(:parent_pids).keys.each do |pid|
-          build_preservation_document(pid, graph)
-          build_index_document(pid, graph)
+        graph.fetch(:parent_ids).keys.each do |id|
+          build_preservation_document(id, graph)
+          build_index_document(id, graph)
         end
       end
 
-      def build_preservation_document(pid, graph)
-        parent_pids = graph.fetch(:parent_pids).fetch(pid)
-        NestingIndexer.adapter.write_document_attributes_to_preservation_layer(pid: pid, parent_pids: parent_pids)
+      def build_preservation_document(id, graph)
+        parent_ids = graph.fetch(:parent_ids).fetch(id)
+        NestingIndexer.adapter.write_document_attributes_to_preservation_layer(id: id, parent_ids: parent_ids)
       end
 
-      def build_index_document(pid, graph)
+      def build_index_document(id, graph)
         NestingIndexer.adapter.write_document_attributes_to_index_layer(
-          pid: pid,
-          parent_pids: graph.fetch(:parent_pids).fetch(pid),
-          ancestors: graph.fetch(:ancestors, {})[pid],
-          pathnames: graph.fetch(:pathnames, {})[pid]
+          id: id,
+          parent_ids: graph.fetch(:parent_ids).fetch(id),
+          ancestors: graph.fetch(:ancestors, {})[id],
+          pathnames: graph.fetch(:pathnames, {})[id]
         )
       end
 
@@ -48,46 +48,46 @@ module Samvera
           {
             name: 'A graph without parents',
             starting_graph: {
-              parent_pids: { a: [], b: [], c: [] },
+              parent_ids: { a: [], b: [], c: [] },
               ancestors: { a: [], b: [], c: [] },
               pathnames: { a: ['a'], b: ['b'], c: ['c'] }
             },
-            preservation_document_attributes_to_update: { pid: :d, parent_pids: [] },
+            preservation_document_attributes_to_update: { id: :d, parent_ids: [] },
             ending_graph: {
-              parent_pids: { a: [], b: [], c: [], d: [] },
+              parent_ids: { a: [], b: [], c: [], d: [] },
               ancestors: { a: [], b: [], c: [], d: [] },
               pathnames: { a: ['a'], b: ['b'], c: ['c'], d: ['d'] }
             }
           }, {
             name: 'A semi-complicated graph with diamonds and triangle relationships',
             starting_graph: {
-              parent_pids: { a: [], b: ['a'], c: ['a', 'b'], d: ['c', 'e'], e: ['b'] },
+              parent_ids: { a: [], b: ['a'], c: ['a', 'b'], d: ['c', 'e'], e: ['b'] },
               ancestors: { a: [], b: ['a'], c: ['a/b', 'a'], d: ['a', 'a/b', 'a/b/c', 'a/b/e', 'a/c'], e: ['a', 'a/b'] },
               pathnames: { a: ['a'], b: ['a/b'], c: ['a/c', 'a/b/c'], d: ['a/c/d', 'a/b/c/d', 'a/b/e/d'], e: ['a/b/e'] }
             },
-            preservation_document_attributes_to_update: { pid: :c, parent_pids: ['a'] },
+            preservation_document_attributes_to_update: { id: :c, parent_ids: ['a'] },
             ending_graph: {
-              parent_pids: { a: [], b: ['a'], c: ['a'], d: ['c', 'e'], e: ['b'] },
+              parent_ids: { a: [], b: ['a'], c: ['a'], d: ['c', 'e'], e: ['b'] },
               ancestors: { a: [], b: ['a'], c: ['a'], d: ['a', 'a/b', 'a/b/e', 'a/c'], e: ['a', 'a/b'] },
               pathnames: { a: ['a'], b: ['a/b'], c: ['a/c'], d: ['a/c/d', 'a/b/e/d'], e: ['a/b/e'] }
             }
           }, {
-            name: 'Two child with same parent_pids and one drops one of the parent_pids',
+            name: 'Two child with same parent_ids and one drops one of the parent_ids',
             starting_graph: {
-              parent_pids: { a: [], b: [], c: ['a', 'b'], d: ['a', 'b'] },
+              parent_ids: { a: [], b: [], c: ['a', 'b'], d: ['a', 'b'] },
               ancestors: { a: [], b: [], c: ['a', 'b'], d: ['a', 'b'] },
               pathnames: { a: ['a'], b: ['b'], c: ['a/c', 'b/c'], d: ['a/d', 'b/d'] }
             },
-            preservation_document_attributes_to_update: { pid: :c, parent_pids: ['a'] },
+            preservation_document_attributes_to_update: { id: :c, parent_ids: ['a'] },
             ending_graph: {
-              parent_pids: { a: [], b: [], c: ['a'], d: ['a', 'b'] },
+              parent_ids: { a: [], b: [], c: ['a'], d: ['a', 'b'] },
               ancestors: { a: [], b: [], c: ['a'], d: ['a', 'b'] },
               pathnames: { a: ['a'], b: ['b'], c: ['a/c'], d: ['a/d', 'b/d'] }
             }
           }, {
-            name: 'Switching top-level parent_pids in a nested graph',
+            name: 'Switching top-level parent_ids in a nested graph',
             starting_graph: {
-              parent_pids: { a: [], b: ['a'], c: ['a', 'b'], d: ['b', 'c'], e: ['b', 'c'], f: ['e'], g: [] },
+              parent_ids: { a: [], b: ['a'], c: ['a', 'b'], d: ['b', 'c'], e: ['b', 'c'], f: ['e'], g: [] },
               ancestors: {
                 a: [], b: ['a'], c: ['a', 'a/b'], d: ['a', 'a/b', 'a/b/c', 'a/c'], e: ['a', 'a/b', 'a/b/c', 'a/c'],
                 f: ['a', 'a/b', 'a/b/e', 'a/b/c', 'a/b/c/e', 'a/c', 'a/c/e'], g: []
@@ -97,9 +97,9 @@ module Samvera
                 f: ['a/b/e/f', 'a/b/c/e/f', 'a/c/e/f'], g: ['g']
               }
             },
-            preservation_document_attributes_to_update: { pid: :b, parent_pids: ['g'] },
+            preservation_document_attributes_to_update: { id: :b, parent_ids: ['g'] },
             ending_graph: {
-              parent_pids: { a: [], b: ['g'], c: ['a', 'b'], d: ['b', 'c'], e: ['b', 'c'], f: ['e'], g: [] },
+              parent_ids: { a: [], b: ['g'], c: ['a', 'b'], d: ['b', 'c'], e: ['b', 'c'], f: ['e'], g: [] },
               ancestors: {
                 a: [], b: ['g'], c: ['a', 'g', 'g/b'], d: ['g', 'g/b', 'g/b/c', 'a', 'a/c'], e: ['g', 'g/b', 'g/b/c', 'a', 'a/c'],
                 f: ['a', 'a/c', 'a/c/e', 'g', 'g/b', 'g/b/c', 'g/b/c/e', 'g/b/e'], g: []
@@ -123,8 +123,8 @@ module Samvera
               # Logic that mirrors the behavior of updating an ActiveFedora object.
               write_document_to_persistence_layers(preservation_document_attributes_to_update)
 
-              # Run the "job" that will reindex the relationships for the given pid.
-              NestingIndexer.reindex_relationships(preservation_document_attributes_to_update.fetch(:pid))
+              # Run the "job" that will reindex the relationships for the given id.
+              NestingIndexer.reindex_relationships(preservation_document_attributes_to_update.fetch(:id))
 
               # A custom spec helper that verifies the expected ending graph versus the actual graph as retrieved
               # This verifies the "ending" data state
@@ -135,25 +135,25 @@ module Samvera
       end
 
       def verify_graph_versus_storage(ending_graph)
-        ending_graph.fetch(:parent_pids).keys.each do |pid|
-          verify_graph_item_versus_storage(pid, ending_graph)
+        ending_graph.fetch(:parent_ids).keys.each do |id|
+          verify_graph_item_versus_storage(id, ending_graph)
         end
       end
 
-      def verify_graph_item_versus_storage(pid, ending_graph)
+      def verify_graph_item_versus_storage(id, ending_graph)
         document = Documents::IndexDocument.new(
-          pid: pid,
-          parent_pids: ending_graph.fetch(:parent_pids).fetch(pid),
-          ancestors: ending_graph.fetch(:ancestors).fetch(pid),
-          pathnames: ending_graph.fetch(:pathnames).fetch(pid)
+          id: id,
+          parent_ids: ending_graph.fetch(:parent_ids).fetch(id),
+          ancestors: ending_graph.fetch(:ancestors).fetch(id),
+          pathnames: ending_graph.fetch(:pathnames).fetch(id)
         )
-        expect(NestingIndexer.adapter.find_index_document_by(pid)).to eq(document)
+        expect(NestingIndexer.adapter.find_index_document_by(id)).to eq(document)
       end
 
       context "Cyclical graphs" do
         it 'will catch due to a time to live constraint' do
           starting_graph = {
-            parent_pids: { a: [], b: ['a', 'd'], c: ['b'], d: ['c'] },
+            parent_ids: { a: [], b: ['a', 'd'], c: ['b'], d: ['c'] },
             ancestors: { a: [], b: ['a', 'c', 'd', 'b'], c: ['a', 'b'], d: ['a', 'b', 'c'] },
             pathnames: { a: [], b: ['a/b', 'b/d', 'b/d/c'], c: ['a/c', 'b/c'], d: ['a/d', 'b/d'] }
           }
@@ -166,12 +166,12 @@ module Samvera
       context "Bootstrapping a graph" do
         it 'indexes with a non-trivial graph' do
           starting_graph = {
-            parent_pids: { a: [], b: ['a'], c: ['a', 'b'], d: ['b', 'c'], e: ['b', 'c'], f: ['e'], g: [] }
+            parent_ids: { a: [], b: ['a'], c: ['a', 'b'], d: ['b', 'c'], e: ['b', 'c'], f: ['e'], g: [] }
           }
           build_graph(starting_graph)
           NestingIndexer.reindex_all!
           ending_graph = {
-            parent_pids: { a: [], b: ['a'], c: ['a', 'b'], d: ['b', 'c'], e: ['b', 'c'], f: ['e'], g: [] },
+            parent_ids: { a: [], b: ['a'], c: ['a', 'b'], d: ['b', 'c'], e: ['b', 'c'], f: ['e'], g: [] },
             ancestors: {
               a: [], b: ['a'], c: ['a', 'a/b'], d: ['a', 'a/b', 'a/b/c', 'a/c'], e: ['a', 'a/b', 'a/b/c', 'a/c'],
               f: ['a', 'a/b', 'a/b/e', 'a/b/c', 'a/b/c/e', 'a/c', 'a/c/e'], g: []
@@ -186,14 +186,14 @@ module Samvera
 
         it 'indexes a non-cyclical graph' do
           starting_graph = {
-            parent_pids: { a: [], b: ['a'], c: ['a', 'b'], d: ['b'], e: ['c', 'd'], f: [] }
+            parent_ids: { a: [], b: ['a'], c: ['a', 'b'], d: ['b'], e: ['c', 'd'], f: [] }
           }
           build_graph(starting_graph)
 
           NestingIndexer.reindex_all!
 
           ending_graph = {
-            parent_pids: { a: [], b: ['a'], c: ['a', 'b'], d: ['b'], e: ['c', 'd'], f: [] },
+            parent_ids: { a: [], b: ['a'], c: ['a', 'b'], d: ['b'], e: ['c', 'd'], f: [] },
             ancestors: { a: [], b: ['a'], c: ['a/b', 'a'], d: ['a', 'a/b'], e: ['a', 'a/b', 'a/b/c', 'a/b/d', 'a/c'], f: [] },
             pathnames: { a: ['a'], b: ['a/b'], c: ['a/c', 'a/b/c'], d: ['a/b/d'], e: ['a/c/e', 'a/b/c/e', 'a/b/d/e'], f: ['f'] }
           }
@@ -202,14 +202,14 @@ module Samvera
 
         it 'indexes a non-cyclical graph not declared in parent order' do
           starting_graph = {
-            parent_pids: { a: ['b'], b: ['c'], c: [] }
+            parent_ids: { a: ['b'], b: ['c'], c: [] }
           }
           build_graph(starting_graph)
 
           NestingIndexer.reindex_all!
 
           ending_graph = {
-            parent_pids: { a: ['b'], b: ['c'], c: [] },
+            parent_ids: { a: ['b'], b: ['c'], c: [] },
             ancestors: { a: ['c/b', 'c'], b: ['c'], c: [] },
             pathnames: { a: ['c/b/a'], b: ['c/b'], c: ['c'] }
           }
@@ -218,7 +218,7 @@ module Samvera
 
         it 'catches a cyclical graph definition' do
           starting_graph = {
-            parent_pids: { a: [], b: ['a', 'd'], c: ['b'], d: ['c'] }
+            parent_ids: { a: [], b: ['a', 'd'], c: ['b'], d: ['c'] }
           }
           build_graph(starting_graph)
           expect { NestingIndexer.reindex_all! }.to raise_error(Exceptions::ReindexingError)

@@ -15,19 +15,19 @@ module Samvera
 
       # Raised when we may have detected a cycle within the graph
       class CycleDetectionError < RuntimeError
-        attr_reader :pid
-        def initialize(pid)
-          @pid = pid
-          super "Possible graph cycle discovered related to PID=#{pid}."
+        attr_reader :id
+        def initialize(id)
+          @id = id
+          super "Possible graph cycle discovered related to PID=#{id}."
         end
       end
-      # A wrapper exception that includes the original exception and the pid
+      # A wrapper exception that includes the original exception and the id
       class ReindexingError < RuntimeError
-        attr_reader :pid, :original_exception
-        def initialize(pid, original_exception)
-          @pid = pid
+        attr_reader :id, :original_exception
+        def initialize(id, original_exception)
+          @id = id
           @original_exception = original_exception
-          super "Error PID=#{pid} - #{original_exception}"
+          super "Error PID=#{id} - #{original_exception}"
         end
       end
     end

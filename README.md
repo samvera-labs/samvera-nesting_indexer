@@ -16,7 +16,7 @@ The Samvera::NestingIndexer gem is responsible for indexing the graph relationsh
 
 ## Background
 
-This is a sandbox to work through the reindexing strategy as it relates to [SamveraND Collections](https://github.com/ndlib/samvera_nd/issues/420). At this point the code is separate to allow for rapid testing and prototyping (no sense spinning up SOLR and Fedora to walk an arbitrary graph).
+This is a sandbox to work through the reindexing strategy as it relates to [SamveraND Collections](https://github.com/ndlib/samvera_nd/issues/420). At this point the code is separate to allow for raid testing and prototyping (no sense spinning up SOLR and Fedora to walk an arbitrary graph).
 
 ## Concepts
 
@@ -27,8 +27,8 @@ As we are indexing objects, we have two types of documents:
 
 We have four attributes to consider for indexing the graph:
 
-1. pid - the unique identifier for a document
-2. parent_pids - the pids for all of the parents of a given document
+1. id - the unique identifier for a document
+2. parent_ids - the ids for all of the parents of a given document
 3. pathnames - the paths to traverse from a root document to the given document
 4. ancestors - the pathnames of each of the ancestors
 
@@ -58,7 +58,7 @@ If we were to reindex the above PreservationDocuments, we will generate the foll
 | D   | A, B    | [A/D, B/D] | [A, B]    |
 | E   | C       | [A/C/E]    | [A/C]     |
 
-For more scenarios, look at the [Reindex PID and Descendants specs](./spec/features/reindex_pid_and_descendants_spec.rb).
+For more scenarios, look at the [Reindex PID and Descendants specs](./spec/features/reindex_id_and_descendants_spec.rb).
 
 ## Adapters
 

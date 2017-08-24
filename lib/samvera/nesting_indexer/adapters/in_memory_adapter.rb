@@ -11,17 +11,17 @@ module Samvera
       module InMemoryAdapter
         extend AbstractAdapter
         # @api public
-        # @param pid [String]
+        # @param id [String]
         # @return Samvera::NestingIndexer::Document::PreservationDocument
-        def self.find_preservation_document_by(pid)
-          Preservation.find(pid)
+        def self.find_preservation_document_by(id)
+          Preservation.find(id)
         end
 
         # @api public
-        # @param pid [String]
+        # @param id [String]
         # @return Samvera::NestingIndexer::Documents::IndexDocument
-        def self.find_index_document_by(pid)
-          Index.find(pid)
+        def self.find_index_document_by(id)
+          Index.find(id)
         end
 
         # @api public
@@ -67,11 +67,11 @@ module Samvera
         #   end
         module StorageModule
           def write(doc)
-            cache[doc.pid] = doc
+            cache[doc.id] = doc
           end
 
-          def find(pid)
-            cache.fetch(pid.to_s)
+          def find(id)
+            cache.fetch(id.to_s)
           end
 
           def find_each
@@ -94,8 +94,8 @@ module Samvera
         # In the case of SamveraND, there will need to be an adapter to get a Fedora
         # object coerced into a Samvera::NestingIndexer::Preservation::Document
         module Preservation
-          def self.find(pid, *)
-            MemoryStorage.find(pid)
+          def self.find(id, *)
+            MemoryStorage.find(id)
           end
 
           def self.find_each(*, &block)
@@ -129,12 +129,12 @@ module Samvera
             Storage.clear_cache!
           end
 
-          def self.find(pid)
-            Storage.find(pid)
+          def self.find(id)
+            Storage.find(id)
           end
 
           def self.each_child_document_of(document, &block)
-            Storage.find_children_of_pid(document.pid).each(&block)
+            Storage.find_children_of_id(document.id).each(&block)
           end
 
           def self.write_document(attributes = {})
@@ -144,8 +144,8 @@ module Samvera
           # :nodoc:
           module Storage
             extend StorageModule
-            def self.find_children_of_pid(pid)
-              cache.values.select { |document| document.parent_pids.include?(pid) }
+            def self.find_children_of_id(id)
+              cache.values.select { |document| document.parent_ids.include?(id) }
             end
           end
           private_constant :Storage

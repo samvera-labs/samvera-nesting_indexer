@@ -9,13 +9,13 @@ module Samvera
       # the children of Fedora objects.
       class PreservationDocument
         def initialize(keywords = {})
-          @pid = keywords.fetch(:pid).to_s
-          @parent_pids = Array(keywords.fetch(:parent_pids))
+          @id = keywords.fetch(:id).to_s
+          @parent_ids = Array(keywords.fetch(:parent_ids))
         end
 
         # @api public
         # @return String The Fedora object's PID
-        attr_reader :pid
+        attr_reader :id
 
         # @api public
         #
@@ -23,7 +23,7 @@ module Samvera
         #
         # This does not include grandparents, great-grandparents, etc.
         # @return Array<String>
-        attr_reader :parent_pids
+        attr_reader :parent_ids
       end
 
       # @api public
@@ -31,18 +31,18 @@ module Samvera
       # A rudimentary representation of what is needed to reindex Solr documents
       class IndexDocument
         # A quick and dirty means of doing comparative logic
-        include Dry::Equalizer(:pid, :sorted_parent_pids, :sorted_pathnames, :sorted_ancestors)
+        include Dry::Equalizer(:id, :sorted_parent_ids, :sorted_pathnames, :sorted_ancestors)
 
         def initialize(keywords = {})
-          @pid = keywords.fetch(:pid).to_s
-          @parent_pids = Array(keywords.fetch(:parent_pids))
+          @id = keywords.fetch(:id).to_s
+          @parent_ids = Array(keywords.fetch(:parent_ids))
           @pathnames = Array(keywords.fetch(:pathnames))
           @ancestors = Array(keywords.fetch(:ancestors))
         end
 
         # @api public
         # @return String The Fedora object's PID
-        attr_reader :pid
+        attr_reader :id
 
         # @api public
         #
@@ -50,7 +50,7 @@ module Samvera
         #
         # This does not include grandparents, great-grandparents, etc.
         # @return Array<String>
-        attr_reader :parent_pids
+        attr_reader :parent_ids
 
         # @api public
         #
@@ -73,8 +73,8 @@ module Samvera
         # @return Array<String>
         attr_reader :ancestors
 
-        def sorted_parent_pids
-          parent_pids.sort
+        def sorted_parent_ids
+          parent_ids.sort
         end
 
         def sorted_pathnames

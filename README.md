@@ -77,6 +77,19 @@ Samvera::NestingIndexer.configure do |config|
 end
 ```
 
+To best ensure you have implemented the adapter to spec:
+
+```ruby
+# In the spec for MyCustomAdapter
+require 'samvera/nesting_indexer/adapters/interface_behavior_spec'
+RSpec.describe MyCustomAdapter
+  it_behaves_like 'a Samvera::NestingIndexer::Adapter'
+end
+```
+
+
+
+
 [See CurateND for our adaptor configuration](https://github.com/ndlib/samvera_nd/blob/6fbe79c9725c0f8b4641981044ec250c5163053b/config/initializers/samvera_config.rb#L32-L35).
 
 ## Considerations

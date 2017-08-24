@@ -7,17 +7,17 @@ module Samvera
     # @api public
     # Responsible for the configuration of the Samvera::NestingIndexer
     class Configuration
-      DEFAULT_TIME_TO_LIVE = 15
+      DEFAULT_MAXIMUM_NESTING_DEPTH = 15
 
-      def initialize(adapter: default_adapter, time_to_live: DEFAULT_TIME_TO_LIVE)
+      def initialize(adapter: default_adapter, maximum_nesting_depth: DEFAULT_MAXIMUM_NESTING_DEPTH)
         self.adapter = adapter
-        self.time_to_live = time_to_live
+        self.maximum_nesting_depth = maximum_nesting_depth
       end
 
-      attr_reader :time_to_live
+      attr_reader :maximum_nesting_depth
 
-      def time_to_live=(input)
-        @time_to_live = input.to_i
+      def maximum_nesting_depth=(input)
+        @maximum_nesting_depth = input.to_i
       end
 
       # @api public

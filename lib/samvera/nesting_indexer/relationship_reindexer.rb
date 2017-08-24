@@ -15,7 +15,7 @@ module Samvera
       #
       # @param options [Hash]
       # @option options [String] pid
-      # @option options [Integer] time_to_live Samvera::NestingIndexer::TIME_TO_LIVE to detect cycles in the graph
+      # @option options [Integer] maximum_nesting_depth Samvera::NestingIndexer::TIME_TO_LIVE to detect cycles in the graph
       # @option options [Samvera::NestingIndexer::Adapters::AbstractAdapter] adapter
       # @option options [#shift, #push] queue
       # @return Samvera::NestingIndexer::RelationshipReindexer
@@ -25,19 +25,19 @@ module Samvera
 
       def initialize(options = {})
         @pid = options.fetch(:pid).to_s
-        @time_to_live = options.fetch(:time_to_live).to_i
+        @maximum_nesting_depth = options.fetch(:maximum_nesting_depth).to_i
         @adapter = options.fetch(:adapter)
         @queue = options.fetch(:queue, [])
       end
-      attr_reader :pid, :time_to_live, :queue, :adapter
+      attr_reader :pid, :maximum_nesting_depth, :queue, :adapter
 
       # Perform a bread-first tree traversal of the initial document and its descendants.
       def call
-        enqueue(initial_index_document, time_to_live)
+        enqueue(initial_index_document, maximum_nesting_depth)
         processing_document = dequeue
         while processing_document
           process_a_document(processing_document)
-          adapter.each_child_document_of(processing_document) { |child| enqueue(child, processing_document.time_to_live - 1) }
+          adapter.each_child_document_of(processing_document) { |child| enqueue(child, processing_document.maximum_nesting_depth - 1) }
           processing_document = dequeue
         end
         self
@@ -57,19 +57,19 @@ module Samvera
       require 'delegate'
       # A small object to help track time to live concerns
       class ProcessingDocument < SimpleDelegator
-        def initialize(document, time_to_live)
-          @time_to_live = time_to_live
+        def initialize(document, maximum_nesting_depth)
+          @maximum_nesting_depth = maximum_nesting_depth
           super(document)
         end
-        attr_reader :time_to_live
+        attr_reader :maximum_nesting_depth
       end
       private_constant :ProcessingDocument
-      def enqueue(document, time_to_live)
-        queue.push(ProcessingDocument.new(document, time_to_live))
+      def enqueue(document, maximum_nesting_depth)
+        queue.push(ProcessingDocument.new(document, maximum_nesting_depth))
       end
 
       def process_a_document(index_document)
-        raise Exceptions::CycleDetectionError, pid if index_document.time_to_live <= 0
+        raise Exceptions::CycleDetectionError, pid if index_document.maximum_nesting_depth <= 0
         preservation_document = adapter.find_preservation_document_by(index_document.pid)
         parent_pids_and_path_and_ancestors = parent_pids_and_path_and_ancestors_for(preservation_document)
         adapter.write_document_attributes_to_index_layer(parent_pids_and_path_and_ancestors)

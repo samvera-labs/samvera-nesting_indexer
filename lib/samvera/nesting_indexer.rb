@@ -8,17 +8,17 @@ module Samvera
   # Responsible for indexing an object and its related child objects.
   module NestingIndexer
     # This assumes a rather deep graph
-    DEFAULT_TIME_TO_LIVE = 15
+    DEFAULT_MAXIMUM_NESTING_DEPTH = 15
     # @api public
     # Responsible for reindexing the associated document for the given :pid and the descendants of that :pid.
     # In a perfect world we could reindex the pid as well; But that is for another test.
     #
     # @param pid [String] - The permanent identifier of the object that will be reindexed along with its children.
-    # @param time_to_live [Integer] - there to guard against cyclical graphs
+    # @param maximum_nesting_depth [Integer] - there to guard against cyclical graphs
     # @return [Boolean] - It was successful
     # @raise Samvera::Exceptions::CycleDetectionError - A potential cycle was detected
-    def self.reindex_relationships(pid, time_to_live = DEFAULT_TIME_TO_LIVE)
-      RelationshipReindexer.call(pid: pid, time_to_live: time_to_live, adapter: adapter)
+    def self.reindex_relationships(pid, maximum_nesting_depth = DEFAULT_MAXIMUM_NESTING_DEPTH)
+      RelationshipReindexer.call(pid: pid, maximum_nesting_depth: maximum_nesting_depth, adapter: adapter)
       true
     end
 
@@ -30,14 +30,14 @@ module Samvera
 
     # @api public
     # Responsible for reindexing the entire preservation layer.
-    # @param time_to_live [Integer] - there to guard against cyclical graphs
+    # @param maximum_nesting_depth [Integer] - there to guard against cyclical graphs
     # @return [Boolean] - It was successful
     # @raise Samvera::Exceptions::CycleDetectionError - A potential cycle was detected
-    def self.reindex_all!(time_to_live = DEFAULT_TIME_TO_LIVE)
+    def self.reindex_all!(maximum_nesting_depth = DEFAULT_MAXIMUM_NESTING_DEPTH)
       # While the RepositoryReindexer is responsible for reindexing everything, I
       # want to inject the lambda that will reindex a single item.
       pid_reindexer = method(:reindex_relationships)
-      RepositoryReindexer.call(time_to_live: time_to_live, pid_reindexer: pid_reindexer, adapter: adapter)
+      RepositoryReindexer.call(maximum_nesting_depth: maximum_nesting_depth, pid_reindexer: pid_reindexer, adapter: adapter)
       true
     end
 

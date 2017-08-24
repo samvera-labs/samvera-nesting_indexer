@@ -7,8 +7,8 @@ module Samvera
   module NestingIndexer
     RSpec.describe Configuration do
       let(:configuration) { described_class.new }
-      context '#time_to_live' do
-        subject { configuration.time_to_live }
+      context '#maximum_nesting_depth' do
+        subject { configuration.maximum_nesting_depth }
         it { is_expected.to be_a(Integer) }
       end
       context '#adapter' do

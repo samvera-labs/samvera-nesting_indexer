@@ -54,7 +54,7 @@ module Samvera
       end
 
       def reindex_a_id(id)
-        id_reindexer.call(id)
+        id_reindexer.call(id: id)
         processed_ids << id
       rescue StandardError => e
         raise Exceptions::ReindexingError.new(id, e)

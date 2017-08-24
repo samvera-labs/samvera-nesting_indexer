@@ -124,7 +124,7 @@ module Samvera
               write_document_to_persistence_layers(preservation_document_attributes_to_update)
 
               # Run the "job" that will reindex the relationships for the given id.
-              NestingIndexer.reindex_relationships(preservation_document_attributes_to_update.fetch(:id))
+              NestingIndexer.reindex_relationships(id: preservation_document_attributes_to_update.fetch(:id))
 
               # A custom spec helper that verifies the expected ending graph versus the actual graph as retrieved
               # This verifies the "ending" data state
@@ -159,7 +159,7 @@ module Samvera
           }
           build_graph(starting_graph)
 
-          expect { NestingIndexer.reindex_relationships(:a) }.to raise_error(Exceptions::CycleDetectionError)
+          expect { NestingIndexer.reindex_relationships(id: :a) }.to raise_error(Exceptions::CycleDetectionError)
         end
       end
 

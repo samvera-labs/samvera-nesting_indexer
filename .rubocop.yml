@@ -33,6 +33,9 @@ ModuleLength:
   Exclude:
     - 'spec/**/*'
 
+Metrics/BlockLength:
+  Exclude:
+    - 'spec/**/*_spec.rb'
 
 Style/StringLiterals:
   Description: 'Checks if uses of quotes match the configured preference.'

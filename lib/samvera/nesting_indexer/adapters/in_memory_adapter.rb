@@ -27,7 +27,7 @@ module Samvera
         # @api public
         # @yield Samvera::NestingIndexer::Document::PreservationDocument
         def self.each_preservation_document(&block)
-          Preservation.find_each { |document| yield(document) }
+          Preservation.find_each { |document| block.call(document) }
         end
 
         # @api public

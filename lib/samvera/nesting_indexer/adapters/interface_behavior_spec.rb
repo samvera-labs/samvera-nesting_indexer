@@ -1,8 +1,8 @@
 if defined?(RSpec)
   RSpec.shared_examples 'a Samvera::NestingIndexer::Adapter' do
-    let(:required_keyword_parameters) { ->(method) { method.parameters.select { |type, kwarg| type == :keyreq }.map(&:last) } }
-    let(:required_parameters) { ->(method) { method.parameters.select { |type, kwarg| type == :keyreq || type == :req }.map(&:last) } }
-    let(:block_parameter_extracter) { ->(method) { method.parameters.select { |type, kwarg| type == :block }.map(&:last) } }
+    let(:required_keyword_parameters) { ->(method) { method.parameters.select { |type, _kwarg| type == :keyreq }.map(&:last) } }
+    let(:required_parameters) { ->(method) { method.parameters.select { |type, _kwarg| type == :keyreq || type == :req }.map(&:last) } }
+    let(:block_parameter_extracter) { ->(method) { method.parameters.select { |type, _kwarg| type == :block }.map(&:last) } }
 
     describe '.find_preservation_document_by' do
       subject { described_class.method(:find_preservation_document_by) }

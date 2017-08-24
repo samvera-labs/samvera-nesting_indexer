@@ -6,7 +6,7 @@ if defined?(RSpec)
     describe '.find_preservation_document_by' do
       subject { described_class.method(:find_preservation_document_by) }
 
-      it 'requires the :id keyword (and no other)' do
+      it 'requires the :id  keyword (and does not require any others)' do
         expect(required_parameters_extractor.call(subject)).to eq([:id])
       end
 
@@ -17,7 +17,7 @@ if defined?(RSpec)
     describe '.find_index_document_by' do
       subject { described_class.method(:find_index_document_by) }
 
-      it 'requires the :id keyword (and no other)' do
+      it 'requires the :id  keyword (and does not require any others)' do
         expect(required_parameters_extractor.call(subject)).to eq([:id])
       end
 
@@ -39,8 +39,8 @@ if defined?(RSpec)
     describe '.each_child_document_of' do
       subject { described_class.method(:each_child_document_of) }
 
-      it 'requires no keywords' do
-        expect(required_parameters_extractor.call(subject)).to eq([])
+      it 'requires the :document keyword (and does not require any others)' do
+        expect(required_parameters_extractor.call(subject)).to eq([:document])
       end
 
       it 'expects a block' do

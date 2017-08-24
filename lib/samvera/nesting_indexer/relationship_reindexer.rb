@@ -37,7 +37,7 @@ module Samvera
         processing_document = dequeue
         while processing_document
           process_a_document(processing_document)
-          adapter.each_child_document_of(processing_document) { |child| enqueue(child, processing_document.maximum_nesting_depth - 1) }
+          adapter.each_child_document_of(document: processing_document) { |child| enqueue(child, processing_document.maximum_nesting_depth - 1) }
           processing_document = dequeue
         end
         self

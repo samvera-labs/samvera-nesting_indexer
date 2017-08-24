@@ -29,7 +29,7 @@ module Samvera
         end
 
         describe '.each_child_document_of' do
-          subject { described_class.each_child_document_of(double) }
+          subject { described_class.each_child_document_of(document: double) }
           it 'requires implementation (see documentation)' do
             expect { subject }.to raise_error(NotImplementedError)
           end

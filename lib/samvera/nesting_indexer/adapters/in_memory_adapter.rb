@@ -26,15 +26,15 @@ module Samvera
 
         # @api public
         # @yield Samvera::NestingIndexer::Document::PreservationDocument
-        def self.each_preservation_document
+        def self.each_preservation_document(&block)
           Preservation.find_each { |document| yield(document) }
         end
 
         # @api public
         # @param document [Samvera::NestingIndexer::Documents::IndexDocument]
         # @yield Samvera::NestingIndexer::Documents::IndexDocument
-        def self.each_child_document_of(document, &block)
-          Index.each_child_document_of(document, &block)
+        def self.each_child_document_of(document:, &block)
+          Index.each_child_document_of(document: document, &block)
         end
 
         # @api public
@@ -133,7 +133,7 @@ module Samvera
             Storage.find(id)
           end
 
-          def self.each_child_document_of(document, &block)
+          def self.each_child_document_of(document:, &block)
             Storage.find_children_of_id(document.id).each(&block)
           end
 

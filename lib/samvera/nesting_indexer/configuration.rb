@@ -7,6 +7,19 @@ module Samvera
     # @api public
     # Responsible for the configuration of the Samvera::NestingIndexer
     class Configuration
+      DEFAULT_TIME_TO_LIVE = 15
+
+      def initialize(adapter: default_adapter, time_to_live: DEFAULT_TIME_TO_LIVE)
+        self.adapter = adapter
+        self.time_to_live = time_to_live
+      end
+
+      attr_reader :time_to_live
+
+      def time_to_live=(input)
+        @time_to_live = input.to_i
+      end
+
       # @api public
       # @return Samvera::NestingIndexer::Adapters::AbstractAdapter
       def adapter

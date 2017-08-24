@@ -2,6 +2,7 @@ require "samvera/nesting_indexer/version"
 require 'samvera/nesting_indexer/relationship_reindexer'
 require 'samvera/nesting_indexer/repository_reindexer'
 require 'samvera/nesting_indexer/configuration'
+require 'samvera/nesting_indexer/documents'
 require 'samvera/nesting_indexer/railtie' if defined?(Rails)
 
 module Samvera

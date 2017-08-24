@@ -23,7 +23,7 @@ namespace :commitment do
 end
 
 task(
-  default: [
+  all_specs: [
     'commitment:rubocop',
     'commitment:configure_test_for_code_coverage',
     'spec',
@@ -31,6 +31,9 @@ task(
   ]
 )
 
+task default: :all_specs
+
 RSpec::Core::RakeTask.new(:spec)
 
-task default: :spec
+task build: :all_specs
+task release: :all_specs

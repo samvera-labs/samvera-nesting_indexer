@@ -1,8 +1,8 @@
 require 'spec_helper'
-require 'samvera/indexer/adapters/abstract_adapter'
+require 'samvera/nesting_indexer/adapters/abstract_adapter'
 
 module Samvera
-  module Indexer
+  module NestingIndexer
     module Adapters
       RSpec.describe AbstractAdapter do
         AbstractAdapter.methods(false).each do |method_name|

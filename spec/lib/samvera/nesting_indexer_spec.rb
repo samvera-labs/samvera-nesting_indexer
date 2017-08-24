@@ -1,7 +1,7 @@
 require 'spec_helper'
-require 'samvera/indexer'
+require 'samvera/nesting_indexer'
 
-describe Samvera::Indexer do
+describe Samvera::NestingIndexer do
   describe '.configure' do
     before do
       Object.send(:remove_const, :Rails) if defined?(Rails)
@@ -20,7 +20,7 @@ describe Samvera::Indexer do
       after do
         Object.send(:remove_const, :Rails)
       end
-      it 'will not call the configuration block immediately but instead rely on the Samvera::Indexer::Railtie' do
+      it 'will not call the configuration block immediately but instead rely on the Samvera::NestingIndexer::Railtie' do
         expect { |b| described_class.configure(&b) }.to_not yield_control
       end
     end

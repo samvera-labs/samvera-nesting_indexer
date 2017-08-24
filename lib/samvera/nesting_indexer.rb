@@ -1,12 +1,12 @@
-require "samvera/indexer/version"
-require 'samvera/indexer/relationship_reindexer'
-require 'samvera/indexer/repository_reindexer'
-require 'samvera/indexer/configuration'
-require 'samvera/indexer/railtie' if defined?(Rails)
+require "samvera/nesting_indexer/version"
+require 'samvera/nesting_indexer/relationship_reindexer'
+require 'samvera/nesting_indexer/repository_reindexer'
+require 'samvera/nesting_indexer/configuration'
+require 'samvera/nesting_indexer/railtie' if defined?(Rails)
 
 module Samvera
   # Responsible for indexing an object and its related child objects.
-  module Indexer
+  module NestingIndexer
     # This assumes a rather deep graph
     DEFAULT_TIME_TO_LIVE = 15
     # @api public
@@ -43,8 +43,8 @@ module Samvera
 
     # @api public
     #
-    # Contains the Samvera::Indexer configuration information that is referenceable from wit
-    # @see Samvera::Indexer::Configuration
+    # Contains the Samvera::NestingIndexer configuration information that is referenceable from wit
+    # @see Samvera::NestingIndexer::Configuration
     def self.configuration
       @configuration ||= Configuration.new
     end
@@ -53,8 +53,8 @@ module Samvera
     #
     # Exposes the data adapter to use for the reindexing process.
     #
-    # @see Samvera::Indexer::Adapters::AbstractAdapter
-    # @return Object that implementes the Samvera::Indexer::Adapters::AbstractAdapter method interface
+    # @see Samvera::NestingIndexer::Adapters::AbstractAdapter
+    # @return Object that implementes the Samvera::NestingIndexer::Adapters::AbstractAdapter method interface
     def self.adapter
       configuration.adapter
     end
@@ -63,14 +63,14 @@ module Samvera
     #
     # Capture the configuration information
     #
-    # @see Samvera::Indexer::Configuration
+    # @see Samvera::NestingIndexer::Configuration
     # @see .configuration
-    # @see Samvera::Indexer::Railtie
+    # @see Samvera::NestingIndexer::Railtie
     def self.configure(&block)
       @configuration_block = block
       # The Rails load sequence means that some of the configured Targets may
       # not be loaded; As such I am not calling configure! instead relying on
-      # Samvera::Indexer::Railtie to handle the configure! call
+      # Samvera::NestingIndexer::Railtie to handle the configure! call
       configure! unless defined?(Rails)
     end
 

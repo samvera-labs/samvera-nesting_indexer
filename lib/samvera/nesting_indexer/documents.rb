@@ -1,7 +1,7 @@
 require 'dry-equalizer'
 
 module Samvera
-  module Indexer
+  module NestingIndexer
     module Documents
       # @api public
       #

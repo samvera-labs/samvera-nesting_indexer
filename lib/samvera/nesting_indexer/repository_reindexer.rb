@@ -1,6 +1,6 @@
 module Samvera
   # Establishing namespace
-  module Indexer
+  module NestingIndexer
     # Responsible for reindexing the entire repository
     # @api private
     # @note There is cycle detection logic for walking the graph prior to attempting relationship re-indexing
@@ -12,10 +12,10 @@ module Samvera
       # @note This could crush your system as it will loop through ALL the documents
       #
       # @param options [Hash]
-      # @option options [Integer] pid_reindexer Samvera::Indexer.method(:reindex_relationships) Responsible for reindexing a single object
-      # @option options [Integer] time_to_live Samvera::Indexer::TIME_TO_LIVE to detect cycles in the graph
-      # @option options [Samvera::Indexer::Adapters::AbstractAdapter] adapter
-      # @return Samvera::Indexer::RepositoryReindexer
+      # @option options [Integer] pid_reindexer Samvera::NestingIndexer.method(:reindex_relationships) Responsible for reindexing a single object
+      # @option options [Integer] time_to_live Samvera::NestingIndexer::TIME_TO_LIVE to detect cycles in the graph
+      # @option options [Samvera::NestingIndexer::Adapters::AbstractAdapter] adapter
+      # @return Samvera::NestingIndexer::RepositoryReindexer
       def self.call(*args)
         new(*args).call
       end

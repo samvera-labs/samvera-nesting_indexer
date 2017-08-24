@@ -1,10 +1,10 @@
 require 'spec_helper'
-require 'samvera/indexer/exceptions'
-require 'samvera/indexer/adapters/in_memory_adapter'
-require 'samvera/indexer/adapters/abstract_adapter'
+require 'samvera/nesting_indexer/exceptions'
+require 'samvera/nesting_indexer/adapters/in_memory_adapter'
+require 'samvera/nesting_indexer/adapters/abstract_adapter'
 
 module Samvera
-  module Indexer
+  module NestingIndexer
     RSpec.describe Configuration do
       let(:configuration) { described_class.new }
       context '#adapter' do

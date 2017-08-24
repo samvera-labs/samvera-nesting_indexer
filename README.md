@@ -1,4 +1,4 @@
-# Samvera::Indexer
+# Samvera::NestingIndexer
 
 [![Build Status](https://travis-ci.org/ndlib/samvera-indexer.png?branch=master)](https://travis-ci.org/ndlib/samvera-indexer)
 [![Test Coverage](https://codeclimate.com/github/ndlib/samvera-indexer/badges/coverage.svg)](https://codeclimate.com/github/ndlib/samvera-indexer)
@@ -6,7 +6,7 @@
 [![Documentation Status](http://inch-ci.org/github/ndlib/samvera-indexer.svg?branch=master)](http://inch-ci.org/github/ndlib/samvera-indexer)
 [![APACHE 2 License](http://img.shields.io/badge/APACHE2-license-blue.svg)](./LICENSE)
 
-The Samvera::Indexer gem is responsible for indexing the graph relationship of objects. It maps a PreservationDocument to an IndexDocument by mapping a PreservationDocument's direct parents into the paths to get from a root document to the given PreservationDocument.
+The Samvera::NestingIndexer gem is responsible for indexing the graph relationship of objects. It maps a PreservationDocument to an IndexDocument by mapping a PreservationDocument's direct parents into the paths to get from a root document to the given PreservationDocument.
 
 * [Background](#background)
 * [Concepts](#concepts)
@@ -22,8 +22,8 @@ This is a sandbox to work through the reindexing strategy as it relates to [Samv
 
 As we are indexing objects, we have two types of documents:
 
-1. [PreservationDocument](./lib/samvera/indexer/documents.rb) - a light-weight representation of a Fedora object
-2. [IndexDocument](./lib/samvera/indexer/documents.rb) - a light-weight representation of a SOLR document object
+1. [PreservationDocument](./lib/samvera/nesting_indexer/documents.rb) - a light-weight representation of a Fedora object
+2. [IndexDocument](./lib/samvera/nesting_indexer/documents.rb) - a light-weight representation of a SOLR document object
 
 We have four attributes to consider for indexing the graph:
 
@@ -32,9 +32,9 @@ We have four attributes to consider for indexing the graph:
 3. pathnames - the paths to traverse from a root document to the given document
 4. ancestors - the pathnames of each of the ancestors
 
-See [Samvera::Indexer::Documents::IndexDocument](./lib/samvera/indexer/documents.rb) for further discussion.
+See [Samvera::NestingIndexer::Documents::IndexDocument](./lib/samvera/nesting_indexer/documents.rb) for further discussion.
 
-To reindex a single document, we leverage the [`Samvera::Indexer.reindex_relationships`](./lib/samvera/indexer.rb) method.
+To reindex a single document, we leverage the [`Samvera::NestingIndexer.reindex_relationships`](./lib/samvera/nesting_indexer.rb) method.
 
 ## Examples
 
@@ -62,9 +62,9 @@ For more scenarios, look at the [Reindex PID and Descendants specs](./spec/featu
 
 ## Adapters
 
-An [AbstractAdapter](./lib/samvera/indexer/adapters/abstract_adapter.rb) provides the method interface for others to build against.
+An [AbstractAdapter](./lib/samvera/nesting_indexer/adapters/abstract_adapter.rb) provides the method interface for others to build against.
 
-The [InMemory adapter](./lib/samvera/indexer/adapters/in_memory_adapter.rb) is a reference implementation (and used to ease testing overhead).
+The [InMemory adapter](./lib/samvera/nesting_indexer/adapters/in_memory_adapter.rb) is a reference implementation (and used to ease testing overhead).
 
 SamveraND has implemented the [following adapter](https://github.com/ndlib/samvera_nd/blob/master/lib/samvera/library_collection_indexing_adapter.rb) for its LibraryCollection indexing.
 
@@ -72,7 +72,7 @@ To define the adapter for your application:
 
 ```ruby
 # In an application initializer (e.g. config/samvera_indexer_config.rb)
-Samvera::Indexer.configure do |config|
+Samvera::NestingIndexer.configure do |config|
   config.adapter = MyCustomAdapter
 end
 ```

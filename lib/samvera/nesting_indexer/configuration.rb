@@ -1,14 +1,14 @@
-require 'samvera/indexer/adapters/abstract_adapter'
-require 'samvera/indexer/exceptions'
+require 'samvera/nesting_indexer/adapters/abstract_adapter'
+require 'samvera/nesting_indexer/exceptions'
 
 module Samvera
   # :nodoc:
-  module Indexer
+  module NestingIndexer
     # @api public
-    # Responsible for the configuration of the Samvera::Indexer
+    # Responsible for the configuration of the Samvera::NestingIndexer
     class Configuration
       # @api public
-      # @return Samvera::Indexer::Adapters::AbstractAdapter
+      # @return Samvera::NestingIndexer::Adapters::AbstractAdapter
       def adapter
         @adapter || default_adapter
       end
@@ -25,11 +25,11 @@ module Samvera
       private
 
       IN_MEMORY_ADAPTER_WARNING_MESSAGE =
-        "WARNING: You are using the default Samvera::Indexer::Adapters::InMemoryAdapter for the Samvera::Indexer.adapter.".freeze
+        "WARNING: You are using the default Samvera::NestingIndexer::Adapters::InMemoryAdapter for the Samvera::NestingIndexer.adapter.".freeze
 
       def default_adapter
         $stdout.puts IN_MEMORY_ADAPTER_WARNING_MESSAGE unless defined?(SUPPRESS_MEMORY_ADAPTER_WARNING)
-        require 'samvera/indexer/adapters/in_memory_adapter'
+        require 'samvera/nesting_indexer/adapters/in_memory_adapter'
         Adapters::InMemoryAdapter
       end
     end

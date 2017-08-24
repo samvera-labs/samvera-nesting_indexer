@@ -1,32 +1,32 @@
 module Samvera
-  module Indexer
+  module NestingIndexer
     module Adapters
       # @api public
-      # A module that defines the interface of methods required to interact with Samvera::Indexer operations
+      # A module that defines the interface of methods required to interact with Samvera::NestingIndexer operations
       module AbstractAdapter
         # @api public
         # @param pid [String]
-        # @return Samvera::Indexer::Document::PreservationDocument
+        # @return Samvera::NestingIndexer::Document::PreservationDocument
         def self.find_preservation_document_by(*)
           raise NotImplementedError
         end
 
         # @api public
         # @param pid [String]
-        # @return Samvera::Indexer::Documents::IndexDocument
+        # @return Samvera::NestingIndexer::Documents::IndexDocument
         def self.find_index_document_by(*)
           raise NotImplementedError
         end
 
         # @api public
-        # @yield Samvera::Indexer::Document::PreservationDocument
+        # @yield Samvera::NestingIndexer::Document::PreservationDocument
         def self.each_preservation_document
           raise NotImplementedError
         end
 
         # @api public
-        # @param document [Samvera::Indexer::Documents::IndexDocument]
-        # @yield Samvera::Indexer::Documents::IndexDocument
+        # @param document [Samvera::NestingIndexer::Documents::IndexDocument]
+        # @yield Samvera::NestingIndexer::Documents::IndexDocument
         def self.each_child_document_of(*, &_block)
           raise NotImplementedError
         end

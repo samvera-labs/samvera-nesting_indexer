@@ -1,8 +1,8 @@
-require 'samvera/indexer/adapters/abstract_adapter'
-require 'samvera/indexer/documents'
+require 'samvera/nesting_indexer/adapters/abstract_adapter'
+require 'samvera/nesting_indexer/documents'
 
 module Samvera
-  module Indexer
+  module NestingIndexer
     module Adapters
       # @api public
       #
@@ -12,27 +12,27 @@ module Samvera
         extend AbstractAdapter
         # @api public
         # @param pid [String]
-        # @return Samvera::Indexer::Document::PreservationDocument
+        # @return Samvera::NestingIndexer::Document::PreservationDocument
         def self.find_preservation_document_by(pid)
           Preservation.find(pid)
         end
 
         # @api public
         # @param pid [String]
-        # @return Samvera::Indexer::Documents::IndexDocument
+        # @return Samvera::NestingIndexer::Documents::IndexDocument
         def self.find_index_document_by(pid)
           Index.find(pid)
         end
 
         # @api public
-        # @yield Samvera::Indexer::Document::PreservationDocument
+        # @yield Samvera::NestingIndexer::Document::PreservationDocument
         def self.each_preservation_document
           Preservation.find_each { |document| yield(document) }
         end
 
         # @api public
-        # @param document [Samvera::Indexer::Documents::IndexDocument]
-        # @yield Samvera::Indexer::Documents::IndexDocument
+        # @param document [Samvera::NestingIndexer::Documents::IndexDocument]
+        # @yield Samvera::NestingIndexer::Documents::IndexDocument
         def self.each_child_document_of(document, &block)
           Index.each_child_document_of(document, &block)
         end
@@ -40,7 +40,7 @@ module Samvera
         # @api public
         # This is not something that I envision using in the production environment;
         # It is hear to keep the Preservation system isolated and accessible only through interfaces.
-        # @return Samvera::Indexer::Documents::PreservationDocument
+        # @return Samvera::NestingIndexer::Documents::PreservationDocument
         def self.write_document_attributes_to_preservation_layer(attributes = {})
           Preservation.write_document(attributes)
         end
@@ -63,7 +63,7 @@ module Samvera
         #
         # @example
         #   module Foo
-        #     extend Samvera::Indexer::StorageModule
+        #     extend Samvera::NestingIndexer::StorageModule
         #   end
         module StorageModule
           def write(doc)
@@ -92,7 +92,7 @@ module Samvera
         #
         # A module responsible for containing the "preservation interface" logic.
         # In the case of SamveraND, there will need to be an adapter to get a Fedora
-        # object coerced into a Samvera::Indexer::Preservation::Document
+        # object coerced into a Samvera::NestingIndexer::Preservation::Document
         module Preservation
           def self.find(pid, *)
             MemoryStorage.find(pid)

@@ -1,5 +1,5 @@
 module Samvera
-  module Indexer
+  module NestingIndexer
     module Exceptions
       class RuntimeError < ::RuntimeError
       end

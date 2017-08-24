@@ -1,16 +1,16 @@
 require 'spec_helper'
-require 'samvera/indexer'
-require 'samvera/indexer/exceptions'
-require 'samvera/indexer/adapters'
+require 'samvera/nesting_indexer'
+require 'samvera/nesting_indexer/exceptions'
+require 'samvera/nesting_indexer/adapters'
 
 # :nodoc:
 module Samvera
-  module Indexer
+  module NestingIndexer
     RSpec.describe 'Reindex pid and descendants' do
       before do
         # Ensuring we have a clear configuration each time; Also assists with code coverage.
-        Indexer.configure { |config| config.adapter = Adapters::InMemoryAdapter }
-        Indexer.adapter.clear_cache!
+        NestingIndexer.configure { |config| config.adapter = Adapters::InMemoryAdapter }
+        NestingIndexer.adapter.clear_cache!
       end
 
       def build_graph(graph)
@@ -23,11 +23,11 @@ module Samvera
 
       def build_preservation_document(pid, graph)
         parent_pids = graph.fetch(:parent_pids).fetch(pid)
-        Indexer.adapter.write_document_attributes_to_preservation_layer(pid: pid, parent_pids: parent_pids)
+        NestingIndexer.adapter.write_document_attributes_to_preservation_layer(pid: pid, parent_pids: parent_pids)
       end
 
       def build_index_document(pid, graph)
-        Indexer.adapter.write_document_attributes_to_index_layer(
+        NestingIndexer.adapter.write_document_attributes_to_index_layer(
           pid: pid,
           parent_pids: graph.fetch(:parent_pids).fetch(pid),
           ancestors: graph.fetch(:ancestors, {})[pid],
@@ -37,8 +37,8 @@ module Samvera
 
       # Logic that mirrors the behavior of updating an ActiveFedora object.
       def write_document_to_persistence_layers(preservation_document_attributes_to_update)
-        Indexer.adapter.write_document_attributes_to_preservation_layer(preservation_document_attributes_to_update)
-        Indexer.adapter.write_document_attributes_to_index_layer(
+        NestingIndexer.adapter.write_document_attributes_to_preservation_layer(preservation_document_attributes_to_update)
+        NestingIndexer.adapter.write_document_attributes_to_index_layer(
           { pathnames: [], ancestors: [] }.merge(preservation_document_attributes_to_update)
         )
       end
@@ -124,7 +124,7 @@ module Samvera
               write_document_to_persistence_layers(preservation_document_attributes_to_update)
 
               # Run the "job" that will reindex the relationships for the given pid.
-              Indexer.reindex_relationships(preservation_document_attributes_to_update.fetch(:pid))
+              NestingIndexer.reindex_relationships(preservation_document_attributes_to_update.fetch(:pid))
 
               # A custom spec helper that verifies the expected ending graph versus the actual graph as retrieved
               # This verifies the "ending" data state
@@ -147,7 +147,7 @@ module Samvera
           ancestors: ending_graph.fetch(:ancestors).fetch(pid),
           pathnames: ending_graph.fetch(:pathnames).fetch(pid)
         )
-        expect(Indexer.adapter.find_index_document_by(pid)).to eq(document)
+        expect(NestingIndexer.adapter.find_index_document_by(pid)).to eq(document)
       end
 
       context "Cyclical graphs" do
@@ -159,7 +159,7 @@ module Samvera
           }
           build_graph(starting_graph)
 
-          expect { Indexer.reindex_relationships(:a) }.to raise_error(Exceptions::CycleDetectionError)
+          expect { NestingIndexer.reindex_relationships(:a) }.to raise_error(Exceptions::CycleDetectionError)
         end
       end
 
@@ -169,7 +169,7 @@ module Samvera
             parent_pids: { a: [], b: ['a'], c: ['a', 'b'], d: ['b', 'c'], e: ['b', 'c'], f: ['e'], g: [] }
           }
           build_graph(starting_graph)
-          Indexer.reindex_all!
+          NestingIndexer.reindex_all!
           ending_graph = {
             parent_pids: { a: [], b: ['a'], c: ['a', 'b'], d: ['b', 'c'], e: ['b', 'c'], f: ['e'], g: [] },
             ancestors: {
@@ -190,7 +190,7 @@ module Samvera
           }
           build_graph(starting_graph)
 
-          Indexer.reindex_all!
+          NestingIndexer.reindex_all!
 
           ending_graph = {
             parent_pids: { a: [], b: ['a'], c: ['a', 'b'], d: ['b'], e: ['c', 'd'], f: [] },
@@ -206,7 +206,7 @@ module Samvera
           }
           build_graph(starting_graph)
 
-          Indexer.reindex_all!
+          NestingIndexer.reindex_all!
 
           ending_graph = {
             parent_pids: { a: ['b'], b: ['c'], c: [] },
@@ -221,7 +221,7 @@ module Samvera
             parent_pids: { a: [], b: ['a', 'd'], c: ['b'], d: ['c'] }
           }
           build_graph(starting_graph)
-          expect { Indexer.reindex_all! }.to raise_error(Exceptions::ReindexingError)
+          expect { NestingIndexer.reindex_all! }.to raise_error(Exceptions::ReindexingError)
         end
       end
     end

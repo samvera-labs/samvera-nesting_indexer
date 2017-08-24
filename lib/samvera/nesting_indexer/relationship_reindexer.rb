@@ -1,10 +1,10 @@
-require 'samvera/indexer/exceptions'
+require 'samvera/nesting_indexer/exceptions'
 require 'forwardable'
 require 'set'
 
 module Samvera
   # Establishing namespace
-  module Indexer
+  module NestingIndexer
     # Responsible for reindexing the PID and its descendants
     # @note There is cycle detection via the TIME_TO_LIVE counter
     # @api private
@@ -15,10 +15,10 @@ module Samvera
       #
       # @param options [Hash]
       # @option options [String] pid
-      # @option options [Integer] time_to_live Samvera::Indexer::TIME_TO_LIVE to detect cycles in the graph
-      # @option options [Samvera::Indexer::Adapters::AbstractAdapter] adapter
+      # @option options [Integer] time_to_live Samvera::NestingIndexer::TIME_TO_LIVE to detect cycles in the graph
+      # @option options [Samvera::NestingIndexer::Adapters::AbstractAdapter] adapter
       # @option options [#shift, #push] queue
-      # @return Samvera::Indexer::RelationshipReindexer
+      # @return Samvera::NestingIndexer::RelationshipReindexer
       def self.call(options = {})
         new(options).call
       end
@@ -80,9 +80,9 @@ module Samvera
       end
 
       # A small object that helps encapsulate the logic of building the hash of information regarding
-      # the initialization of an Samvera::Indexer::Documents::IndexDocument
+      # the initialization of an Samvera::NestingIndexer::Documents::IndexDocument
       #
-      # @see Samvera::Indexer::Documents::IndexDocument for details on pathnames, ancestors, and parent_pids.
+      # @see Samvera::NestingIndexer::Documents::IndexDocument for details on pathnames, ancestors, and parent_pids.
       class ParentAndPathAndAncestorsBuilder
         def initialize(preservation_document, adapter)
           @preservation_document = preservation_document

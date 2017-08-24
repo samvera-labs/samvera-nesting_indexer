@@ -1,9 +1,9 @@
 # Samvera::NestingIndexer
 
-[![Build Status](https://travis-ci.org/ndlib/samvera-indexer.png?branch=master)](https://travis-ci.org/ndlib/samvera-indexer)
-[![Test Coverage](https://codeclimate.com/github/ndlib/samvera-indexer/badges/coverage.svg)](https://codeclimate.com/github/ndlib/samvera-indexer)
-[![Code Climate](https://codeclimate.com/github/ndlib/samvera-indexer.png)](https://codeclimate.com/github/ndlib/samvera-indexer)
-[![Documentation Status](http://inch-ci.org/github/ndlib/samvera-indexer.svg?branch=master)](http://inch-ci.org/github/ndlib/samvera-indexer)
+[![Build Status](https://travis-ci.org/samvera-labs/samvera-nesting_indexer.png?branch=master)](https://travis-ci.org/samvera-labs/samvera-nesting_indexer)
+[![Test Coverage](https://codeclimate.com/github/samvera-labs/samvera-nesting_indexer/badges/coverage.svg)](https://codeclimate.com/github/samvera-labs/samvera-nesting_indexer)
+[![Code Climate](https://codeclimate.com/github/samvera-labs/samvera-nesting_indexer.png)](https://codeclimate.com/github/samvera-labs/samvera-nesting_indexer)
+[![Documentation Status](http://inch-ci.org/github/samvera-labs/samvera-nesting_indexer.svg?branch=master)](http://inch-ci.org/github/samvera-labs/samvera-nesting_indexer)
 [![APACHE 2 License](http://img.shields.io/badge/APACHE2-license-blue.svg)](./LICENSE)
 
 The Samvera::NestingIndexer gem is responsible for indexing the graph relationship of objects. It maps a PreservationDocument to an IndexDocument by mapping a PreservationDocument's direct parents into the paths to get from a root document to the given PreservationDocument.

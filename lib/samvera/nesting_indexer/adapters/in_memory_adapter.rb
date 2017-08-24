@@ -91,7 +91,7 @@ module Samvera
         # @api private
         #
         # A module responsible for containing the "preservation interface" logic.
-        # In the case of SamveraND, there will need to be an adapter to get a Fedora
+        # In the case of CurateND, there will need to be an adapter to get a Fedora
         # object coerced into a Samvera::NestingIndexer::Preservation::Document
         module Preservation
           def self.find(id, *)
@@ -123,7 +123,7 @@ module Samvera
         # @api private
         #
         # An abstract representation of the underlying index service. In the case of
-        # SamveraND this is an abstraction of Solr.
+        # CurateND this is an abstraction of Solr.
         module Index
           def self.clear_cache!
             Storage.clear_cache!

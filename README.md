@@ -16,7 +16,7 @@ The Samvera::NestingIndexer gem is responsible for indexing the graph relationsh
 
 ## Background
 
-This is a sandbox to work through the reindexing strategy as it relates to [SamveraND Collections](https://github.com/ndlib/samvera_nd/issues/420). At this point the code is separate to allow for raid testing and prototyping (no sense spinning up SOLR and Fedora to walk an arbitrary graph).
+This is a sandbox to work through the reindexing strategy as it relates to [CurateND Collections](https://github.com/ndlib/samvera_nd/issues/420). At this point the code is separate to allow for raid testing and prototyping (no sense spinning up SOLR and Fedora to walk an arbitrary graph).
 
 ## Concepts
 
@@ -66,7 +66,7 @@ An [AbstractAdapter](./lib/samvera/nesting_indexer/adapters/abstract_adapter.rb)
 
 The [InMemory adapter](./lib/samvera/nesting_indexer/adapters/in_memory_adapter.rb) is a reference implementation (and used to ease testing overhead).
 
-SamveraND has implemented the [following adapter](https://github.com/ndlib/samvera_nd/blob/master/lib/samvera/library_collection_indexing_adapter.rb) for its LibraryCollection indexing.
+CurateND has implemented the [following adapter](https://github.com/ndlib/samvera_nd/blob/master/lib/samvera/library_collection_indexing_adapter.rb) for its LibraryCollection indexing.
 
 To define the adapter for your application:
 
@@ -77,7 +77,7 @@ Samvera::NestingIndexer.configure do |config|
 end
 ```
 
-[See SamveraND for our adaptor configuration](https://github.com/ndlib/samvera_nd/blob/6fbe79c9725c0f8b4641981044ec250c5163053b/config/initializers/samvera_config.rb#L32-L35).
+[See CurateND for our adaptor configuration](https://github.com/ndlib/samvera_nd/blob/6fbe79c9725c0f8b4641981044ec250c5163053b/config/initializers/samvera_config.rb#L32-L35).
 
 ## Considerations
 

@@ -33,8 +33,9 @@ module Samvera
         end
 
         # @api public
+        # @param attributes [Hash]
         # @return Hash - the attributes written to the indexing layer
-        def self.write_document_attributes_to_index_layer(attributes = {})
+        def self.write_document_attributes_to_index_layer(attributes:)
           raise NotImplementedError
         end
       end

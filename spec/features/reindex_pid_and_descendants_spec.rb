@@ -28,10 +28,12 @@ module Samvera
 
       def build_index_document(id, graph)
         NestingIndexer.adapter.write_document_attributes_to_index_layer(
-          id: id,
-          parent_ids: graph.fetch(:parent_ids).fetch(id),
-          ancestors: graph.fetch(:ancestors, {})[id],
-          pathnames: graph.fetch(:pathnames, {})[id]
+          attributes: {
+            id: id,
+            parent_ids: graph.fetch(:parent_ids).fetch(id),
+            ancestors: graph.fetch(:ancestors, {})[id],
+            pathnames: graph.fetch(:pathnames, {})[id]
+          }
         )
       end
 
@@ -39,7 +41,10 @@ module Samvera
       def write_document_to_persistence_layers(preservation_document_attributes_to_update)
         NestingIndexer.adapter.write_document_attributes_to_preservation_layer(preservation_document_attributes_to_update)
         NestingIndexer.adapter.write_document_attributes_to_index_layer(
-          { pathnames: [], ancestors: [] }.merge(preservation_document_attributes_to_update)
+          attributes: {
+            pathnames: [],
+            ancestors: []
+          }.merge(preservation_document_attributes_to_update)
         )
       end
 

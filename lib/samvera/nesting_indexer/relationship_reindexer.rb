@@ -72,7 +72,7 @@ module Samvera
         raise Exceptions::CycleDetectionError, id if index_document.maximum_nesting_depth <= 0
         preservation_document = adapter.find_preservation_document_by(id: index_document.id)
         parent_ids_and_path_and_ancestors = parent_ids_and_path_and_ancestors_for(preservation_document)
-        adapter.write_document_attributes_to_index_layer(parent_ids_and_path_and_ancestors)
+        adapter.write_document_attributes_to_index_layer(attributes: parent_ids_and_path_and_ancestors)
       end
 
       def parent_ids_and_path_and_ancestors_for(preservation_document)

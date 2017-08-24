@@ -40,14 +40,16 @@ module Samvera
         # @api public
         # This is not something that I envision using in the production environment;
         # It is hear to keep the Preservation system isolated and accessible only through interfaces.
+        # @param attributes [Hash]
         # @return Samvera::NestingIndexer::Documents::PreservationDocument
-        def self.write_document_attributes_to_preservation_layer(attributes = {})
+        def self.write_document_attributes_to_preservation_layer(attributes)
           Preservation.write_document(attributes)
         end
 
         # @api public
+        # @param attributes [Hash]
         # @return Hash - the attributes written to the indexing layer
-        def self.write_document_attributes_to_index_layer(attributes = {})
+        def self.write_document_attributes_to_index_layer(attributes:)
           Index.write_document(attributes)
         end
 

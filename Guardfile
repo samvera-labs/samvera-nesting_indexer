@@ -24,7 +24,7 @@
 #  * zeus: 'zeus rspec' (requires the server to be started separately)
 #  * 'just' rspec: 'rspec'
 
-notification :terminal_notifier, subtitle: 'Samvera::NestingIndexer'
+notification :terminal_notifier, subtitle: 'Samvera::NestingIndexer', timeout: 4
 
 guard :rspec, cmd: "bundle exec rspec" do
   require "guard/rspec/dsl"

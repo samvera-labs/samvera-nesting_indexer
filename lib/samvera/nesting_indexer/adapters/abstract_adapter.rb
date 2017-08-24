@@ -21,7 +21,7 @@ module Samvera
 
         # @api public
         # @yield Samvera::NestingIndexer::Document::PreservationDocument
-        def self.each_preservation_document
+        def self.each_preservation_document(&block)
           raise NotImplementedError
         end
 

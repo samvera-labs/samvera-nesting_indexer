@@ -75,10 +75,6 @@ if defined?(RSpec)
         expect(required_parameters.call(subject)).to eq(required_keyword_parameters.call(subject))
       end
 
-      it 'requires a single un-named parameter' do
-        expect(required_parameters.call(subject).size).to eq(1)
-      end
-
       it 'does not expect a block' do
         expect(block_parameter_extracter.call(subject)).to be_empty
       end

@@ -1,14 +1,14 @@
-require 'curate/indexer/adapters/abstract_adapter'
-require 'curate/indexer/exceptions'
+require 'samvera/indexer/adapters/abstract_adapter'
+require 'samvera/indexer/exceptions'
 
-module Curate
+module Samvera
   # :nodoc:
   module Indexer
     # @api public
-    # Responsible for the configuration of the Curate::Indexer
+    # Responsible for the configuration of the Samvera::Indexer
     class Configuration
       # @api public
-      # @return Curate::Indexer::Adapters::AbstractAdapter
+      # @return Samvera::Indexer::Adapters::AbstractAdapter
       def adapter
         @adapter || default_adapter
       end
@@ -25,11 +25,11 @@ module Curate
       private
 
       IN_MEMORY_ADAPTER_WARNING_MESSAGE =
-        "WARNING: You are using the default Curate::Indexer::Adapters::InMemoryAdapter for the Curate::Indexer.adapter.".freeze
+        "WARNING: You are using the default Samvera::Indexer::Adapters::InMemoryAdapter for the Samvera::Indexer.adapter.".freeze
 
       def default_adapter
         $stdout.puts IN_MEMORY_ADAPTER_WARNING_MESSAGE unless defined?(SUPPRESS_MEMORY_ADAPTER_WARNING)
-        require 'curate/indexer/adapters/in_memory_adapter'
+        require 'samvera/indexer/adapters/in_memory_adapter'
         Adapters::InMemoryAdapter
       end
     end

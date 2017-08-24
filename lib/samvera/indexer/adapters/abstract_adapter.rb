@@ -1,32 +1,32 @@
-module Curate
+module Samvera
   module Indexer
     module Adapters
       # @api public
-      # A module that defines the interface of methods required to interact with Curate::Indexer operations
+      # A module that defines the interface of methods required to interact with Samvera::Indexer operations
       module AbstractAdapter
         # @api public
         # @param pid [String]
-        # @return Curate::Indexer::Document::PreservationDocument
+        # @return Samvera::Indexer::Document::PreservationDocument
         def self.find_preservation_document_by(*)
           raise NotImplementedError
         end
 
         # @api public
         # @param pid [String]
-        # @return Curate::Indexer::Documents::IndexDocument
+        # @return Samvera::Indexer::Documents::IndexDocument
         def self.find_index_document_by(*)
           raise NotImplementedError
         end
 
         # @api public
-        # @yield Curate::Indexer::Document::PreservationDocument
+        # @yield Samvera::Indexer::Document::PreservationDocument
         def self.each_preservation_document
           raise NotImplementedError
         end
 
         # @api public
-        # @param document [Curate::Indexer::Documents::IndexDocument]
-        # @yield Curate::Indexer::Documents::IndexDocument
+        # @param document [Samvera::Indexer::Documents::IndexDocument]
+        # @yield Samvera::Indexer::Documents::IndexDocument
         def self.each_child_document_of(*, &_block)
           raise NotImplementedError
         end

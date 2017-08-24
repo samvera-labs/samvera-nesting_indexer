@@ -1,6 +1,6 @@
 require 'dry-equalizer'
 
-module Curate
+module Samvera
   module Indexer
     module Documents
       # @api public

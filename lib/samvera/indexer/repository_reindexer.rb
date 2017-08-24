@@ -1,4 +1,4 @@
-module Curate
+module Samvera
   # Establishing namespace
   module Indexer
     # Responsible for reindexing the entire repository
@@ -12,10 +12,10 @@ module Curate
       # @note This could crush your system as it will loop through ALL the documents
       #
       # @param options [Hash]
-      # @option options [Integer] pid_reindexer Curate::Indexer.method(:reindex_relationships) Responsible for reindexing a single object
-      # @option options [Integer] time_to_live Curate::Indexer::TIME_TO_LIVE to detect cycles in the graph
-      # @option options [Curate::Indexer::Adapters::AbstractAdapter] adapter
-      # @return Curate::Indexer::RepositoryReindexer
+      # @option options [Integer] pid_reindexer Samvera::Indexer.method(:reindex_relationships) Responsible for reindexing a single object
+      # @option options [Integer] time_to_live Samvera::Indexer::TIME_TO_LIVE to detect cycles in the graph
+      # @option options [Samvera::Indexer::Adapters::AbstractAdapter] adapter
+      # @return Samvera::Indexer::RepositoryReindexer
       def self.call(*args)
         new(*args).call
       end

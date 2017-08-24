@@ -1,9 +1,9 @@
 require 'spec_helper'
-require 'curate/indexer/exceptions'
-require 'curate/indexer/adapters/in_memory_adapter'
-require 'curate/indexer/adapters/abstract_adapter'
+require 'samvera/indexer/exceptions'
+require 'samvera/indexer/adapters/in_memory_adapter'
+require 'samvera/indexer/adapters/abstract_adapter'
 
-module Curate
+module Samvera
   module Indexer
     RSpec.describe Configuration do
       let(:configuration) { described_class.new }

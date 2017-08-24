@@ -1,11 +1,11 @@
 require 'rails/railtie'
 
-module Curate
+module Samvera
   module Indexer
     # Connect into the boot sequence of a Rails application
     class Railtie < Rails::Railtie
       config.to_prepare do
-        Curate::Indexer.configure!
+        Samvera::Indexer.configure!
       end
     end
   end

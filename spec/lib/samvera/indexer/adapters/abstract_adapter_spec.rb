@@ -1,7 +1,7 @@
 require 'spec_helper'
-require 'curate/indexer/adapters/abstract_adapter'
+require 'samvera/indexer/adapters/abstract_adapter'
 
-module Curate
+module Samvera
   module Indexer
     module Adapters
       RSpec.describe AbstractAdapter do

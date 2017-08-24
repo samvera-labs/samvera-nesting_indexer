@@ -1,12 +1,12 @@
-# Curate::Indexer
+# Samvera::Indexer
 
-[![Build Status](https://travis-ci.org/ndlib/curate-indexer.png?branch=master)](https://travis-ci.org/ndlib/curate-indexer)
-[![Test Coverage](https://codeclimate.com/github/ndlib/curate-indexer/badges/coverage.svg)](https://codeclimate.com/github/ndlib/curate-indexer)
-[![Code Climate](https://codeclimate.com/github/ndlib/curate-indexer.png)](https://codeclimate.com/github/ndlib/curate-indexer)
-[![Documentation Status](http://inch-ci.org/github/ndlib/curate-indexer.svg?branch=master)](http://inch-ci.org/github/ndlib/curate-indexer)
+[![Build Status](https://travis-ci.org/ndlib/samvera-indexer.png?branch=master)](https://travis-ci.org/ndlib/samvera-indexer)
+[![Test Coverage](https://codeclimate.com/github/ndlib/samvera-indexer/badges/coverage.svg)](https://codeclimate.com/github/ndlib/samvera-indexer)
+[![Code Climate](https://codeclimate.com/github/ndlib/samvera-indexer.png)](https://codeclimate.com/github/ndlib/samvera-indexer)
+[![Documentation Status](http://inch-ci.org/github/ndlib/samvera-indexer.svg?branch=master)](http://inch-ci.org/github/ndlib/samvera-indexer)
 [![APACHE 2 License](http://img.shields.io/badge/APACHE2-license-blue.svg)](./LICENSE)
 
-The Curate::Indexer gem is responsible for indexing the graph relationship of objects. It maps a PreservationDocument to an IndexDocument by mapping a PreservationDocument's direct parents into the paths to get from a root document to the given PreservationDocument.
+The Samvera::Indexer gem is responsible for indexing the graph relationship of objects. It maps a PreservationDocument to an IndexDocument by mapping a PreservationDocument's direct parents into the paths to get from a root document to the given PreservationDocument.
 
 * [Background](#background)
 * [Concepts](#concepts)
@@ -16,14 +16,14 @@ The Curate::Indexer gem is responsible for indexing the graph relationship of ob
 
 ## Background
 
-This is a sandbox to work through the reindexing strategy as it relates to [CurateND Collections](https://github.com/ndlib/curate_nd/issues/420). At this point the code is separate to allow for rapid testing and prototyping (no sense spinning up SOLR and Fedora to walk an arbitrary graph).
+This is a sandbox to work through the reindexing strategy as it relates to [SamveraND Collections](https://github.com/ndlib/samvera_nd/issues/420). At this point the code is separate to allow for rapid testing and prototyping (no sense spinning up SOLR and Fedora to walk an arbitrary graph).
 
 ## Concepts
 
 As we are indexing objects, we have two types of documents:
 
-1. [PreservationDocument](./lib/curate/indexer/documents.rb) - a light-weight representation of a Fedora object
-2. [IndexDocument](./lib/curate/indexer/documents.rb) - a light-weight representation of a SOLR document object
+1. [PreservationDocument](./lib/samvera/indexer/documents.rb) - a light-weight representation of a Fedora object
+2. [IndexDocument](./lib/samvera/indexer/documents.rb) - a light-weight representation of a SOLR document object
 
 We have four attributes to consider for indexing the graph:
 
@@ -32,9 +32,9 @@ We have four attributes to consider for indexing the graph:
 3. pathnames - the paths to traverse from a root document to the given document
 4. ancestors - the pathnames of each of the ancestors
 
-See [Curate::Indexer::Documents::IndexDocument](./lib/curate/indexer/documents.rb) for further discussion.
+See [Samvera::Indexer::Documents::IndexDocument](./lib/samvera/indexer/documents.rb) for further discussion.
 
-To reindex a single document, we leverage the [`Curate::Indexer.reindex_relationships`](./lib/curate/indexer.rb) method.
+To reindex a single document, we leverage the [`Samvera::Indexer.reindex_relationships`](./lib/samvera/indexer.rb) method.
 
 ## Examples
 
@@ -62,22 +62,22 @@ For more scenarios, look at the [Reindex PID and Descendants specs](./spec/featu
 
 ## Adapters
 
-An [AbstractAdapter](./lib/curate/indexer/adapters/abstract_adapter.rb) provides the method interface for others to build against.
+An [AbstractAdapter](./lib/samvera/indexer/adapters/abstract_adapter.rb) provides the method interface for others to build against.
 
-The [InMemory adapter](./lib/curate/indexer/adapters/in_memory_adapter.rb) is a reference implementation (and used to ease testing overhead).
+The [InMemory adapter](./lib/samvera/indexer/adapters/in_memory_adapter.rb) is a reference implementation (and used to ease testing overhead).
 
-CurateND has implemented the [following adapter](https://github.com/ndlib/curate_nd/blob/master/lib/curate/library_collection_indexing_adapter.rb) for its LibraryCollection indexing.
+SamveraND has implemented the [following adapter](https://github.com/ndlib/samvera_nd/blob/master/lib/samvera/library_collection_indexing_adapter.rb) for its LibraryCollection indexing.
 
 To define the adapter for your application:
 
 ```ruby
-# In an application initializer (e.g. config/curate_indexer_config.rb)
-Curate::Indexer.configure do |config|
+# In an application initializer (e.g. config/samvera_indexer_config.rb)
+Samvera::Indexer.configure do |config|
   config.adapter = MyCustomAdapter
 end
 ```
 
-[See CurateND for our adaptor configuration](https://github.com/ndlib/curate_nd/blob/6fbe79c9725c0f8b4641981044ec250c5163053b/config/initializers/curate_config.rb#L32-L35).
+[See SamveraND for our adaptor configuration](https://github.com/ndlib/samvera_nd/blob/6fbe79c9725c0f8b4641981044ec250c5163053b/config/initializers/samvera_config.rb#L32-L35).
 
 ## Considerations
 

@@ -1,7 +1,7 @@
-require 'curate/indexer/adapters/abstract_adapter'
-require 'curate/indexer/documents'
+require 'samvera/indexer/adapters/abstract_adapter'
+require 'samvera/indexer/documents'
 
-module Curate
+module Samvera
   module Indexer
     module Adapters
       # @api public
@@ -12,27 +12,27 @@ module Curate
         extend AbstractAdapter
         # @api public
         # @param pid [String]
-        # @return Curate::Indexer::Document::PreservationDocument
+        # @return Samvera::Indexer::Document::PreservationDocument
         def self.find_preservation_document_by(pid)
           Preservation.find(pid)
         end
 
         # @api public
         # @param pid [String]
-        # @return Curate::Indexer::Documents::IndexDocument
+        # @return Samvera::Indexer::Documents::IndexDocument
         def self.find_index_document_by(pid)
           Index.find(pid)
         end
 
         # @api public
-        # @yield Curate::Indexer::Document::PreservationDocument
+        # @yield Samvera::Indexer::Document::PreservationDocument
         def self.each_preservation_document
           Preservation.find_each { |document| yield(document) }
         end
 
         # @api public
-        # @param document [Curate::Indexer::Documents::IndexDocument]
-        # @yield Curate::Indexer::Documents::IndexDocument
+        # @param document [Samvera::Indexer::Documents::IndexDocument]
+        # @yield Samvera::Indexer::Documents::IndexDocument
         def self.each_child_document_of(document, &block)
           Index.each_child_document_of(document, &block)
         end
@@ -40,7 +40,7 @@ module Curate
         # @api public
         # This is not something that I envision using in the production environment;
         # It is hear to keep the Preservation system isolated and accessible only through interfaces.
-        # @return Curate::Indexer::Documents::PreservationDocument
+        # @return Samvera::Indexer::Documents::PreservationDocument
         def self.write_document_attributes_to_preservation_layer(attributes = {})
           Preservation.write_document(attributes)
         end
@@ -63,7 +63,7 @@ module Curate
         #
         # @example
         #   module Foo
-        #     extend Curate::Indexer::StorageModule
+        #     extend Samvera::Indexer::StorageModule
         #   end
         module StorageModule
           def write(doc)
@@ -91,8 +91,8 @@ module Curate
         # @api private
         #
         # A module responsible for containing the "preservation interface" logic.
-        # In the case of CurateND, there will need to be an adapter to get a Fedora
-        # object coerced into a Curate::Indexer::Preservation::Document
+        # In the case of SamveraND, there will need to be an adapter to get a Fedora
+        # object coerced into a Samvera::Indexer::Preservation::Document
         module Preservation
           def self.find(pid, *)
             MemoryStorage.find(pid)
@@ -123,7 +123,7 @@ module Curate
         # @api private
         #
         # An abstract representation of the underlying index service. In the case of
-        # CurateND this is an abstraction of Solr.
+        # SamveraND this is an abstraction of Solr.
         module Index
           def self.clear_cache!
             Storage.clear_cache!

@@ -1,7 +1,7 @@
 require 'spec_helper'
-require 'curate/indexer'
+require 'samvera/indexer'
 
-describe Curate::Indexer do
+describe Samvera::Indexer do
   describe '.configure' do
     before do
       Object.send(:remove_const, :Rails) if defined?(Rails)
@@ -20,7 +20,7 @@ describe Curate::Indexer do
       after do
         Object.send(:remove_const, :Rails)
       end
-      it 'will not call the configuration block immediately but instead rely on the Curate::Indexer::Railtie' do
+      it 'will not call the configuration block immediately but instead rely on the Samvera::Indexer::Railtie' do
         expect { |b| described_class.configure(&b) }.to_not yield_control
       end
     end

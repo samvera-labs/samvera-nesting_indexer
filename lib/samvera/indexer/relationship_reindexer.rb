@@ -1,8 +1,8 @@
-require 'curate/indexer/exceptions'
+require 'samvera/indexer/exceptions'
 require 'forwardable'
 require 'set'
 
-module Curate
+module Samvera
   # Establishing namespace
   module Indexer
     # Responsible for reindexing the PID and its descendants
@@ -15,10 +15,10 @@ module Curate
       #
       # @param options [Hash]
       # @option options [String] pid
-      # @option options [Integer] time_to_live Curate::Indexer::TIME_TO_LIVE to detect cycles in the graph
-      # @option options [Curate::Indexer::Adapters::AbstractAdapter] adapter
+      # @option options [Integer] time_to_live Samvera::Indexer::TIME_TO_LIVE to detect cycles in the graph
+      # @option options [Samvera::Indexer::Adapters::AbstractAdapter] adapter
       # @option options [#shift, #push] queue
-      # @return Curate::Indexer::RelationshipReindexer
+      # @return Samvera::Indexer::RelationshipReindexer
       def self.call(options = {})
         new(options).call
       end
@@ -80,9 +80,9 @@ module Curate
       end
 
       # A small object that helps encapsulate the logic of building the hash of information regarding
-      # the initialization of an Curate::Indexer::Documents::IndexDocument
+      # the initialization of an Samvera::Indexer::Documents::IndexDocument
       #
-      # @see Curate::Indexer::Documents::IndexDocument for details on pathnames, ancestors, and parent_pids.
+      # @see Samvera::Indexer::Documents::IndexDocument for details on pathnames, ancestors, and parent_pids.
       class ParentAndPathAndAncestorsBuilder
         def initialize(preservation_document, adapter)
           @preservation_document = preservation_document

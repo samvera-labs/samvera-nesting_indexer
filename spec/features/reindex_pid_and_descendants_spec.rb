@@ -1,10 +1,10 @@
 require 'spec_helper'
-require 'curate/indexer'
-require 'curate/indexer/exceptions'
-require 'curate/indexer/adapters'
+require 'samvera/indexer'
+require 'samvera/indexer/exceptions'
+require 'samvera/indexer/adapters'
 
 # :nodoc:
-module Curate
+module Samvera
   module Indexer
     RSpec.describe 'Reindex pid and descendants' do
       before do

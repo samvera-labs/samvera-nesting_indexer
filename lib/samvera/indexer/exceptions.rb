@@ -1,4 +1,4 @@
-module Curate
+module Samvera
   module Indexer
     module Exceptions
       class RuntimeError < ::RuntimeError

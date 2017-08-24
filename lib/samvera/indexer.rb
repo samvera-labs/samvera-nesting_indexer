@@ -1,10 +1,10 @@
-require "curate/indexer/version"
-require 'curate/indexer/relationship_reindexer'
-require 'curate/indexer/repository_reindexer'
-require 'curate/indexer/configuration'
-require 'curate/indexer/railtie' if defined?(Rails)
+require "samvera/indexer/version"
+require 'samvera/indexer/relationship_reindexer'
+require 'samvera/indexer/repository_reindexer'
+require 'samvera/indexer/configuration'
+require 'samvera/indexer/railtie' if defined?(Rails)
 
-module Curate
+module Samvera
   # Responsible for indexing an object and its related child objects.
   module Indexer
     # This assumes a rather deep graph
@@ -16,7 +16,7 @@ module Curate
     # @param pid [String] - The permanent identifier of the object that will be reindexed along with its children.
     # @param time_to_live [Integer] - there to guard against cyclical graphs
     # @return [Boolean] - It was successful
-    # @raise Curate::Exceptions::CycleDetectionError - A potential cycle was detected
+    # @raise Samvera::Exceptions::CycleDetectionError - A potential cycle was detected
     def self.reindex_relationships(pid, time_to_live = DEFAULT_TIME_TO_LIVE)
       RelationshipReindexer.call(pid: pid, time_to_live: time_to_live, adapter: adapter)
       true
@@ -32,7 +32,7 @@ module Curate
     # Responsible for reindexing the entire preservation layer.
     # @param time_to_live [Integer] - there to guard against cyclical graphs
     # @return [Boolean] - It was successful
-    # @raise Curate::Exceptions::CycleDetectionError - A potential cycle was detected
+    # @raise Samvera::Exceptions::CycleDetectionError - A potential cycle was detected
     def self.reindex_all!(time_to_live = DEFAULT_TIME_TO_LIVE)
       # While the RepositoryReindexer is responsible for reindexing everything, I
       # want to inject the lambda that will reindex a single item.
@@ -43,8 +43,8 @@ module Curate
 
     # @api public
     #
-    # Contains the Curate::Indexer configuration information that is referenceable from wit
-    # @see Curate::Indexer::Configuration
+    # Contains the Samvera::Indexer configuration information that is referenceable from wit
+    # @see Samvera::Indexer::Configuration
     def self.configuration
       @configuration ||= Configuration.new
     end
@@ -53,8 +53,8 @@ module Curate
     #
     # Exposes the data adapter to use for the reindexing process.
     #
-    # @see Curate::Indexer::Adapters::AbstractAdapter
-    # @return Object that implementes the Curate::Indexer::Adapters::AbstractAdapter method interface
+    # @see Samvera::Indexer::Adapters::AbstractAdapter
+    # @return Object that implementes the Samvera::Indexer::Adapters::AbstractAdapter method interface
     def self.adapter
       configuration.adapter
     end
@@ -63,14 +63,14 @@ module Curate
     #
     # Capture the configuration information
     #
-    # @see Curate::Indexer::Configuration
+    # @see Samvera::Indexer::Configuration
     # @see .configuration
-    # @see Curate::Indexer::Railtie
+    # @see Samvera::Indexer::Railtie
     def self.configure(&block)
       @configuration_block = block
       # The Rails load sequence means that some of the configured Targets may
       # not be loaded; As such I am not calling configure! instead relying on
-      # Curate::Indexer::Railtie to handle the configure! call
+      # Samvera::Indexer::Railtie to handle the configure! call
       configure! unless defined?(Rails)
     end
 

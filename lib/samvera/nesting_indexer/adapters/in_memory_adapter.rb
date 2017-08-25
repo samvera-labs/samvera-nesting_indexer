@@ -39,6 +39,10 @@ module Samvera
           end
         end
 
+        def self.find_preservation_parent_ids_for(id:)
+          Preservation.find(id).parent_ids
+        end
+
         # @api public
         # @param document [Samvera::NestingIndexer::Documents::IndexDocument]
         # @yield [Samvera::NestingIndexer::Documents::IndexDocument]

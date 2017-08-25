@@ -35,6 +35,14 @@ module Samvera
         end
 
         # @api public
+        # @since 0.7.0
+        # @param id [String] The `id` of the preservation document
+        # @return [Array<String>] The parent ids of the given preservation document
+        def self.find_preservation_parent_ids_for(id:)
+          raise NotImplementedError
+        end
+
+        # @api public
         # @param document [Samvera::NestingIndexer::Documents::IndexDocument]
         # @yield [Samvera::NestingIndexer::Documents::IndexDocument]
         def self.each_child_document_of(document:, &block)

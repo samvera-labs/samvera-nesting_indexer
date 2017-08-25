@@ -19,6 +19,21 @@ if defined?(RSpec)
         expect(block_parameter_extracter.call(subject)).to be_empty
       end
     end
+    describe '.find_preservation_parent_ids_for' do
+      subject { described_class.method(:find_preservation_parent_ids_for) }
+
+      it 'requires the :id  keyword (and does not require any others)' do
+        expect(required_keyword_parameters.call(subject)).to eq([:id])
+      end
+
+      it 'does not require any other parameters (besides :id)' do
+        expect(required_parameters.call(subject)).to eq(required_keyword_parameters.call(subject))
+      end
+
+      it 'does not expect a block' do
+        expect(block_parameter_extracter.call(subject)).to be_empty
+      end
+    end
     describe '.find_index_document_by' do
       subject { described_class.method(:find_index_document_by) }
 

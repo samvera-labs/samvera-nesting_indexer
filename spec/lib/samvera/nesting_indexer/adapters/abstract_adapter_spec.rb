@@ -35,6 +35,13 @@ module Samvera
           end
         end
 
+        describe '.find_preservation_parent_ids_for(id:)' do
+          subject { described_class.find_preservation_parent_ids_for(id: 1) }
+          it 'requires implementation (see documentation)' do
+            expect { subject }.to raise_error(NotImplementedError)
+          end
+        end
+
         describe '.each_child_document_of' do
           subject { described_class.each_child_document_of(document: double) }
           it 'requires implementation (see documentation)' do

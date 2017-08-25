@@ -19,28 +19,28 @@ module Samvera
         @maximum_nesting_depth = input.to_i
       end
 
-      def solr_field_name_prefix_for_parent_ids=(input)
-        @solr_field_name_prefix_for_parent_ids = input.to_s
+      def solr_field_name_for_storing_parent_ids=(input)
+        @solr_field_name_for_storing_parent_ids = input.to_s
       end
 
-      def solr_field_name_prefix_for_parent_ids
-        @solr_field_name_prefix_for_parent_ids || raise(Exceptions::SolrKeyConfigurationError.new(name: __method__, config: self))
+      def solr_field_name_for_storing_parent_ids
+        @solr_field_name_for_storing_parent_ids || raise(Exceptions::SolrKeyConfigurationError.new(name: __method__, config: self))
       end
 
-      def solr_field_name_prefix_for_ancestors=(input)
-        @solr_field_name_prefix_for_ancestors = input.to_s
+      def solr_field_name_for_storing_ancestors=(input)
+        @solr_field_name_for_storing_ancestors = input.to_s
       end
 
-      def solr_field_name_prefix_for_ancestors
-        @solr_field_name_prefix_for_ancestors || raise(Exceptions::SolrKeyConfigurationError.new(name: __method__, config: self))
+      def solr_field_name_for_storing_ancestors
+        @solr_field_name_for_storing_ancestors || raise(Exceptions::SolrKeyConfigurationError.new(name: __method__, config: self))
       end
 
-      def solr_field_name_prefix_for_pathnames=(input)
-        @solr_field_name_prefix_for_pathnames = input.to_s
+      def solr_field_name_for_storing_pathnames=(input)
+        @solr_field_name_for_storing_pathnames = input.to_s
       end
 
-      def solr_field_name_prefix_for_pathnames
-        @solr_field_name_prefix_for_pathnames || raise(Exceptions::SolrKeyConfigurationError.new(name: __method__, config: self))
+      def solr_field_name_for_storing_pathnames
+        @solr_field_name_for_storing_pathnames || raise(Exceptions::SolrKeyConfigurationError.new(name: __method__, config: self))
       end
 
       # @api public

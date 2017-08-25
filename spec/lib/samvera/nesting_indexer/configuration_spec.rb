@@ -12,11 +12,11 @@ module Samvera
         it { is_expected.to be_a(Integer) }
       end
 
-      describe '#solr_field_name_prefix_for_parent_ids' do
-        subject { configuration.solr_field_name_prefix_for_parent_ids }
+      describe '#solr_field_name_for_storing_parent_ids' do
+        subject { configuration.solr_field_name_for_storing_parent_ids }
 
         describe 'when set' do
-          before { configuration.solr_field_name_prefix_for_parent_ids = :the_key }
+          before { configuration.solr_field_name_for_storing_parent_ids = :the_key }
 
           it { is_expected.to be_a(String) }
         end
@@ -28,11 +28,11 @@ module Samvera
         end
       end
 
-      describe '#solr_field_name_prefix_for_ancestors' do
-        subject { configuration.solr_field_name_prefix_for_ancestors }
+      describe '#solr_field_name_for_storing_ancestors' do
+        subject { configuration.solr_field_name_for_storing_ancestors }
 
         describe 'when set' do
-          before { configuration.solr_field_name_prefix_for_ancestors = :the_key }
+          before { configuration.solr_field_name_for_storing_ancestors = :the_key }
 
           it { is_expected.to be_a(String) }
         end
@@ -44,11 +44,11 @@ module Samvera
         end
       end
 
-      describe '#solr_field_name_prefix_for_pathnames' do
-        subject { configuration.solr_field_name_prefix_for_pathnames }
+      describe '#solr_field_name_for_storing_pathnames' do
+        subject { configuration.solr_field_name_for_storing_pathnames }
 
         describe 'when set' do
-          before { configuration.solr_field_name_prefix_for_pathnames = :the_key }
+          before { configuration.solr_field_name_for_storing_pathnames = :the_key }
 
           it { is_expected.to be_a(String) }
         end

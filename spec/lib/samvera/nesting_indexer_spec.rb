@@ -2,6 +2,9 @@ require 'spec_helper'
 require 'samvera/nesting_indexer'
 
 describe Samvera::NestingIndexer do
+  it { is_expected.to respond_to(:config) }
+  it { is_expected.to respond_to(:configuration) }
+
   describe '.configure' do
     before do
       Object.send(:remove_const, :Rails) if defined?(Rails)

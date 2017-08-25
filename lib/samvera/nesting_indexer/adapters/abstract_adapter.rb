@@ -33,9 +33,13 @@ module Samvera
         end
 
         # @api public
-        # @param attributes [Hash]
+        # @see README.md
+        # @param id [String]
+        # @param parent_ids [Array<String>]
+        # @param ancestors [Array<String>]
+        # @param pathnames [Array<String>]
         # @return Hash - the attributes written to the indexing layer
-        def self.write_document_attributes_to_index_layer(attributes:)
+        def self.write_document_attributes_to_index_layer(id:, parent_ids:, ancestors:, pathnames:)
           raise NotImplementedError
         end
       end

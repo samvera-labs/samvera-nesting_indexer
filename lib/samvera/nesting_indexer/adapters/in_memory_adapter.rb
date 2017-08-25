@@ -47,10 +47,14 @@ module Samvera
         end
 
         # @api public
-        # @param attributes [Hash]
+        # @see README.md
+        # @param id [String]
+        # @param parent_ids [Array<String>]
+        # @param ancestors [Array<String>]
+        # @param pathnames [Array<String>]
         # @return Hash - the attributes written to the indexing layer
-        def self.write_document_attributes_to_index_layer(attributes:)
-          Index.write_document(attributes)
+        def self.write_document_attributes_to_index_layer(id:, parent_ids:, ancestors:, pathnames:)
+          Index.write_document(id: id, parent_ids: parent_ids, ancestors: ancestors, pathnames: pathnames)
         end
 
         # @api private
@@ -108,8 +112,8 @@ module Samvera
             MemoryStorage.clear_cache!
           end
 
-          def self.write_document(attributes = {})
-            Documents::PreservationDocument.new(attributes).tap do |doc|
+          def self.write_document(**kargs)
+            Documents::PreservationDocument.new(**kargs).tap do |doc|
               MemoryStorage.write(doc)
             end
           end

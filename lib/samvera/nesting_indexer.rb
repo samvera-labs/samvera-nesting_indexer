@@ -48,6 +48,10 @@ module Samvera
       @configuration ||= Configuration.new
     end
 
+    class << self
+      alias config configuration
+    end
+
     # @api public
     #
     # Exposes the data adapter to use for the reindexing process.

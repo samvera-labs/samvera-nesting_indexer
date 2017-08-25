@@ -1,8 +1,8 @@
 if defined?(RSpec)
   RSpec.shared_examples 'a Samvera::NestingIndexer::Adapter' do
-    let(:required_keyword_parameters) { ->(method) { method.parameters.select { |type, _kwarg| type == :keyreq }.map(&:last) } }
-    let(:required_parameters) { ->(method) { method.parameters.select { |type, _kwarg| type == :keyreq || type == :req }.map(&:last) } }
-    let(:block_parameter_extracter) { ->(method) { method.parameters.select { |type, _kwarg| type == :block }.map(&:last) } }
+    let(:required_keyword_parameters) { ->(method) { method.parameters.select { |type, _kwarg| type == :keyreq }.map(&:last).sort } }
+    let(:required_parameters) { ->(method) { method.parameters.select { |type, _kwarg| type == :keyreq || type == :req }.map(&:last).sort } }
+    let(:block_parameter_extracter) { ->(method) { method.parameters.select { |type, _kwarg| type == :block }.map(&:last).sort } }
 
     describe '.find_preservation_document_by' do
       subject { described_class.method(:find_preservation_document_by) }
@@ -68,7 +68,7 @@ if defined?(RSpec)
       subject { described_class.method(:write_document_attributes_to_index_layer) }
 
       it 'requires the :attributes keyword (and does not require any others)' do
-        expect(required_keyword_parameters.call(subject)).to eq([:attributes])
+        expect(required_keyword_parameters.call(subject)).to eq(%i(ancestors id parent_ids pathnames))
       end
 
       it 'does not require any other parameters (besides :attributes)' do

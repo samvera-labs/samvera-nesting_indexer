@@ -28,24 +28,18 @@ module Samvera
 
       def build_index_document(id, graph)
         NestingIndexer.adapter.write_document_attributes_to_index_layer(
-          attributes: {
-            id: id,
-            parent_ids: graph.fetch(:parent_ids).fetch(id),
-            ancestors: graph.fetch(:ancestors, {})[id],
-            pathnames: graph.fetch(:pathnames, {})[id]
-          }
+          id: id,
+          parent_ids: graph.fetch(:parent_ids).fetch(id),
+          ancestors: graph.fetch(:ancestors, {})[id],
+          pathnames: graph.fetch(:pathnames, {})[id]
         )
       end
 
       # Logic that mirrors the behavior of updating an ActiveFedora object.
       def write_document_to_persistence_layers(preservation_document_attributes_to_update)
         NestingIndexer.adapter.write_document_attributes_to_preservation_layer(preservation_document_attributes_to_update)
-        NestingIndexer.adapter.write_document_attributes_to_index_layer(
-          attributes: {
-            pathnames: [],
-            ancestors: []
-          }.merge(preservation_document_attributes_to_update)
-        )
+        attributes = { pathnames: [], ancestors: [] }.merge(preservation_document_attributes_to_update)
+        NestingIndexer.adapter.write_document_attributes_to_index_layer(**attributes)
       end
 
       context "non-Cycle graphs" do

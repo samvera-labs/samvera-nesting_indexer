@@ -28,6 +28,13 @@ module Samvera
           end
         end
 
+        describe '.each_perservation_document_id_and_parent_ids' do
+          subject { described_class.each_perservation_document_id_and_parent_ids }
+          it 'requires implementation (see documentation)' do
+            expect { subject }.to raise_error(NotImplementedError)
+          end
+        end
+
         describe '.each_child_document_of' do
           subject { described_class.each_child_document_of(document: double) }
           it 'requires implementation (see documentation)' do

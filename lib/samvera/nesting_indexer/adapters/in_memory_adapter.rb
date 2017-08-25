@@ -19,20 +19,29 @@ module Samvera
 
         # @api public
         # @param id [String]
-        # @return Samvera::NestingIndexer::Documents::IndexDocument
+        # @return [Samvera::NestingIndexer::Documents::IndexDocument]
         def self.find_index_document_by(id:)
           Index.find(id)
         end
 
         # @api public
-        # @yield Samvera::NestingIndexer::Document::PreservationDocument
+        # @yield [Samvera::NestingIndexer::Document::PreservationDocument]
         def self.each_preservation_document(&block)
           Preservation.find_each { |document| block.call(document) }
         end
 
         # @api public
+        # @yieldparam id [String] The `id` of the preservation document
+        # @yieldparam parent_ids [String] The ids of the parent objects of this presevation document
+        def self.each_perservation_document_id_and_parent_ids(&block)
+          Preservation.find_each do |document|
+            block.call(document.id, document.parent_ids)
+          end
+        end
+
+        # @api public
         # @param document [Samvera::NestingIndexer::Documents::IndexDocument]
-        # @yield Samvera::NestingIndexer::Documents::IndexDocument
+        # @yield [Samvera::NestingIndexer::Documents::IndexDocument]
         def self.each_child_document_of(document:, &block)
           Index.each_child_document_of(document: document, &block)
         end
@@ -41,7 +50,7 @@ module Samvera
         # This is not something that I envision using in the production environment;
         # It is hear to keep the Preservation system isolated and accessible only through interfaces.
         # @param attributes [Hash]
-        # @return Samvera::NestingIndexer::Documents::PreservationDocument
+        # @return [Samvera::NestingIndexer::Documents::PreservationDocument]
         def self.write_document_attributes_to_preservation_layer(attributes)
           Preservation.write_document(attributes)
         end
@@ -52,7 +61,7 @@ module Samvera
         # @param parent_ids [Array<String>]
         # @param ancestors [Array<String>]
         # @param pathnames [Array<String>]
-        # @return Hash - the attributes written to the indexing layer
+        # @return [Hash] - the attributes written to the indexing layer
         def self.write_document_attributes_to_index_layer(id:, parent_ids:, ancestors:, pathnames:)
           Index.write_document(id: id, parent_ids: parent_ids, ancestors: ancestors, pathnames: pathnames)
         end

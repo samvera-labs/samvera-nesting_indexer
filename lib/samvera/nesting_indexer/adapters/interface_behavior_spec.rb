@@ -49,21 +49,6 @@ if defined?(RSpec)
         expect(block_parameter_extracter.call(subject)).to be_empty
       end
     end
-    describe '.each_preservation_document' do
-      subject { described_class.method(:each_preservation_document) }
-
-      it 'requires no keywords' do
-        expect(required_keyword_parameters.call(subject)).to eq([])
-      end
-
-      it 'does not require any parameters' do
-        expect(required_parameters.call(subject)).to eq(required_keyword_parameters.call(subject))
-      end
-
-      it 'expects a block' do
-        expect(block_parameter_extracter.call(subject)).to be_present
-      end
-    end
     describe '.each_perservation_document_id_and_parent_ids' do
       subject { described_class.method(:each_perservation_document_id_and_parent_ids) }
 

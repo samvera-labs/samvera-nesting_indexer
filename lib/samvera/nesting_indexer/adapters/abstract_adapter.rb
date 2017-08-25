@@ -20,13 +20,6 @@ module Samvera
         end
 
         # @api public
-        # @deprecated Prefer .each_perservation_document_id_and_parent_ids
-        # @yield [Samvera::NestingIndexer::Document::PreservationDocument]
-        def self.each_preservation_document(&block)
-          raise NotImplementedError
-        end
-
-        # @api public
         # @since 0.7.0
         # @yieldparam id [String] The `id` of the preservation document
         # @yieldparam parent_ids [String] The ids of the parent objects of this presevation document

@@ -21,13 +21,6 @@ module Samvera
           end
         end
 
-        describe '.each_preservation_document' do
-          subject { described_class.each_preservation_document }
-          it 'requires implementation (see documentation)' do
-            expect { subject }.to raise_error(NotImplementedError)
-          end
-        end
-
         describe '.each_perservation_document_id_and_parent_ids' do
           subject { described_class.each_perservation_document_id_and_parent_ids }
           it 'requires implementation (see documentation)' do

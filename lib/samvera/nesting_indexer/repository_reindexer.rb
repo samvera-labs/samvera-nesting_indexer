@@ -50,10 +50,10 @@ module Samvera
           parent_document = @adapter.find_preservation_document_by(id: parent_id)
           recursive_reindex(parent_document, maximum_nesting_depth - 1)
         end
-        reindex_a_id(document.id)
+        reindex_an_id(document.id)
       end
 
-      def reindex_a_id(id)
+      def reindex_an_id(id)
         id_reindexer.call(id: id)
         processed_ids << id
       rescue StandardError => e

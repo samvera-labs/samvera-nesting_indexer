@@ -176,8 +176,12 @@ module Samvera
           }
           verify_graph_versus_storage(ending_graph)
 
+          # We are writing (and succeeding at writing) a cyclical relationship
           NestingIndexer.adapter.write_document_attributes_to_preservation_layer(id: :a, parent_ids: ['b'])
-          expect { NestingIndexer.reindex_relationships(id: :a) }.to raise_error(Samvera::NestingIndexer::Exceptions::CycleDetectionError)
+          expect { NestingIndexer.reindex_relationships(id: :a) }.to raise_error(Samvera::NestingIndexer::Exceptions::DocumentIsItsOwnAncestorError)
+
+          # We should have the same index that we started with.
+          verify_graph_versus_storage(ending_graph)
         end
 
         it 'catches a simple cyclical graph (start with A ={ B ={ C and add C ={ B relationship)' do
@@ -195,8 +199,28 @@ module Samvera
           }
           verify_graph_versus_storage(ending_graph)
 
+          # We are writing (and succeeding at writing) a cyclical relationship
           NestingIndexer.adapter.write_document_attributes_to_preservation_layer(id: :b, parent_ids: ['a', 'c'])
-          expect { NestingIndexer.reindex_relationships(id: :b) }.to raise_error(Samvera::NestingIndexer::Exceptions::CycleDetectionError)
+          expect { NestingIndexer.reindex_relationships(id: :b) }.to raise_error(Samvera::NestingIndexer::Exceptions::DocumentIsItsOwnAncestorError)
+
+          # We should have the same index that we started with.
+          verify_graph_versus_storage(ending_graph)
+        end
+
+        it 'catches a simple cyclical graph (start with A ={ B ={ C and add C ={ B relationship)' do
+          starting_graph = {
+            parent_ids: { a: [], b: ['a'], c: ['b'], d: ['c'] }
+          }
+          build_graph(starting_graph)
+          # If we give enough time to live this will index
+          expect { NestingIndexer.reindex_relationships(id: :a, maximum_nesting_depth: 5) }.not_to(
+            raise_error(Samvera::NestingIndexer::Exceptions::CycleDetectionError)
+          )
+
+          # If we don't give enough time to live this will fail in indexing
+          expect { NestingIndexer.reindex_relationships(id: :a, maximum_nesting_depth: 2) }.to(
+            raise_error(Samvera::NestingIndexer::Exceptions::CycleDetectionError)
+          )
         end
       end
 

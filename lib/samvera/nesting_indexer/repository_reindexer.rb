@@ -54,7 +54,7 @@ module Samvera
       # walk up the parent graph to reindex the parents before we start on the child.
       def recursive_reindex(id:, parent_ids:, time_to_live:)
         return true if processed_ids.include?(id)
-        raise Exceptions::CycleDetectionError, id if time_to_live <= 0
+        raise Exceptions::CycleDetectionError, id: id if time_to_live <= 0
         parent_ids.each do |parent_id|
           grand_parent_ids = adapter.find_preservation_parent_ids_for(id: parent_id)
           recursive_reindex(id: parent_id, parent_ids: grand_parent_ids, time_to_live: maximum_nesting_depth - 1)

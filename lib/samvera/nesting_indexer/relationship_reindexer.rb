@@ -24,11 +24,12 @@ module Samvera
       # @param configuration [#adapter, #logger] The :adapter conforms to the Samvera::NestingIndexer::Adapters::AbstractAdapter interface
       #                                          and the :logger conforms to Logger
       # @param queue [#shift, #push] queue
-      def initialize(id:, maximum_nesting_depth:, configuration:, queue: [])
+      def initialize(id:, maximum_nesting_depth:, configuration:, queue: [], visited_ids: [])
         @id = id.to_s
         @maximum_nesting_depth = maximum_nesting_depth.to_i
         @configuration = configuration
         @queue = queue
+        @visited_ids = visited_ids
       end
       attr_reader :id, :maximum_nesting_depth
 
@@ -50,7 +51,7 @@ module Samvera
 
       private
 
-      attr_reader :queue, :configuration
+      attr_reader :queue, :configuration, :visited_ids
 
       def initial_index_document
         adapter.find_index_document_by(id: id)
@@ -76,16 +77,25 @@ module Samvera
       end
 
       def process_a_document(index_document)
-        raise Exceptions::CycleDetectionError, id if index_document.maximum_nesting_depth <= 0
+        raise Exceptions::CycleDetectionError, id: id if index_document.maximum_nesting_depth <= 0
         wrap_logging("indexing ID=#{index_document.id.inspect}") do
           preservation_document = adapter.find_preservation_document_by(id: index_document.id)
           parent_ids_and_path_and_ancestors = parent_ids_and_path_and_ancestors_for(preservation_document)
+          guard_against_possiblity_of_self_ancestry(index_document: index_document, pathnames: parent_ids_and_path_and_ancestors.fetch(:pathnames))
           adapter.write_document_attributes_to_index_layer(**parent_ids_and_path_and_ancestors)
+          visited_ids << index_document.id
         end
       end
 
       def parent_ids_and_path_and_ancestors_for(preservation_document)
         ParentAndPathAndAncestorsBuilder.new(preservation_document, adapter).to_hash
+      end
+
+      def guard_against_possiblity_of_self_ancestry(index_document:, pathnames:)
+        pathnames.each do |pathname|
+          next unless pathname.include?("#{index_document.id}/")
+          raise Exceptions::DocumentIsItsOwnAncestorError, id: index_document.id, pathnames: pathnames
+        end
       end
 
       def wrap_logging(message_suffix)

@@ -30,9 +30,26 @@ module Samvera
       # Raised when we may have detected a cycle within the graph
       class CycleDetectionError < RuntimeError
         attr_reader :id
-        def initialize(id)
+        def initialize(id:)
           @id = id
-          super "Possible graph cycle discovered related to PID=#{id}."
+          super to_s
+        end
+
+        def to_s
+          "Possible graph cycle discovered related to ID=#{id.inspect}."
+        end
+      end
+
+      # Raised when we encounter a document that is to be indexed as its own ancestor.
+      class DocumentIsItsOwnAncestorError < CycleDetectionError
+        attr_reader :pathnames
+        def initialize(id:, pathnames:)
+          super(id: id)
+          @pathnames = pathnames
+        end
+
+        def to_s
+          "Document with ID=#{id.inspect} is marked as its own ancestor based on the given pathnames: #{pathnames.inspect}."
         end
       end
       # A wrapper exception that includes the original exception and the id

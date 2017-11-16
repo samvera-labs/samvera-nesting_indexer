@@ -21,24 +21,29 @@ module Samvera
 
       # @param id_reindexer [#call] Samvera::NestingIndexer.method(:reindex_relationships) Responsible for reindexing a single object
       # @param maximum_nesting_depth [Integer] detect cycles in the graph
-      # @param adapter [Samvera::NestingIndexer::Adapters::AbstractAdapter] Conforms to the Samvera::NestingIndexer::Adapters::AbstractAdapter interface
-      def initialize(maximum_nesting_depth:, id_reindexer:, adapter:)
+      # @param configuration [#adapter, #logger] The :adapter conforms to the Samvera::NestingIndexer::Adapters::AbstractAdapter interface
+      #                                          and the :logger conforms to Logger
+      def initialize(maximum_nesting_depth:, id_reindexer:, configuration:)
         @maximum_nesting_depth = maximum_nesting_depth.to_i
         @id_reindexer = id_reindexer
-        @adapter = adapter
+        @configuration = configuration
         @processed_ids = []
       end
 
       # @todo Would it make sense to leverage an each_preservation_id instead?
       def call
-        @adapter.each_perservation_document_id_and_parent_ids do |id, parent_ids|
+        adapter.each_perservation_document_id_and_parent_ids do |id, parent_ids|
           recursive_reindex(id: id, parent_ids: parent_ids, time_to_live: maximum_nesting_depth)
         end
       end
 
       private
 
-      attr_reader :maximum_nesting_depth, :processed_ids, :id_reindexer
+      attr_reader :maximum_nesting_depth, :processed_ids, :id_reindexer, :configuration
+
+      extend Forwardable
+      def_delegator :configuration, :adapter
+      def_delegator :configuration, :logger
 
       # When we find a document, reindex it if it doesn't have a parent. If it has a parent, reindex the parent first.
       #
@@ -51,7 +56,7 @@ module Samvera
         return true if processed_ids.include?(id)
         raise Exceptions::CycleDetectionError, id if time_to_live <= 0
         parent_ids.each do |parent_id|
-          grand_parent_ids = @adapter.find_preservation_parent_ids_for(id: parent_id)
+          grand_parent_ids = adapter.find_preservation_parent_ids_for(id: parent_id)
           recursive_reindex(id: parent_id, parent_ids: grand_parent_ids, time_to_live: maximum_nesting_depth - 1)
         end
         reindex_an_id(id)

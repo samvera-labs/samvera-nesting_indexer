@@ -21,15 +21,16 @@ module Samvera
 
       # @param id [String]
       # @param maximum_nesting_depth [Integer] Samvera::NestingIndexer::TIME_TO_LIVE to detect cycles in the graph
-      # @param adapter [Samvera::NestingIndexer::Adapters::AbstractAdapter] Conforms to the Samvera::NestingIndexer::Adapters::AbstractAdapter interface
+      # @param configuration [#adapter, #logger] The :adapter conforms to the Samvera::NestingIndexer::Adapters::AbstractAdapter interface
+      #                                          and the :logger conforms to Logger
       # @param queue [#shift, #push] queue
-      def initialize(id:, maximum_nesting_depth:, adapter:, queue: [])
+      def initialize(id:, maximum_nesting_depth:, configuration:, queue: [])
         @id = id.to_s
         @maximum_nesting_depth = maximum_nesting_depth.to_i
-        @adapter = adapter
+        @configuration = configuration
         @queue = queue
       end
-      attr_reader :id, :maximum_nesting_depth, :queue, :adapter
+      attr_reader :id, :maximum_nesting_depth
 
       # Perform a bread-first tree traversal of the initial document and its descendants.
       def call
@@ -45,6 +46,7 @@ module Samvera
 
       private
 
+      attr_reader :queue, :configuration
       attr_writer :document
 
       def initial_index_document
@@ -53,6 +55,8 @@ module Samvera
 
       extend Forwardable
       def_delegator :queue, :shift, :dequeue
+      def_delegator :configuration, :adapter
+      def_delegator :configuration, :logger
 
       require 'delegate'
       # A small object to help track time to live concerns

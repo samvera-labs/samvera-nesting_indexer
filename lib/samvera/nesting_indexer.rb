@@ -17,7 +17,7 @@ module Samvera
     # @return [Boolean] - It was successful
     # @raise Samvera::Exceptions::CycleDetectionError - A potential cycle was detected
     def self.reindex_relationships(id:, maximum_nesting_depth: configuration.maximum_nesting_depth)
-      RelationshipReindexer.call(id: id, maximum_nesting_depth: maximum_nesting_depth, adapter: adapter)
+      RelationshipReindexer.call(id: id, maximum_nesting_depth: maximum_nesting_depth, configuration: configuration)
       true
     end
 
@@ -36,7 +36,7 @@ module Samvera
       # While the RepositoryReindexer is responsible for reindexing everything, I
       # want to inject the lambda that will reindex a single item.
       id_reindexer = method(:reindex_relationships)
-      RepositoryReindexer.call(maximum_nesting_depth: maximum_nesting_depth, id_reindexer: id_reindexer, adapter: adapter)
+      RepositoryReindexer.call(maximum_nesting_depth: maximum_nesting_depth, id_reindexer: id_reindexer, configuration: configuration)
       true
     end
 

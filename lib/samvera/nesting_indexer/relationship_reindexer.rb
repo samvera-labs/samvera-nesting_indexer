@@ -51,7 +51,6 @@ module Samvera
       private
 
       attr_reader :queue, :configuration
-      attr_writer :document
 
       def initial_index_document
         adapter.find_index_document_by(id: id)

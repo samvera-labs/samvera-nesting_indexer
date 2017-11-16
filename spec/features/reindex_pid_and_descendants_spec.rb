@@ -160,6 +160,44 @@ module Samvera
 
           expect { NestingIndexer.reindex_relationships(id: :a) }.to raise_error(Exceptions::CycleDetectionError)
         end
+
+        it 'catches a simple cyclical graph (start with A ={ B and add B ={ A relationship)' do
+          starting_graph = {
+            parent_ids: { a: [], b: ['a'] }
+          }
+          build_graph(starting_graph)
+
+          NestingIndexer.reindex_all!
+
+          ending_graph = {
+            parent_ids: { a: [], b: ['a'] },
+            ancestors: { a: [], b: ['a'] },
+            pathnames: { a: ['a'], b: ['a/b'] }
+          }
+          verify_graph_versus_storage(ending_graph)
+
+          NestingIndexer.adapter.write_document_attributes_to_preservation_layer(id: :a, parent_ids: ['b'])
+          expect { NestingIndexer.reindex_relationships(id: :a) }.to raise_error(Samvera::NestingIndexer::Exceptions::CycleDetectionError)
+        end
+
+        it 'catches a simple cyclical graph (start with A ={ B ={ C and add C ={ B relationship)' do
+          starting_graph = {
+            parent_ids: { a: [], b: ['a'], c: ['b'] }
+          }
+          build_graph(starting_graph)
+
+          NestingIndexer.reindex_all!
+
+          ending_graph = {
+            parent_ids: { a: [], b: ['a'], c: ['b'] },
+            ancestors: { a: [], b: ['a'], c: ['a', 'a/b'] },
+            pathnames: { a: ['a'], b: ['a/b'], c: ['a/b/c'] }
+          }
+          verify_graph_versus_storage(ending_graph)
+
+          NestingIndexer.adapter.write_document_attributes_to_preservation_layer(id: :b, parent_ids: ['a', 'c'])
+          expect { NestingIndexer.reindex_relationships(id: :b) }.to raise_error(Samvera::NestingIndexer::Exceptions::CycleDetectionError)
+        end
       end
 
       context "Bootstrapping a graph" do

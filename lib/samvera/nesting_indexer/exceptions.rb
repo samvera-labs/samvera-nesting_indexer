@@ -41,7 +41,7 @@ module Samvera
         def initialize(id, original_exception)
           @id = id
           @original_exception = original_exception
-          super "Error PID=#{id} - #{original_exception}"
+          super "ReindexingError on ID=#{id.inspect}\n\t#{original_exception}"
         end
       end
     end

@@ -18,6 +18,10 @@ The Samvera::NestingIndexer gem is responsible for indexing the graph relationsh
 
 This is a sandbox to work through the reindexing strategy as it relates to [CurateND Collections](https://github.com/ndlib/samvera_nd/issues/420). At this point the code is separate to allow for raid testing and prototyping (no sense spinning up SOLR and Fedora to walk an arbitrary graph).
 
+### Notation
+
+When B is a member of A, I am using the `A ={ B` notation. When C is a member of B and B is a member of A, I'll chain these together `A ={ B ={ C`.
+
 ## Concepts
 
 As we are indexing objects, we have two types of documents:

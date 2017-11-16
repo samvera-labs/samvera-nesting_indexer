@@ -1,3 +1,5 @@
+require 'samvera/nesting_indexer/exceptions'
+require 'forwardable'
 module Samvera
   # Establishing namespace
   module NestingIndexer

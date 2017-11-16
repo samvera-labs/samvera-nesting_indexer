@@ -33,16 +33,20 @@ module Samvera
       attr_reader :id, :maximum_nesting_depth
 
       # Perform a bread-first tree traversal of the initial document and its descendants.
+      # rubocop:disable Metrics/AbcSize
       def call
-        enqueue(initial_index_document, maximum_nesting_depth)
-        processing_document = dequeue
-        while processing_document
-          process_a_document(processing_document)
-          adapter.each_child_document_of(document: processing_document) { |child| enqueue(child, processing_document.maximum_nesting_depth - 1) }
+        wrap_logging("nested indexing of ID=#{initial_index_document.id.inspect}") do
+          enqueue(initial_index_document, maximum_nesting_depth)
           processing_document = dequeue
+          while processing_document
+            process_a_document(processing_document)
+            adapter.each_child_document_of(document: processing_document) { |child| enqueue(child, processing_document.maximum_nesting_depth - 1) }
+            processing_document = dequeue
+          end
         end
         self
       end
+      # rubocop:enbable Metrics/AbcSize
 
       private
 
@@ -74,13 +78,21 @@ module Samvera
 
       def process_a_document(index_document)
         raise Exceptions::CycleDetectionError, id if index_document.maximum_nesting_depth <= 0
-        preservation_document = adapter.find_preservation_document_by(id: index_document.id)
-        parent_ids_and_path_and_ancestors = parent_ids_and_path_and_ancestors_for(preservation_document)
-        adapter.write_document_attributes_to_index_layer(**parent_ids_and_path_and_ancestors)
+        wrap_logging("indexing ID=#{index_document.id.inspect}") do
+          preservation_document = adapter.find_preservation_document_by(id: index_document.id)
+          parent_ids_and_path_and_ancestors = parent_ids_and_path_and_ancestors_for(preservation_document)
+          adapter.write_document_attributes_to_index_layer(**parent_ids_and_path_and_ancestors)
+        end
       end
 
       def parent_ids_and_path_and_ancestors_for(preservation_document)
         ParentAndPathAndAncestorsBuilder.new(preservation_document, adapter).to_hash
+      end
+
+      def wrap_logging(message_suffix)
+        logger.debug("Starting #{message_suffix}")
+        yield
+        logger.debug("Ending #{message_suffix}")
       end
 
       # A small object that helps encapsulate the logic of building the hash of information regarding

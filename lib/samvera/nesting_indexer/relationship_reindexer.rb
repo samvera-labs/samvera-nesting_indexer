@@ -128,9 +128,9 @@ module Samvera
         def compile_one!(parent_index_document)
           @parent_ids << parent_index_document.id
           parent_index_document.pathnames.each do |pathname|
-            @pathnames << File.join(pathname, @preservation_document.id)
-            slugs = pathname.split("/")
-            slugs.each_index { |i| @ancestors << slugs[0..i].join('/') }
+            @pathnames << "#{pathname}#{Documents::ANCESTOR_AND_PATHNAME_DELIMITER}#{@preservation_document.id}"
+            slugs = pathname.split(Documents::ANCESTOR_AND_PATHNAME_DELIMITER)
+            slugs.each_index { |i| @ancestors << slugs[0..i].join(Documents::ANCESTOR_AND_PATHNAME_DELIMITER) }
           end
           @ancestors += parent_index_document.ancestors
         end

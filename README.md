@@ -40,6 +40,8 @@ See [Samvera::NestingIndexer::Documents::IndexDocument](./lib/samvera/nesting_in
 
 To reindex a single document, we leverage the [`Samvera::NestingIndexer.reindex_relationships`](./lib/samvera/nesting_indexer.rb) method.
 
+To reindex all of the documents, we leverage the [`Samvera::NestingIndexer.reindex_all!`](lib/samvera/nesting_indexer.rb) method. **Warning: This is a very slow process.**
+
 ## Examples
 
 Given the following PreservationDocuments:
@@ -112,3 +114,10 @@ When dealing with nested graphs, there is a danger of creating an cycle (e.g. `A
 The [`./spec/features/reindex_pid_and_descendants_spec.rb`](spec/features/reindex_pid_and_descendants_spec.rb) contains examples of behavior.
 
 **NOTE: These guards to prevent indexing cyclic graphs do not prevent the underlying preservation document from creating its own cyclic graph.**
+
+## TODO
+
+- [ ] Incorporate additional logging
+- [ ] Build methods to allow for fanning out the reindexing. At present, when we reindex a node and its "children", we run that entire process within a single context. Likewise, we run a single process when reindexing EVERYTHING.
+- [ ] Promote from [samvera-labs](https://github.com/samvera-labs) to [samvera](https://github.com/samvera) via the [promotion process](http://samvera-labs.github.io/promotion.html).
+- [ ] Write adapter method to assist in guarding against self-ancestry. We could probably expose a base adapter that has the method through use of the other adapter methods.

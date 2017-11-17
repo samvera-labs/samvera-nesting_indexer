@@ -88,7 +88,7 @@ module Samvera
           end
 
           def find_each
-            cache.each { |_key, document| yield(document) }
+            cache.each_value { |document| yield(document) }
           end
 
           def clear_cache!

@@ -15,7 +15,7 @@ module Samvera
 
       def build_graph(graph)
         # Create the starting_graph
-        graph.fetch(:parent_ids).keys.each do |id|
+        graph.fetch(:parent_ids).each_key do |id|
           build_preservation_document(id, graph)
           build_index_document(id, graph)
         end
@@ -134,7 +134,7 @@ module Samvera
       end
 
       def verify_graph_versus_storage(ending_graph)
-        ending_graph.fetch(:parent_ids).keys.each do |id|
+        ending_graph.fetch(:parent_ids).each_key do |id|
           verify_graph_item_versus_storage(id, ending_graph)
         end
       end

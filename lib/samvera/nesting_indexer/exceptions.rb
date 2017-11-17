@@ -40,6 +40,14 @@ module Samvera
         end
       end
 
+      # Raised when we have exceeded the time to live constraint
+      # @see Samvera::NestingIndexer::Configuration.maximum_nesting_depth
+      class ExceededMaximumNestingDepthError < CycleDetectionError
+        def to_s
+          "Exceeded maximum nesting depth while indexing ID=#{id.inspect}."
+        end
+      end
+
       # Raised when we encounter a document that is to be indexed as its own ancestor.
       class DocumentIsItsOwnAncestorError < CycleDetectionError
         attr_reader :pathnames

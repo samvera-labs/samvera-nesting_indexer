@@ -6,7 +6,7 @@ module Samvera
   # Establishing namespace
   module NestingIndexer
     # Responsible for reindexing the PID and its descendants
-    # @note There is cycle detection via the TIME_TO_LIVE counter
+    # @note There is cycle detection via the Samvera::NestingIndexer::Configuration#maximum_nesting_depth counter
     # @api private
     class RelationshipReindexer
       # @api private
@@ -20,7 +20,7 @@ module Samvera
       end
 
       # @param id [String]
-      # @param maximum_nesting_depth [Integer] Samvera::NestingIndexer::TIME_TO_LIVE to detect cycles in the graph
+      # @param maximum_nesting_depth [Integer] What is the maximum allowed depth of nesting
       # @param configuration [#adapter, #logger] The :adapter conforms to the Samvera::NestingIndexer::Adapters::AbstractAdapter interface
       #                                          and the :logger conforms to Logger
       # @param queue [#shift, #push] queue
@@ -77,7 +77,7 @@ module Samvera
       end
 
       def process_a_document(index_document)
-        raise Exceptions::CycleDetectionError, id: id if index_document.maximum_nesting_depth <= 0
+        raise Exceptions::ExceededMaximumNestingDepthError, id: id if index_document.maximum_nesting_depth <= 0
         wrap_logging("indexing ID=#{index_document.id.inspect}") do
           preservation_document = adapter.find_preservation_document_by(id: index_document.id)
           parent_ids_and_path_and_ancestors = parent_ids_and_path_and_ancestors_for(preservation_document)

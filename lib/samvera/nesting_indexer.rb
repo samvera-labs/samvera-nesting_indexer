@@ -13,9 +13,12 @@ module Samvera
     # In a perfect world we could reindex the id as well; But that is for another test.
     #
     # @param id [String] - The permanent identifier of the object that will be reindexed along with its children.
-    # @param maximum_nesting_depth [Integer] - there to guard against cyclical graphs
+    # @param maximum_nesting_depth [Integer] - used to short-circuit overly deep nesting as well as prevent accidental cyclic graphs
+    #                                          from creating an infinite loop.
     # @return [Boolean] - It was successful
-    # @raise Samvera::Exceptions::CycleDetectionError - A potential cycle was detected
+    # @raise Samvera::Exceptions::CycleDetectionError - A possible cycle was detected
+    # @raise Samvera::Exceptions::ExceededMaximumNestingDepthError - We exceeded our maximum depth
+    # @raise Samvera::Exceptions::DocumentIsItsOwnAncestorError - A document we were about to index appeared to be its own ancestor
     def self.reindex_relationships(id:, maximum_nesting_depth: configuration.maximum_nesting_depth)
       RelationshipReindexer.call(id: id, maximum_nesting_depth: maximum_nesting_depth, configuration: configuration)
       true
@@ -29,9 +32,9 @@ module Samvera
 
     # @api public
     # Responsible for reindexing the entire preservation layer.
-    # @param maximum_nesting_depth [Integer] - there to guard against cyclical graphs
+    # @param maximum_nesting_depth [Integer] - there to guard against cyclic graphs
     # @return [Boolean] - It was successful
-    # @raise Samvera::Exceptions::CycleDetectionError - A potential cycle was detected
+    # @raise Samvera::Exceptions::ReindexingError - There was a problem reindexing the graph.
     def self.reindex_all!(maximum_nesting_depth: configuration.maximum_nesting_depth)
       # While the RepositoryReindexer is responsible for reindexing everything, I
       # want to inject the lambda that will reindex a single item.

@@ -101,3 +101,14 @@ Given a single object A, when we reindex A, we:
 * Iterate through each descendant, in a breadth-first process, to reindex it (and each descendant's descendants).
 
 This is a potentially time consumptive process and should not be run within the request cycle.
+
+### Cycle Detections
+
+When dealing with nested graphs, there is a danger of creating an cycle (e.g. `A ={ B ={ A`). Samvera::NestingIndexer implements two guards to short-circuit the indexing of cyclic graphs:
+
+* Enforcing a maximum nesting depth of the graph
+* Checking that an object is not its own ancestor (`Samvera::NestingIndexer::RelationshipReindexer#guard_against_possiblity_of_self_ancestry`)
+
+The [`./spec/features/reindex_pid_and_descendants_spec.rb`](spec/features/reindex_pid_and_descendants_spec.rb) contains examples of behavior.
+
+**NOTE: These guards to prevent indexing cyclic graphs do not prevent the underlying preservation document from creating its own cyclic graph.**

@@ -161,7 +161,7 @@ module Samvera
           expect { NestingIndexer.reindex_relationships(id: :a) }.to raise_error(Exceptions::CycleDetectionError)
         end
 
-        it 'catches a simple cyclical graph (start with A ={ B and add B ={ A relationship)' do
+        it 'catches a simple cyclic graph (start with A ={ B and add B ={ A relationship)' do
           starting_graph = {
             parent_ids: { a: [], b: ['a'] }
           }
@@ -176,7 +176,7 @@ module Samvera
           }
           verify_graph_versus_storage(ending_graph)
 
-          # We are writing (and succeeding at writing) a cyclical relationship
+          # We are writing (and succeeding at writing) a cyclic relationship
           NestingIndexer.adapter.write_document_attributes_to_preservation_layer(id: :a, parent_ids: ['b'])
           expect { NestingIndexer.reindex_relationships(id: :a) }.to raise_error(Samvera::NestingIndexer::Exceptions::DocumentIsItsOwnAncestorError)
 
@@ -184,7 +184,7 @@ module Samvera
           verify_graph_versus_storage(ending_graph)
         end
 
-        it 'catches a simple cyclical graph (start with A ={ B ={ C and add C ={ B relationship)' do
+        it 'catches a simple cyclic graph (start with A ={ B ={ C and add C ={ B relationship)' do
           starting_graph = {
             parent_ids: { a: [], b: ['a'], c: ['b'] }
           }
@@ -199,7 +199,7 @@ module Samvera
           }
           verify_graph_versus_storage(ending_graph)
 
-          # We are writing (and succeeding at writing) a cyclical relationship
+          # We are writing (and succeeding at writing) a cyclic relationship
           NestingIndexer.adapter.write_document_attributes_to_preservation_layer(id: :b, parent_ids: ['a', 'c'])
           expect { NestingIndexer.reindex_relationships(id: :b) }.to raise_error(Samvera::NestingIndexer::Exceptions::DocumentIsItsOwnAncestorError)
 
@@ -207,7 +207,7 @@ module Samvera
           verify_graph_versus_storage(ending_graph)
         end
 
-        it 'catches a simple cyclical graph (start with A ={ B ={ C and add C ={ B relationship)' do
+        it 'catches a simple cyclic graph (start with A ={ B ={ C and add C ={ B relationship)' do
           starting_graph = {
             parent_ids: { a: [], b: ['a'], c: ['b'], d: ['c'] }
           }
@@ -245,7 +245,7 @@ module Samvera
           verify_graph_versus_storage(ending_graph)
         end
 
-        it 'indexes a non-cyclical graph' do
+        it 'indexes a non-cyclic graph' do
           starting_graph = {
             parent_ids: { a: [], b: ['a'], c: ['a', 'b'], d: ['b'], e: ['c', 'd'], f: [] }
           }
@@ -261,7 +261,7 @@ module Samvera
           verify_graph_versus_storage(ending_graph)
         end
 
-        it 'indexes a non-cyclical graph not declared in parent order' do
+        it 'indexes a non-cyclic graph not declared in parent order' do
           starting_graph = {
             parent_ids: { a: ['b'], b: ['c'], c: [] }
           }
@@ -277,7 +277,7 @@ module Samvera
           verify_graph_versus_storage(ending_graph)
         end
 
-        it 'catches a cyclical graph definition' do
+        it 'catches a cyclic graph definition' do
           starting_graph = {
             parent_ids: { a: [], b: ['a', 'd'], c: ['b'], d: ['c'] }
           }

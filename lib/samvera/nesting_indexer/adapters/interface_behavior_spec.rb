@@ -61,7 +61,7 @@ if defined?(RSpec)
       end
 
       it 'expects a block' do
-        expect(block_parameter_extracter.call(subject)).to be_present
+        expect(block_parameter_extracter.call(subject)).to eq([:block])
       end
     end
     describe '.each_child_document_of' do
@@ -76,13 +76,13 @@ if defined?(RSpec)
       end
 
       it 'expects a block' do
-        expect(block_parameter_extracter.call(subject)).to be_present
+        expect(block_parameter_extracter.call(subject)).to eq([:block])
       end
     end
     describe '.write_document_attributes_to_index_layer' do
       subject { described_class.method(:write_document_attributes_to_index_layer) }
 
-      it 'requires the :attributes keyword (and does not require any others)' do
+      it 'requires the :ancestors, :id, :parent_ids, and :pathnames keyword (and does not require any others)' do
         expect(required_keyword_parameters.call(subject)).to eq(%i(ancestors id parent_ids pathnames))
       end
 

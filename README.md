@@ -18,6 +18,10 @@ The Samvera::NestingIndexer gem is responsible for indexing the graph relationsh
 
 This is a sandbox to work through the reindexing strategy as it relates to [CurateND Collections](https://github.com/ndlib/samvera_nd/issues/420). At this point the code is separate to allow for raid testing and prototyping (no sense spinning up SOLR and Fedora to walk an arbitrary graph).
 
+### Notation
+
+When B is a member of A, I am using the `A ={ B` notation. When C is a member of B and B is a member of A, I'll chain these together `A ={ B ={ C`.
+
 ## Concepts
 
 As we are indexing objects, we have two types of documents:
@@ -35,6 +39,8 @@ We have four attributes to consider for indexing the graph:
 See [Samvera::NestingIndexer::Documents::IndexDocument](./lib/samvera/nesting_indexer/documents.rb) for further discussion.
 
 To reindex a single document, we leverage the [`Samvera::NestingIndexer.reindex_relationships`](./lib/samvera/nesting_indexer.rb) method.
+
+To reindex all of the documents, we leverage the [`Samvera::NestingIndexer.reindex_all!`](lib/samvera/nesting_indexer.rb) method. **Warning: This is a very slow process.**
 
 ## Examples
 
@@ -87,10 +93,7 @@ RSpec.describe MyCustomAdapter
 end
 ```
 
-
-
-
-[See CurateND for our adaptor configuration](https://github.com/ndlib/samvera_nd/blob/6fbe79c9725c0f8b4641981044ec250c5163053b/config/initializers/samvera_config.rb#L32-L35).
+[See CurateND for Notre Dame's adaptor configuration](https://github.com/ndlib/samvera_nd/blob/6fbe79c9725c0f8b4641981044ec250c5163053b/config/initializers/samvera_config.rb#L32-L35).
 
 ## Considerations
 
@@ -100,3 +103,21 @@ Given a single object A, when we reindex A, we:
 * Iterate through each descendant, in a breadth-first process, to reindex it (and each descendant's descendants).
 
 This is a potentially time consumptive process and should not be run within the request cycle.
+
+### Cycle Detections
+
+When dealing with nested graphs, there is a danger of creating an cycle (e.g. `A ={ B ={ A`). Samvera::NestingIndexer implements two guards to short-circuit the indexing of cyclic graphs:
+
+* Enforcing a maximum nesting depth of the graph
+* Checking that an object is not its own ancestor (`Samvera::NestingIndexer::RelationshipReindexer#guard_against_possiblity_of_self_ancestry`)
+
+The [`./spec/features/reindex_pid_and_descendants_spec.rb`](spec/features/reindex_pid_and_descendants_spec.rb) contains examples of behavior.
+
+**NOTE: These guards to prevent indexing cyclic graphs do not prevent the underlying preservation document from creating its own cyclic graph.**
+
+## TODO
+
+- [ ] Incorporate additional logging
+- [ ] Build methods to allow for fanning out the reindexing. At present, when we reindex a node and its "children", we run that entire process within a single context. Likewise, we run a single process when reindexing EVERYTHING.
+- [ ] Promote from [samvera-labs](https://github.com/samvera-labs) to [samvera](https://github.com/samvera) via the [promotion process](http://samvera-labs.github.io/promotion.html).
+- [ ] Write adapter method to assist in guarding against self-ancestry. We could probably expose a base adapter that has the method through use of the other adapter methods.

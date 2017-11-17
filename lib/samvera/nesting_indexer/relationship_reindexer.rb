@@ -6,7 +6,7 @@ module Samvera
   # Establishing namespace
   module NestingIndexer
     # Responsible for reindexing the PID and its descendants
-    # @note There is cycle detection via the TIME_TO_LIVE counter
+    # @note There is cycle detection via the Samvera::NestingIndexer::Configuration#maximum_nesting_depth counter
     # @api private
     class RelationshipReindexer
       # @api private
@@ -20,32 +20,38 @@ module Samvera
       end
 
       # @param id [String]
-      # @param maximum_nesting_depth [Integer] Samvera::NestingIndexer::TIME_TO_LIVE to detect cycles in the graph
-      # @param adapter [Samvera::NestingIndexer::Adapters::AbstractAdapter] Conforms to the Samvera::NestingIndexer::Adapters::AbstractAdapter interface
+      # @param maximum_nesting_depth [Integer] What is the maximum allowed depth of nesting
+      # @param configuration [#adapter, #logger] The :adapter conforms to the Samvera::NestingIndexer::Adapters::AbstractAdapter interface
+      #                                          and the :logger conforms to Logger
       # @param queue [#shift, #push] queue
-      def initialize(id:, maximum_nesting_depth:, adapter:, queue: [])
+      def initialize(id:, maximum_nesting_depth:, configuration:, queue: [], visited_ids: [])
         @id = id.to_s
         @maximum_nesting_depth = maximum_nesting_depth.to_i
-        @adapter = adapter
+        @configuration = configuration
         @queue = queue
+        @visited_ids = visited_ids
       end
-      attr_reader :id, :maximum_nesting_depth, :queue, :adapter
+      attr_reader :id, :maximum_nesting_depth
 
       # Perform a bread-first tree traversal of the initial document and its descendants.
+      # rubocop:disable Metrics/AbcSize
       def call
-        enqueue(initial_index_document, maximum_nesting_depth)
-        processing_document = dequeue
-        while processing_document
-          process_a_document(processing_document)
-          adapter.each_child_document_of(document: processing_document) { |child| enqueue(child, processing_document.maximum_nesting_depth - 1) }
+        wrap_logging("nested indexing of ID=#{initial_index_document.id.inspect}") do
+          enqueue(initial_index_document, maximum_nesting_depth)
           processing_document = dequeue
+          while processing_document
+            process_a_document(processing_document)
+            adapter.each_child_document_of(document: processing_document) { |child| enqueue(child, processing_document.maximum_nesting_depth - 1) }
+            processing_document = dequeue
+          end
         end
         self
       end
+      # rubocop:enbable Metrics/AbcSize
 
       private
 
-      attr_writer :document
+      attr_reader :queue, :configuration, :visited_ids
 
       def initial_index_document
         adapter.find_index_document_by(id: id)
@@ -53,6 +59,8 @@ module Samvera
 
       extend Forwardable
       def_delegator :queue, :shift, :dequeue
+      def_delegator :configuration, :adapter
+      def_delegator :configuration, :logger
 
       require 'delegate'
       # A small object to help track time to live concerns
@@ -69,14 +77,31 @@ module Samvera
       end
 
       def process_a_document(index_document)
-        raise Exceptions::CycleDetectionError, id if index_document.maximum_nesting_depth <= 0
-        preservation_document = adapter.find_preservation_document_by(id: index_document.id)
-        parent_ids_and_path_and_ancestors = parent_ids_and_path_and_ancestors_for(preservation_document)
-        adapter.write_document_attributes_to_index_layer(**parent_ids_and_path_and_ancestors)
+        raise Exceptions::ExceededMaximumNestingDepthError, id: id if index_document.maximum_nesting_depth <= 0
+        wrap_logging("indexing ID=#{index_document.id.inspect}") do
+          preservation_document = adapter.find_preservation_document_by(id: index_document.id)
+          parent_ids_and_path_and_ancestors = parent_ids_and_path_and_ancestors_for(preservation_document)
+          guard_against_possiblity_of_self_ancestry(index_document: index_document, pathnames: parent_ids_and_path_and_ancestors.fetch(:pathnames))
+          adapter.write_document_attributes_to_index_layer(**parent_ids_and_path_and_ancestors)
+          visited_ids << index_document.id
+        end
       end
 
       def parent_ids_and_path_and_ancestors_for(preservation_document)
         ParentAndPathAndAncestorsBuilder.new(preservation_document, adapter).to_hash
+      end
+
+      def guard_against_possiblity_of_self_ancestry(index_document:, pathnames:)
+        pathnames.each do |pathname|
+          next unless pathname.include?("#{index_document.id}/")
+          raise Exceptions::DocumentIsItsOwnAncestorError, id: index_document.id, pathnames: pathnames
+        end
+      end
+
+      def wrap_logging(message_suffix)
+        logger.debug("Starting #{message_suffix}")
+        yield
+        logger.debug("Ending #{message_suffix}")
       end
 
       # A small object that helps encapsulate the logic of building the hash of information regarding
@@ -113,9 +138,9 @@ module Samvera
         def compile_one!(parent_index_document)
           @parent_ids << parent_index_document.id
           parent_index_document.pathnames.each do |pathname|
-            @pathnames << File.join(pathname, @preservation_document.id)
-            slugs = pathname.split("/")
-            slugs.each_index { |i| @ancestors << slugs[0..i].join('/') }
+            @pathnames << "#{pathname}#{Documents::ANCESTOR_AND_PATHNAME_DELIMITER}#{@preservation_document.id}"
+            slugs = pathname.split(Documents::ANCESTOR_AND_PATHNAME_DELIMITER)
+            slugs.each_index { |i| @ancestors << slugs[0..i].join(Documents::ANCESTOR_AND_PATHNAME_DELIMITER) }
           end
           @ancestors += parent_index_document.ancestors
         end

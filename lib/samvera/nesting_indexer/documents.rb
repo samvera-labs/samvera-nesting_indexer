@@ -3,6 +3,8 @@ require 'dry-equalizer'
 module Samvera
   module NestingIndexer
     module Documents
+      ANCESTOR_AND_PATHNAME_DELIMITER = '/'.freeze
+
       # @api public
       #
       # A simplified document that reflects the necessary attributes for re-indexing

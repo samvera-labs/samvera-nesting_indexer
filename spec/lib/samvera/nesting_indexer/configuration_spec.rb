@@ -12,6 +12,42 @@ module Samvera
         it { is_expected.to be_a(Integer) }
       end
 
+      describe '#logger' do
+        before { Object.send(:remove_const, :Rails) if defined?(Rails) }
+        describe 'by default' do
+          describe 'with Rails defined' do
+            before do
+              # rubocop:disable Style/ClassAndModuleChildren
+              module ::Rails
+                def self.logger
+                  :logger
+                end
+              end
+              # rubocop:enable Style/ClassAndModuleChildren
+            end
+            after do
+              Object.send(:remove_const, :Rails) if defined?(Rails)
+            end
+            it 'uses the existing Rails logger' do
+              subject = described_class.new
+              expect(subject.logger).to eq(Rails.logger)
+            end
+          end
+          describe 'without Rails defined' do
+            it 'uses a simple Logger that writes to STDOUT' do
+              subject = described_class.new
+              expect(defined?(Rails)).to be_falsey
+              expect(subject.logger).to be_a(Logger)
+            end
+          end
+        end
+        it 'can be overridden' do
+          logger = double('logger')
+          subject = described_class.new
+          expect { subject.logger = logger }.to change { subject.logger }.to(logger)
+        end
+      end
+
       describe '#solr_field_name_for_storing_parent_ids' do
         subject { configuration.solr_field_name_for_storing_parent_ids }
 

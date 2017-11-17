@@ -15,7 +15,7 @@ module Samvera
 
       def build_graph(graph)
         # Create the starting_graph
-        graph.fetch(:parent_ids).keys.each do |id|
+        graph.fetch(:parent_ids).each_key do |id|
           build_preservation_document(id, graph)
           build_index_document(id, graph)
         end
@@ -134,7 +134,7 @@ module Samvera
       end
 
       def verify_graph_versus_storage(ending_graph)
-        ending_graph.fetch(:parent_ids).keys.each do |id|
+        ending_graph.fetch(:parent_ids).each_key do |id|
           verify_graph_item_versus_storage(id, ending_graph)
         end
       end
@@ -160,6 +160,68 @@ module Samvera
 
           expect { NestingIndexer.reindex_relationships(id: :a) }.to raise_error(Exceptions::CycleDetectionError)
         end
+
+        it 'catches a simple cyclic graph (start with A ={ B and add B ={ A relationship)' do
+          starting_graph = {
+            parent_ids: { a: [], b: ['a'] }
+          }
+          build_graph(starting_graph)
+
+          NestingIndexer.reindex_all!
+
+          ending_graph = {
+            parent_ids: { a: [], b: ['a'] },
+            ancestors: { a: [], b: ['a'] },
+            pathnames: { a: ['a'], b: ['a/b'] }
+          }
+          verify_graph_versus_storage(ending_graph)
+
+          # We are writing (and succeeding at writing) a cyclic relationship
+          NestingIndexer.adapter.write_document_attributes_to_preservation_layer(id: :a, parent_ids: ['b'])
+          expect { NestingIndexer.reindex_relationships(id: :a) }.to raise_error(Samvera::NestingIndexer::Exceptions::DocumentIsItsOwnAncestorError)
+
+          # We should have the same index that we started with.
+          verify_graph_versus_storage(ending_graph)
+        end
+
+        it 'catches a simple cyclic graph (start with A ={ B ={ C and add C ={ B relationship)' do
+          starting_graph = {
+            parent_ids: { a: [], b: ['a'], c: ['b'] }
+          }
+          build_graph(starting_graph)
+
+          NestingIndexer.reindex_all!
+
+          ending_graph = {
+            parent_ids: { a: [], b: ['a'], c: ['b'] },
+            ancestors: { a: [], b: ['a'], c: ['a', 'a/b'] },
+            pathnames: { a: ['a'], b: ['a/b'], c: ['a/b/c'] }
+          }
+          verify_graph_versus_storage(ending_graph)
+
+          # We are writing (and succeeding at writing) a cyclic relationship
+          NestingIndexer.adapter.write_document_attributes_to_preservation_layer(id: :b, parent_ids: ['a', 'c'])
+          expect { NestingIndexer.reindex_relationships(id: :b) }.to raise_error(Samvera::NestingIndexer::Exceptions::DocumentIsItsOwnAncestorError)
+
+          # We should have the same index that we started with.
+          verify_graph_versus_storage(ending_graph)
+        end
+
+        it 'catches a simple cyclic graph (start with A ={ B ={ C and add C ={ B relationship)' do
+          starting_graph = {
+            parent_ids: { a: [], b: ['a'], c: ['b'], d: ['c'] }
+          }
+          build_graph(starting_graph)
+          # If we give enough time to live this will index
+          expect { NestingIndexer.reindex_relationships(id: :a, maximum_nesting_depth: 5) }.not_to(
+            raise_error(Samvera::NestingIndexer::Exceptions::CycleDetectionError)
+          )
+
+          # If we don't give enough time to live this will fail in indexing
+          expect { NestingIndexer.reindex_relationships(id: :a, maximum_nesting_depth: 2) }.to(
+            raise_error(Samvera::NestingIndexer::Exceptions::CycleDetectionError)
+          )
+        end
       end
 
       context "Bootstrapping a graph" do
@@ -183,7 +245,7 @@ module Samvera
           verify_graph_versus_storage(ending_graph)
         end
 
-        it 'indexes a non-cyclical graph' do
+        it 'indexes a non-cyclic graph' do
           starting_graph = {
             parent_ids: { a: [], b: ['a'], c: ['a', 'b'], d: ['b'], e: ['c', 'd'], f: [] }
           }
@@ -199,7 +261,7 @@ module Samvera
           verify_graph_versus_storage(ending_graph)
         end
 
-        it 'indexes a non-cyclical graph not declared in parent order' do
+        it 'indexes a non-cyclic graph not declared in parent order' do
           starting_graph = {
             parent_ids: { a: ['b'], b: ['c'], c: [] }
           }
@@ -215,7 +277,7 @@ module Samvera
           verify_graph_versus_storage(ending_graph)
         end
 
-        it 'catches a cyclical graph definition' do
+        it 'catches a cyclic graph definition' do
           starting_graph = {
             parent_ids: { a: [], b: ['a', 'd'], c: ['b'], d: ['c'] }
           }

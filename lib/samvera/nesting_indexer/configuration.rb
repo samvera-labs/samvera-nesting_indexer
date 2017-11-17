@@ -1,5 +1,6 @@
 require 'samvera/nesting_indexer/adapters/abstract_adapter'
 require 'samvera/nesting_indexer/exceptions'
+require 'logger'
 
 module Samvera
   # :nodoc:
@@ -9,11 +10,14 @@ module Samvera
     class Configuration
       DEFAULT_MAXIMUM_NESTING_DEPTH = 15
 
-      def initialize(maximum_nesting_depth: DEFAULT_MAXIMUM_NESTING_DEPTH)
+      def initialize(maximum_nesting_depth: DEFAULT_MAXIMUM_NESTING_DEPTH, logger: default_logger)
         self.maximum_nesting_depth = maximum_nesting_depth
+        self.logger = logger
       end
 
-      attr_reader :maximum_nesting_depth
+      attr_reader :maximum_nesting_depth, :logger
+
+      attr_writer :logger
 
       def maximum_nesting_depth=(input)
         @maximum_nesting_depth = input.to_i
@@ -67,6 +71,14 @@ module Samvera
         $stdout.puts IN_MEMORY_ADAPTER_WARNING_MESSAGE unless defined?(SUPPRESS_MEMORY_ADAPTER_WARNING)
         require 'samvera/nesting_indexer/adapters/in_memory_adapter'
         Adapters::InMemoryAdapter
+      end
+
+      def default_logger
+        if defined?(Rails.logger)
+          Rails.logger
+        else
+          Logger.new($stdout)
+        end
       end
     end
     private_constant :Configuration

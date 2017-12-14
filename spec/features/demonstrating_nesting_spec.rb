@@ -22,6 +22,8 @@ module Samvera
         true
       end
 
+      # @param id [String]
+      # @param allowed_parent_ids [Array<String>] a list of the possible parent ids that the given ID should be associated with.
       def verify_allowed_parent_ids(id:, allowed_parent_ids:)
         actual_allowed = []
         NestingIndexer.adapter.each_index_document do |document|

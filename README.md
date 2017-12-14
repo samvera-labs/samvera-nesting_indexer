@@ -117,12 +117,17 @@ The [`./spec/features/reindex_pid_and_descendants_spec.rb`](spec/features/reinde
 
 #### Detecting Possible Cycles Before Indexing
 
-Given an up to date index and a document, then we may nest the given document beneath any document that:
+Given an up to date index and a document, then it is valid to nest the given document beneath any document that:
 
 * Is not the given document
 * Does not have one or more pathnames that includes the given document's ID
 
 For examples of determining if we can nest a document within another document, see the [demonstration of nesting](./spec/features/demonstrating_nesting_spec.rb).
+
+In implementations, you'll likely want to write a queries that answer:
+
+* What are the valid IDs that I can nest within?
+* What are the valid IDs in which I can nest within and am not already nested within?
 
 ## TODO
 

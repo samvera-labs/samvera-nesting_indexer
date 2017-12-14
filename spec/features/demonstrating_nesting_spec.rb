@@ -25,9 +25,7 @@ module Samvera
       def verify_allowed_parent_ids(id:, allowed_parent_ids:)
         actual_allowed = []
         NestingIndexer.adapter.each_index_document do |document|
-          if allowed_to_nest?(child_id: id, parent_id: document.id)
-            actual_allowed += [document.id]
-          end
+          actual_allowed += [document.id] if allowed_to_nest?(child_id: id, parent_id: document.id)
         end
         expect(actual_allowed.sort).to eq(allowed_parent_ids.sort)
       end

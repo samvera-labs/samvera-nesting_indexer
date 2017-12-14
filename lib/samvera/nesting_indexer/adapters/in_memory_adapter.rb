@@ -71,6 +71,12 @@ module Samvera
         end
 
         # @api private
+        # A convenience method for testing
+        def self.each_index_document(&block)
+          Index.each_index_document(&block)
+        end
+
+        # @api private
         #
         # A module mixin to expose rudimentary read/write capabilities
         #
@@ -144,6 +150,10 @@ module Samvera
 
           def self.find(id)
             Storage.find(id)
+          end
+
+          def self.each_index_document(&block)
+            Storage.find_each(&block)
           end
 
           def self.each_child_document_of(document:, &block)

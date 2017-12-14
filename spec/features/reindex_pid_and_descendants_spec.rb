@@ -10,11 +10,6 @@ module Samvera
     RSpec.describe 'Reindex id and descendants' do
       include Support::FeatureSpecSupportMethods
       before do
-        # Ensuring we have a clear configuration each time; Also assists with code coverage.
-        NestingIndexer.configure do |config|
-          config.adapter = Adapters::InMemoryAdapter
-          config.logger = Logger.new('/dev/null') unless ENV['VERBOSE'] # Remove all the chatter!
-        end
         NestingIndexer.adapter.clear_cache!
       end
 

@@ -2,44 +2,15 @@ require 'spec_helper'
 require 'samvera/nesting_indexer'
 require 'samvera/nesting_indexer/exceptions'
 require 'samvera/nesting_indexer/adapters'
+require 'support/feature_spec_support_methods'
 
 # :nodoc:
 module Samvera
   module NestingIndexer
     RSpec.describe 'Reindex id and descendants' do
+      include Support::FeatureSpecSupportMethods
       before do
-        # Ensuring we have a clear configuration each time; Also assists with code coverage.
-        NestingIndexer.configure { |config| config.adapter = Adapters::InMemoryAdapter }
         NestingIndexer.adapter.clear_cache!
-      end
-
-      def build_graph(graph)
-        # Create the starting_graph
-        graph.fetch(:parent_ids).each_key do |id|
-          build_preservation_document(id, graph)
-          build_index_document(id, graph)
-        end
-      end
-
-      def build_preservation_document(id, graph)
-        parent_ids = graph.fetch(:parent_ids).fetch(id)
-        NestingIndexer.adapter.write_document_attributes_to_preservation_layer(id: id, parent_ids: parent_ids)
-      end
-
-      def build_index_document(id, graph)
-        NestingIndexer.adapter.write_document_attributes_to_index_layer(
-          id: id,
-          parent_ids: graph.fetch(:parent_ids).fetch(id),
-          ancestors: graph.fetch(:ancestors, {})[id],
-          pathnames: graph.fetch(:pathnames, {})[id]
-        )
-      end
-
-      # Logic that mirrors the behavior of updating an ActiveFedora object.
-      def write_document_to_persistence_layers(preservation_document_attributes_to_update)
-        NestingIndexer.adapter.write_document_attributes_to_preservation_layer(preservation_document_attributes_to_update)
-        attributes = { pathnames: [], ancestors: [] }.merge(preservation_document_attributes_to_update)
-        NestingIndexer.adapter.write_document_attributes_to_index_layer(**attributes)
       end
 
       context "non-Cycle graphs" do
@@ -133,22 +104,6 @@ module Samvera
         end
       end
 
-      def verify_graph_versus_storage(ending_graph)
-        ending_graph.fetch(:parent_ids).each_key do |id|
-          verify_graph_item_versus_storage(id, ending_graph)
-        end
-      end
-
-      def verify_graph_item_versus_storage(id, ending_graph)
-        document = Documents::IndexDocument.new(
-          id: id,
-          parent_ids: ending_graph.fetch(:parent_ids).fetch(id),
-          ancestors: ending_graph.fetch(:ancestors).fetch(id),
-          pathnames: ending_graph.fetch(:pathnames).fetch(id)
-        )
-        expect(NestingIndexer.adapter.find_index_document_by(id: id)).to eq(document)
-      end
-
       context "Cyclical graphs" do
         it 'will catch due to a time to live constraint' do
           starting_graph = {
@@ -213,9 +168,7 @@ module Samvera
           }
           build_graph(starting_graph)
           # If we give enough time to live this will index
-          expect { NestingIndexer.reindex_relationships(id: :a, maximum_nesting_depth: 5) }.not_to(
-            raise_error(Samvera::NestingIndexer::Exceptions::CycleDetectionError)
-          )
+          expect { NestingIndexer.reindex_relationships(id: :a, maximum_nesting_depth: 5) }.not_to raise_error
 
           # If we don't give enough time to live this will fail in indexing
           expect { NestingIndexer.reindex_relationships(id: :a, maximum_nesting_depth: 2) }.to(

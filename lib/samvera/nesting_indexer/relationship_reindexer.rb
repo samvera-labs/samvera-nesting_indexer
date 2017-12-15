@@ -5,7 +5,7 @@ require 'set'
 module Samvera
   # Establishing namespace
   module NestingIndexer
-    # Responsible for reindexing the PID and its descendants
+    # Responsible for reindexing the document associated with the given PID and its descendant documents
     # @note There is cycle detection via the Samvera::NestingIndexer::Configuration#maximum_nesting_depth counter
     # @api private
     class RelationshipReindexer
@@ -24,34 +24,38 @@ module Samvera
       # @param configuration [#adapter, #logger] The :adapter conforms to the Samvera::NestingIndexer::Adapters::AbstractAdapter interface
       #                                          and the :logger conforms to Logger
       # @param queue [#shift, #push] queue
-      def initialize(id:, maximum_nesting_depth:, configuration:, queue: [], visited_ids: [])
+      def initialize(id:, maximum_nesting_depth:, configuration:, queue: [])
         @id = id.to_s
         @maximum_nesting_depth = maximum_nesting_depth.to_i
         @configuration = configuration
         @queue = queue
-        @visited_ids = visited_ids
       end
       attr_reader :id, :maximum_nesting_depth
 
-      # Perform a bread-first tree traversal of the initial document and its descendants.
-      # rubocop:disable Metrics/AbcSize
+      # Perform a breadth-first tree traversal of the initial document and its descendants.
+      # We index the document, then queue up each of its children. For each child, queue up the child's children.
       def call
         wrap_logging("nested indexing of ID=#{initial_index_document.id.inspect}") do
           enqueue(initial_index_document, maximum_nesting_depth)
-          processing_document = dequeue
-          while processing_document
-            process_a_document(processing_document)
-            adapter.each_child_document_of(document: processing_document) { |child| enqueue(child, processing_document.maximum_nesting_depth - 1) }
-            processing_document = dequeue
-          end
+          process_each_document
         end
         self
       end
-      # rubocop:enbable Metrics/AbcSize
 
       private
 
       attr_reader :queue, :configuration, :visited_ids
+
+      def process_each_document
+        processing_document = dequeue
+        while processing_document
+          process_a_document(processing_document)
+          adapter.each_child_document_of(document: processing_document) do |child|
+            enqueue(child, processing_document.maximum_nesting_depth - 1)
+          end
+          processing_document = dequeue
+        end
+      end
 
       def initial_index_document
         adapter.find_index_document_by(id: id)
@@ -76,6 +80,7 @@ module Samvera
         queue.push(ProcessingDocument.new(document, maximum_nesting_depth))
       end
 
+      # rubocop:disable Metrics/AbcSize
       def process_a_document(index_document)
         raise Exceptions::ExceededMaximumNestingDepthError, id: id if index_document.maximum_nesting_depth <= 0
         wrap_logging("indexing ID=#{index_document.id.inspect}") do
@@ -83,9 +88,9 @@ module Samvera
           parent_ids_and_path_and_ancestors = parent_ids_and_path_and_ancestors_for(preservation_document)
           guard_against_possiblity_of_self_ancestry(index_document: index_document, pathnames: parent_ids_and_path_and_ancestors.fetch(:pathnames))
           adapter.write_document_attributes_to_index_layer(**parent_ids_and_path_and_ancestors)
-          visited_ids << index_document.id
         end
       end
+      # rubocop:enable Metrics/AbcSize
 
       def parent_ids_and_path_and_ancestors_for(preservation_document)
         ParentAndPathAndAncestorsBuilder.new(preservation_document, adapter).to_hash

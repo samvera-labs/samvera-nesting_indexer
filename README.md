@@ -95,6 +95,14 @@ end
 
 [See CurateND for Notre Dame's adaptor configuration](https://github.com/ndlib/samvera_nd/blob/6fbe79c9725c0f8b4641981044ec250c5163053b/config/initializers/samvera_config.rb#L32-L35).
 
+### Sequence Diagram for Reindexing a Single Document
+
+The following sequence diagram documents the interactions in [Samvera::NestingIndexer::RelationshipReindexer](lib/samvera/nesting_indexer/relationship_reindexer.rb).
+
+![Reindex Relationship Diagram](documentation/reindex_relationship.mermaid.jpg)
+
+See [the text-based version of Reindex Relationship diagram](documentation/reindex_relationship.mermaid), leveraging the [Mermaid syntax](https://mermaidjs.github.io).
+
 ## Considerations
 
 Given a single object A, when we reindex A, we:

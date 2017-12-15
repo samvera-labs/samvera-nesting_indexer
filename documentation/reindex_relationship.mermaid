@@ -1,0 +1,22 @@
+sequenceDiagram
+    participant Application
+    participant Indexer as Samvera:: NestingIndexer
+    participant Adapter as Application Adapter Implementation
+    participant Index as Application Index Layer
+    participant Preservation as Application Preservation Layer
+
+    Application-->>Indexer: indexer.reindex_relationships(id:)
+    Indexer-->>Adapter: adapter.find_index_document_by(id:)
+    Adapter-->>Index: get index document
+    Note right of Adapter: See Samvera:: NestingIndexer:: Adapters:: AbstractAdapter for adapter implementation
+    Index-->>Indexer: coerce index document to indexer
+    Indexer-->>Indexer: enqueue index document
+    loop While queued documents
+        Indexer-->>Adapter: adapter.find_preservation_document_by(id:)
+        Adapter-->>Preservation: get preservation document
+        Preservation-->>Indexer: receive preservation document
+        Indexer-->>Indexer: guard_against_possiblity_of_self_ancestry
+        Indexer-->>Adapter: adapter.write_document_attributes_to_index_layer
+        Adapter-->>Index: write updated application index document
+        Indexer-->>Indexer: enqueue children
+    end

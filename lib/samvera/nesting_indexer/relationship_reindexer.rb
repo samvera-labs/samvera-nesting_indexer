@@ -145,7 +145,9 @@ module Samvera
           parent_index_document.pathnames.each do |pathname|
             @pathnames << "#{pathname}#{Documents::ANCESTOR_AND_PATHNAME_DELIMITER}#{@preservation_document.id}"
             slugs = pathname.split(Documents::ANCESTOR_AND_PATHNAME_DELIMITER)
-            slugs.each_index { |i| @ancestors << slugs[0..i].join(Documents::ANCESTOR_AND_PATHNAME_DELIMITER) }
+            slugs.each_index do |i|
+              @ancestors << slugs[0..i].join(Documents::ANCESTOR_AND_PATHNAME_DELIMITER)
+            end
           end
           @ancestors += parent_index_document.ancestors
         end

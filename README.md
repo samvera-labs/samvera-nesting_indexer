@@ -34,13 +34,15 @@ We have four attributes to consider for indexing the graph:
 1. id - the unique identifier for a document
 2. parent_ids - the ids for all of the parents of a given document
 3. pathnames - the paths to traverse from a root document to the given document
-4. ancestors - the pathnames of each of the ancestors
+4. ancestors - the pathnames to each node that is an ancestor of the given node (e.g. pathname to my parent, pathname to my grandparent)
 
 See [Samvera::NestingIndexer::Documents::IndexDocument](./lib/samvera/nesting_indexer/documents.rb) for further discussion.
 
 To reindex a single document, we leverage the [`Samvera::NestingIndexer.reindex_relationships`](./lib/samvera/nesting_indexer.rb) method.
 
 To reindex all of the documents, we leverage the [`Samvera::NestingIndexer.reindex_all!`](lib/samvera/nesting_indexer.rb) method. **Warning: This is a very slow process.**
+
+With a node's pathname(s), we are able to query what are all of my descendants (both direct and indirect) by way of the ancestors.
 
 ## Examples
 
@@ -53,18 +55,23 @@ Given the following PreservationDocuments:
 | C   | A       |
 | D   | A, B    |
 | E   | C       |
+| F   | D       |
 
 If we were to reindex the above PreservationDocuments, we will generate the following IndexDocuments:
 
-| PID | Parents | Pathnames  | Ancestors |
-|-----|---------|------------|-----------|
-| A   | -       | [A]        | []        |
-| B   | -       | [B]        | []        |
-| C   | A       | [A/C]      | [A]       |
-| D   | A, B    | [A/D, B/D] | [A, B]    |
-| E   | C       | [A/C/E]    | [A/C]     |
+| PID | Parents | Pathnames      | Ancestors        |
+|-----|---------|----------------|------------------|
+| A   | -       | [A]            | []               |
+| B   | -       | [B]            | []               |
+| C   | A       | [A/C]          | [A]              |
+| D   | A, B    | [A/D, B/D]     | [A, B]           |
+| E   | C       | [A/C/E]        | [A, A/C]         |
+| F   | D       | [A/D/F, B/D/F] | [A, A/D, B, B/D] |
 
 For more scenarios, look at the [Reindex PID and Descendants specs](./spec/features/reindex_id_and_descendants_spec.rb).
+
+* Given I want to find the direct descendants of A, then I can query all nodes with that have a parent of A.
+* Given I want to find the direct and indirect descendants of A, then I can query all notes that have an ancestor entry of A.
 
 ## Adapters
 

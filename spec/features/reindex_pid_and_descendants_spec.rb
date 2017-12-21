@@ -79,6 +79,23 @@ module Samvera
                 f: ['g/b/e/f', 'g/b/c/e/f', 'a/c/e/f'], g: ['g']
               }
             }
+          }, {
+            name: 'Nesting one nested set of nodes within another node',
+            starting_graph: {
+              parent_ids: { pnc: [], pub_gw: ['pnc'], pc: [], auth_gw: ['pc'], cc: ['pc'], priv_gw: ['cc'] },
+              ancestors: { pnc: [], pub_gw: ['pnc'], pc: [], auth_gw: ['pc'], cc: ['pc'], priv_gw: ['pc/cc', 'pc'] },
+              pathnames: {
+                pnc: ['pnc'], pub_gw: ['pnc/pub_gw'], pc: ['pc'], auth_gw: ['pc/auth_gw'], cc: ['pc/cc'], priv_gw: ['pc/cc/priv_gw']
+              }
+            },
+            preservation_document_attributes_to_update: { id: :pc, parent_ids: ['pnc'] },
+            ending_graph: {
+              parent_ids: { pnc: [], pub_gw: ['pnc'], pc: ['pnc'], auth_gw: ['pc'], cc: ['pc'], priv_gw: ['cc'] },
+              ancestors: { pnc: [], pub_gw: ['pnc'], pc: ['pnc'], auth_gw: ['pnc', 'pnc/pc'], cc: ['pnc', 'pnc/pc'], priv_gw: ['pnc', 'pnc/pc', 'pnc/pc/cc'] },
+              pathnames: {
+                pnc: ['pnc'], pub_gw: ['pnc/pub_gw'], pc: ['pnc/pc'], auth_gw: ['pnc/pc/auth_gw'], cc: ['pnc/pc/cc'], priv_gw: ['pnc/pc/cc/priv_gw']
+              }
+            }
           }
         ].each_with_index do |the_scenario, index|
           context "#{the_scenario.fetch(:name)} (Scenario #{index})" do
@@ -194,6 +211,22 @@ module Samvera
               a: ['a'], b: ['a/b'], c: ['a/c', 'a/b/c'], d: ['a/b/d', 'a/b/c/d', 'a/c/d'], e: ['a/b/e', 'a/b/c/e', 'a/c/e'],
               f: ['a/b/e/f', 'a/b/c/e/f', 'a/c/e/f'], g: ['g']
             }
+          }
+          verify_graph_versus_storage(ending_graph)
+        end
+
+        it 'verifying the structure of ancestors' do
+          starting_graph = {
+            parent_ids: { a: [], b: ['a'], c: ['b', 'e'], d: [], e: ['d'] }
+          }
+          build_graph(starting_graph)
+
+          NestingIndexer.reindex_all!
+
+          ending_graph = {
+            parent_ids: { a: [], b: ['a'], c: ['b', 'e'], d: [], e: ['d'] },
+            ancestors: { a: [], b: ['a'], c: ['a', 'a/b', 'd', 'd/e'], d: [], e: ['d'] },
+            pathnames: { a: ['a'], b: ['a/b'], c: ['a/b/c', 'd/e/c'], d: ['d'], e: ['d/e'] }
           }
           verify_graph_versus_storage(ending_graph)
         end

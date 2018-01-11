@@ -43,6 +43,19 @@ module Samvera
         end
 
         # @api public
+        # @since v1.0.0
+        # @return [Hash<Symbol,>] the Ruby hash representation of this index document.
+        def to_hash
+          {
+            id: id,
+            parent_ids: parent_ids,
+            pathnames: pathnames,
+            ancestors: ancestors,
+            deepest_nested_depth: deepest_nested_depth
+          }
+        end
+
+        # @api public
         # @return String The Fedora object's PID
         attr_reader :id
 
@@ -70,10 +83,21 @@ module Samvera
         #
         # All of the :pathnames of each of the documents ancestors. If I have A, with parent B, and B has
         # parents C and D then we have the following ancestors:
-        #   [D/B], [C/B]
+        #   [D], [C], [D/B], [C/B]
         #
         # @return Array<String>
         attr_reader :ancestors
+
+        # @api public
+        # @since v1.0.0
+        #
+        # The largest nesting depth of this document. If I have A ={ B ={ C and D ={ C, then
+        # deepest_nested_depth is 3.
+        #
+        # @return Integer
+        def deepest_nested_depth
+          pathnames.map(&:length).max
+        end
 
         def sorted_parent_ids
           parent_ids.sort

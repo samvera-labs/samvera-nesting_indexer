@@ -43,7 +43,7 @@ module Samvera
         end
 
         describe '.write_document_attributes_to_index_layer' do
-          subject { described_class.write_document_attributes_to_index_layer(id: 1, parent_ids: 2, ancestors: 3, pathnames: 4) }
+          subject { described_class.write_document_attributes_to_index_layer(id: 1, parent_ids: 2, ancestors: 3, pathnames: 4, deepest_nested_depth: 5) }
           it 'requires implementation (see documentation)' do
             expect { subject }.to raise_error(NotImplementedError)
           end

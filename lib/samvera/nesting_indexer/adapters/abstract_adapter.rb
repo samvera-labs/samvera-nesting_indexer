@@ -48,8 +48,9 @@ module Samvera
         # @param parent_ids [Array<String>]
         # @param ancestors [Array<String>]
         # @param pathnames [Array<String>]
+        # @param deepest_nested_depth [Integer]
         # @return Hash - the attributes written to the indexing layer
-        def self.write_document_attributes_to_index_layer(id:, parent_ids:, ancestors:, pathnames:)
+        def self.write_document_attributes_to_index_layer(id:, parent_ids:, ancestors:, pathnames:, deepest_nested_depth:)
           raise NotImplementedError
         end
       end

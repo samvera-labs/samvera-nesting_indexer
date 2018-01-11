@@ -59,9 +59,10 @@ module Samvera
         # @param parent_ids [Array<String>]
         # @param ancestors [Array<String>]
         # @param pathnames [Array<String>]
+        # @param deepest_nested_depth [Integer]
         # @return [Hash] - the attributes written to the indexing layer
-        def self.write_document_attributes_to_index_layer(id:, parent_ids:, ancestors:, pathnames:)
-          Index.write_document(id: id, parent_ids: parent_ids, ancestors: ancestors, pathnames: pathnames)
+        def self.write_document_attributes_to_index_layer(id:, parent_ids:, ancestors:, pathnames:, deepest_nested_depth:)
+          Index.write_document(id: id, parent_ids: parent_ids, ancestors: ancestors, pathnames: pathnames, deepest_nested_depth: deepest_nested_depth)
         end
 
         # @api private

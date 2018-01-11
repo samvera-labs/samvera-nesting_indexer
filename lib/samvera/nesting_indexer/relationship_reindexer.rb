@@ -109,7 +109,7 @@ module Samvera
         logger.debug("Ending #{message_suffix}")
       end
 
-      # A small object that helps encapsulate the logic of building the hash of information regarding
+      # A small object that helps encapsulate the logic for building the hash of information regarding
       # the initialization of an Samvera::NestingIndexer::Documents::IndexDocument
       #
       # @see Samvera::NestingIndexer::Documents::IndexDocument for details on pathnames, ancestors, and parent_ids.
@@ -121,15 +121,15 @@ module Samvera
           @ancestors = Set.new
           @adapter = adapter
           compile!
+          @inner_document = Documents::IndexDocument.new(id: @preservation_document.id, parent_ids: @parent_ids, pathnames: @pathnames, ancestors: @ancestors)
         end
 
-        def to_hash
-          { id: @preservation_document.id, parent_ids: @parent_ids.to_a, pathnames: @pathnames.to_a, ancestors: @ancestors.to_a }
-        end
+        extend Forwardable
+        def_delegator :inner_document, :to_hash
 
         private
 
-        attr_reader :adapter
+        attr_reader :adapter, :inner_document
 
         def compile!
           @preservation_document.parent_ids.each do |parent_id|

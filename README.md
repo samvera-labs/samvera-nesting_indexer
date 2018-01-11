@@ -146,7 +146,7 @@ In implementations, you'll likely want to write a queries that answer:
 
 ## TODO
 
-- [ ] Incorporate additional logging
+- [X] Incorporate additional logging
 - [ ] Build methods to allow for fanning out the reindexing. At present, when we reindex a node and its "children", we run that entire process within a single context. Likewise, we run a single process when reindexing EVERYTHING.
 - [ ] Promote from [samvera-labs](https://github.com/samvera-labs) to [samvera](https://github.com/samvera) via the [promotion process](http://samvera-labs.github.io/promotion.html).
 - [ ] Write adapter method to assist in guarding against self-ancestry. We could probably expose a base adapter that has the method through use of the other adapter methods.

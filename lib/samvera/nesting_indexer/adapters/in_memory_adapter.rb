@@ -65,6 +65,13 @@ module Samvera
           Index.write_document(id: id, parent_ids: parent_ids, ancestors: ancestors, pathnames: pathnames, deepest_nested_depth: deepest_nested_depth)
         end
 
+        # @api public
+        # @see README.md
+        # @param nesting_document [Samvera::NestingIndexer::Documents::IndexDocument]
+        def self.write_nesting_document_to_index_layer(nesting_document:)
+          Index.write_to_storage(nesting_document)
+        end
+
         # @api private
         def self.clear_cache!
           Preservation.clear_cache!
@@ -161,8 +168,12 @@ module Samvera
             Storage.find_children_of_id(document.id).each(&block)
           end
 
+          def self.write_to_storage(doc)
+            Storage.write(doc)
+          end
+
           def self.write_document(attributes = {})
-            Documents::IndexDocument.new(attributes).tap { |doc| Storage.write(doc) }
+            Documents::IndexDocument.new(attributes).tap { |doc| write_to_storage(doc) }
           end
 
           # :nodoc:

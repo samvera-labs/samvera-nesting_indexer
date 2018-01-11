@@ -94,5 +94,21 @@ if defined?(RSpec)
         expect(block_parameter_extracter.call(subject)).to be_empty
       end
     end
+
+    describe '.write_nesting_document_to_index_layer' do
+      subject { described_class.method(:write_nesting_document_to_index_layer) }
+
+      it 'requires the :nesting_document' do
+        expect(required_keyword_parameters.call(subject)).to eq(%i(nesting_document))
+      end
+
+      it 'does not require any other parameters' do
+        expect(required_parameters.call(subject)).to eq(required_keyword_parameters.call(subject))
+      end
+
+      it 'does not expect a block' do
+        expect(block_parameter_extracter.call(subject)).to be_empty
+      end
+    end
   end
 end

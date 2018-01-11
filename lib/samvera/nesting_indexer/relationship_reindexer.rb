@@ -85,15 +85,15 @@ module Samvera
         raise Exceptions::ExceededMaximumNestingDepthError, id: id if index_document.maximum_nesting_depth <= 0
         wrap_logging("indexing ID=#{index_document.id.inspect}") do
           preservation_document = adapter.find_preservation_document_by(id: index_document.id)
-          parent_ids_and_path_and_ancestors = parent_ids_and_path_and_ancestors_for(preservation_document)
-          guard_against_possiblity_of_self_ancestry(index_document: index_document, pathnames: parent_ids_and_path_and_ancestors.fetch(:pathnames))
-          adapter.write_document_attributes_to_index_layer(**parent_ids_and_path_and_ancestors)
+          nesting_document = build_nesting_document_for(preservation_document)
+          guard_against_possiblity_of_self_ancestry(index_document: index_document, pathnames: nesting_document.pathnames)
+          adapter.write_nesting_document_to_index_layer(nesting_document: nesting_document)
         end
       end
       # rubocop:enable Metrics/AbcSize
 
-      def parent_ids_and_path_and_ancestors_for(preservation_document)
-        ParentAndPathAndAncestorsBuilder.new(preservation_document, adapter).to_hash
+      def build_nesting_document_for(preservation_document)
+        ParentAndPathAndAncestorsBuilder.new(preservation_document, adapter).nesting_document
       end
 
       def guard_against_possiblity_of_self_ancestry(index_document:, pathnames:)
@@ -121,15 +121,14 @@ module Samvera
           @ancestors = Set.new
           @adapter = adapter
           compile!
-          @inner_document = Documents::IndexDocument.new(id: @preservation_document.id, parent_ids: @parent_ids, pathnames: @pathnames, ancestors: @ancestors)
+          @nesting_document = Documents::IndexDocument.new(id: @preservation_document.id, parent_ids: @parent_ids, pathnames: @pathnames, ancestors: @ancestors)
         end
 
-        extend Forwardable
-        def_delegator :inner_document, :to_hash
+        attr_reader :nesting_document
 
         private
 
-        attr_reader :adapter, :inner_document
+        attr_reader :adapter
 
         def compile!
           @preservation_document.parent_ids.each do |parent_id|

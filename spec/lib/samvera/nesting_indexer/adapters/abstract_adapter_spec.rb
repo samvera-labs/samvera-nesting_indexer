@@ -48,6 +48,12 @@ module Samvera
             expect { subject }.to raise_error(NotImplementedError)
           end
         end
+        describe '.write_nesting_document_to_index_layer' do
+          subject { described_class.write_nesting_document_to_index_layer(nesting_document: 1) }
+          it 'requires implementation (see documentation)' do
+            expect { subject }.to raise_error(NotImplementedError)
+          end
+        end
       end
     end
   end

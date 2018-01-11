@@ -43,6 +43,7 @@ module Samvera
         end
 
         # @api public
+        # @deprecated Use .write_nesting_document_to_index_layer instead
         # @see README.md
         # @param id [String]
         # @param parent_ids [Array<String>]
@@ -51,6 +52,15 @@ module Samvera
         # @param deepest_nested_depth [Integer]
         # @return Hash - the attributes written to the indexing layer
         def self.write_document_attributes_to_index_layer(id:, parent_ids:, ancestors:, pathnames:, deepest_nested_depth:)
+          raise NotImplementedError
+        end
+
+        # @api public
+        # @since v1.0.0
+        # @see README.md
+        # @param nesting_document [Samvera::NestingIndexer::Document::IndexDocument]
+        # @return void
+        def self.write_nesting_document_to_index_layer(nesting_document:)
           raise NotImplementedError
         end
       end

@@ -9,6 +9,11 @@ module Samvera
           subject { index_document.deepest_nested_depth }
           it { is_expected.to be_a(Integer) }
         end
+
+        describe '#to_hash' do
+          subject { index_document.to_hash }
+          it { is_expected.to be_a(Hash) }
+        end
       end
     end
   end

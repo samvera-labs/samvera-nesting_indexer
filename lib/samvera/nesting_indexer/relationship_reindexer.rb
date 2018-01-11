@@ -44,7 +44,7 @@ module Samvera
 
       private
 
-      attr_reader :queue, :configuration, :visited_ids
+      attr_reader :queue, :configuration
 
       def process_each_document
         processing_document = dequeue

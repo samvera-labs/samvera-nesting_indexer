@@ -1,0 +1,15 @@
+===============================================================================
+
+Some setup you may need to complete:
+
+  1. Review the initializer and configurations installed in
+     config/initializers/samvera-nesting_indexer_initializer.rb:
+
+     a. adapter
+     b. maximum_nesting_depth
+     c. field names in the solr document
+
+  2. Ensure the defined adapter implements the Samvera::NestingIndexer::Adapter
+     (see ./lib/samvera/nesting_indexer/adapters/interface_behavior_spec.rb)
+
+===============================================================================

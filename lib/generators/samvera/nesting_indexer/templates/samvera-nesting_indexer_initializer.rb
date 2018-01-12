@@ -4,8 +4,9 @@ require 'samvera/nesting_indexer'
 
 Samvera::NestingIndexer.configure do |config|
   # How many layers of nesting are allowed for collections
-  # For maximum_nesting_depth of 3 the following will raise an exception
-  # C1 ={ C2 ={ C3 ={ W1
+  # Given a maximum_nesting_depth of 3 the following will raise an exception:
+  # C1 ={ C2 ={ C3 ={ C4
+  # (e.g. C4 is a member of C3 is a member of C2 is a member of C1)
   config.maximum_nesting_depth = <%= @maximum_nesting_depth %>
 
   # The adapter that implements the Samvera::NestingIndexer::Adapter interface

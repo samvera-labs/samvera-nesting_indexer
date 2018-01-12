@@ -44,7 +44,7 @@ module Samvera
 
       private
 
-      attr_reader :queue, :configuration, :visited_ids
+      attr_reader :queue, :configuration
 
       def process_each_document
         processing_document = dequeue
@@ -85,15 +85,15 @@ module Samvera
         raise Exceptions::ExceededMaximumNestingDepthError, id: id if index_document.maximum_nesting_depth <= 0
         wrap_logging("indexing ID=#{index_document.id.inspect}") do
           preservation_document = adapter.find_preservation_document_by(id: index_document.id)
-          parent_ids_and_path_and_ancestors = parent_ids_and_path_and_ancestors_for(preservation_document)
-          guard_against_possiblity_of_self_ancestry(index_document: index_document, pathnames: parent_ids_and_path_and_ancestors.fetch(:pathnames))
-          adapter.write_document_attributes_to_index_layer(**parent_ids_and_path_and_ancestors)
+          nesting_document = build_nesting_document_for(preservation_document)
+          guard_against_possiblity_of_self_ancestry(index_document: index_document, pathnames: nesting_document.pathnames)
+          adapter.write_nesting_document_to_index_layer(nesting_document: nesting_document)
         end
       end
       # rubocop:enable Metrics/AbcSize
 
-      def parent_ids_and_path_and_ancestors_for(preservation_document)
-        ParentAndPathAndAncestorsBuilder.new(preservation_document, adapter).to_hash
+      def build_nesting_document_for(preservation_document)
+        ParentAndPathAndAncestorsBuilder.new(preservation_document, adapter).nesting_document
       end
 
       def guard_against_possiblity_of_self_ancestry(index_document:, pathnames:)
@@ -109,7 +109,7 @@ module Samvera
         logger.debug("Ending #{message_suffix}")
       end
 
-      # A small object that helps encapsulate the logic of building the hash of information regarding
+      # A small object that helps encapsulate the logic for building the hash of information regarding
       # the initialization of an Samvera::NestingIndexer::Documents::IndexDocument
       #
       # @see Samvera::NestingIndexer::Documents::IndexDocument for details on pathnames, ancestors, and parent_ids.
@@ -121,11 +121,10 @@ module Samvera
           @ancestors = Set.new
           @adapter = adapter
           compile!
+          @nesting_document = Documents::IndexDocument.new(id: @preservation_document.id, parent_ids: @parent_ids, pathnames: @pathnames, ancestors: @ancestors)
         end
 
-        def to_hash
-          { id: @preservation_document.id, parent_ids: @parent_ids.to_a, pathnames: @pathnames.to_a, ancestors: @ancestors.to_a }
-        end
+        attr_reader :nesting_document
 
         private
 

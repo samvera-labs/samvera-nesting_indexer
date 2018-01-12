@@ -6,7 +6,7 @@
 [![Documentation Status](http://inch-ci.org/github/samvera-labs/samvera-nesting_indexer.svg?branch=master)](http://inch-ci.org/github/samvera-labs/samvera-nesting_indexer)
 [![APACHE 2 License](http://img.shields.io/badge/APACHE2-license-blue.svg)](./LICENSE)
 
-The Samvera::NestingIndexer gem is responsible for indexing the graph relationship of objects. It maps a PreservationDocument to an IndexDocument by mapping a PreservationDocument's direct parents into the paths to get from a root document to the given PreservationDocument.
+The Samvera::NestingIndexer gem generates the graph related attributes related to querying lineage of objects. It maps a PreservationDocument (e.g. a Fedora object) to an IndexDocument (e.g. a SOLR document) by mapping a PreservationDocument's direct parents to ancestral paths for the given PreservationDocument.
 
 * [Background](#background)
 * [Concepts](#concepts)
@@ -16,7 +16,7 @@ The Samvera::NestingIndexer gem is responsible for indexing the graph relationsh
 
 ## Background
 
-This is a sandbox to work through the reindexing strategy as it relates to [CurateND Collections](https://github.com/ndlib/samvera_nd/issues/420). At this point the code is separate to allow for raid testing and prototyping (no sense spinning up SOLR and Fedora to walk an arbitrary graph).
+This gem began as a sandbox to work through the reindexing strategy for [CurateND Collections](https://github.com/ndlib/curate_nd/issues/420). This gem separates the logic of walking a graph, building the attributes necessary for nested collection maintenance, and persistence concerns. In other words, testing this gem does not require spinning up expensive persistence layers (e.g. SOLR, Fedora, or even an RDBMS).
 
 ### Notation
 
@@ -24,25 +24,25 @@ When B is a member of A, I am using the `A ={ B` notation. When C is a member of
 
 ## Concepts
 
-As we are indexing objects, we have two types of documents:
+While indexing objects, we work with two types of documents:
 
 1. [PreservationDocument](./lib/samvera/nesting_indexer/documents.rb) - a light-weight representation of a Fedora object
 2. [IndexDocument](./lib/samvera/nesting_indexer/documents.rb) - a light-weight representation of a SOLR document object
 
-We have four attributes to consider for indexing the graph:
+The four attributes to consider for indexing the graph:
 
 1. id - the unique identifier for a document
-2. parent_ids - the ids for all of the parents of a given document
+2. parent_ids - the ids for of the parents of the given document
 3. pathnames - the paths to traverse from a root document to the given document
-4. ancestors - the pathnames to each node that is an ancestor of the given node (e.g. pathname to my parent, pathname to my grandparent)
+4. ancestors - the pathnames to each ancestral node of the given node (e.g. pathname to my parent, pathname to my grandparent)
 
 See [Samvera::NestingIndexer::Documents::IndexDocument](./lib/samvera/nesting_indexer/documents.rb) for further discussion.
 
-To reindex a single document, we leverage the [`Samvera::NestingIndexer.reindex_relationships`](./lib/samvera/nesting_indexer.rb) method.
+To reindex a single document, use the [`Samvera::NestingIndexer.reindex_relationships`](./lib/samvera/nesting_indexer.rb) method.
 
-To reindex all of the documents, we leverage the [`Samvera::NestingIndexer.reindex_all!`](lib/samvera/nesting_indexer.rb) method. **Warning: This is a very slow process.**
+To reindex all documents, use the [`Samvera::NestingIndexer.reindex_all!`](lib/samvera/nesting_indexer.rb) method. **Warning: This is a very slow process.**
 
-With a node's pathname(s), we are able to query what are all of my descendants (both direct and indirect) by way of the ancestors.
+From a node's pathname(s), you can query all of that node's descendants (both direct and indirect).
 
 ## Examples
 
@@ -57,7 +57,7 @@ Given the following PreservationDocuments:
 | E   | C       |
 | F   | D       |
 
-If we were to reindex the above PreservationDocuments, we will generate the following IndexDocuments:
+When we reindex the above PreservationDocuments, then we will get the following IndexDocuments:
 
 | PID | Parents | Pathnames      | Ancestors        |
 |-----|---------|----------------|------------------|
@@ -97,6 +97,7 @@ To best ensure you have implemented the adapter to spec:
 require 'samvera/nesting_indexer/adapters/interface_behavior_spec'
 RSpec.describe MyCustomAdapter
   it_behaves_like 'a Samvera::NestingIndexer::Adapter'
+  # Your implementation details here
 end
 ```
 
@@ -139,10 +140,10 @@ Given an up to date index and a document, then it is valid to nest the given doc
 
 For examples of determining if we can nest a document within another document, see the [demonstration of nesting](./spec/features/demonstrating_nesting_spec.rb).
 
-In implementations, you'll likely want to write a queries that answer:
+In implementations, you'll likely want to write queries that answer:
 
-* What are the valid IDs that I can nest within?
-* What are the valid IDs in which I can nest within and am not already nested within?
+* Find the valid IDs that I can nest within?
+* Find the valid IDs in which I can nest within and am not already nested within?
 
 ## TODO
 
@@ -150,3 +151,4 @@ In implementations, you'll likely want to write a queries that answer:
 - [ ] Build methods to allow for fanning out the reindexing. At present, when we reindex a node and its "children", we run that entire process within a single context. Likewise, we run a single process when reindexing EVERYTHING.
 - [ ] Promote from [samvera-labs](https://github.com/samvera-labs) to [samvera](https://github.com/samvera) via the [promotion process](http://samvera-labs.github.io/promotion.html).
 - [ ] Write adapter method to assist in guarding against self-ancestry. We could probably expose a base adapter that has the method through use of the other adapter methods.
+- [ ] Add templates to generate the configuration

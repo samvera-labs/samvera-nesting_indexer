@@ -13,6 +13,7 @@ The Samvera::NestingIndexer gem generates the graph related attributes related t
 * [Examples](#examples)
 * [Adapters](#adapters)
 * [Considerations](#considerations)
+* [Public API for Semantic Versioning](#public_api_for_semantic_versioning)
 
 ## Background
 
@@ -144,6 +145,20 @@ In implementations, you'll likely want to write queries that answer:
 
 * Find the valid IDs that I can nest within?
 * Find the valid IDs in which I can nest within and am not already nested within?
+
+## Public API for Semantic Versioning
+
+Any method with `@api public` documentation is part of the semantically versioned API. This means you can assume:
+
+* the method will exist with the same effective signature (perhaps with changes to defaults)
+* the method can be called by upstream consumers
+* deprecations will be announced prior to major version upgrades
+
+Any module or class with `@api public` documentation is part of the semantically versioned API. This means you can assume:
+
+* the module or class can be accessed upstream
+* all public methods are assumed to be `@api public` unless otherwise stated
+* deprecations will be announced prior to major version upgrades
 
 ## TODO
 

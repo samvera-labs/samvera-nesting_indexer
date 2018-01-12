@@ -6,7 +6,10 @@ require 'samvera/nesting_indexer/documents'
 require 'samvera/nesting_indexer/railtie' if defined?(Rails)
 
 module Samvera
-  # Responsible for indexing an object and its related child objects.
+  # @api public
+  #
+  # A container module responsible for exposing public API methods for nested indexing and the
+  # underlying configuration to perform that indexing.
   module NestingIndexer
     # @api public
     # Responsible for reindexing the associated document for the given :id and the descendants of that :id.
@@ -85,6 +88,10 @@ module Samvera
       return false unless @configuration_block.respond_to?(:call)
       @configuration_block.call(configuration)
       @configuration_block = nil
+    end
+
+    def self.semantic_version_messages
+      SemverAssistant.messages
     end
   end
 end

@@ -9,11 +9,13 @@ module Samvera
       # Defines the interface for interacting with the InMemory layer. It is a reference
       # implementation that is used throughout tests.
       module InMemoryAdapter
+        SemverAssistant.removing_from_public_api(context: self, as_of: '2.0.0')
         extend AbstractAdapter
         # @api public
         # @param id [String]
         # @return Samvera::NestingIndexer::Document::PreservationDocument
         def self.find_preservation_document_by(id:)
+          SemverAssistant.removing_from_public_api(context: "#{self.class}##{__method__}", as_of: '2.0.0')
           Preservation.find(id)
         end
 
@@ -21,6 +23,7 @@ module Samvera
         # @param id [String]
         # @return [Samvera::NestingIndexer::Documents::IndexDocument]
         def self.find_index_document_by(id:)
+          SemverAssistant.removing_from_public_api(context: "#{self.class}##{__method__}", as_of: '2.0.0')
           Index.find(id)
         end
 
@@ -28,6 +31,7 @@ module Samvera
         # @yieldparam id [String] The `id` of the preservation document
         # @yieldparam parent_ids [String] The ids of the parent objects of this presevation document
         def self.each_perservation_document_id_and_parent_ids(&block)
+          SemverAssistant.removing_from_public_api(context: "#{self.class}##{__method__}", as_of: '2.0.0')
           Preservation.find_each do |document|
             block.call(document.id, document.parent_ids)
           end
@@ -41,6 +45,7 @@ module Samvera
         # @param document [Samvera::NestingIndexer::Documents::IndexDocument]
         # @yield [Samvera::NestingIndexer::Documents::IndexDocument]
         def self.each_child_document_of(document:, &block)
+          SemverAssistant.removing_from_public_api(context: "#{self.class}##{__method__}", as_of: '2.0.0')
           Index.each_child_document_of(document: document, &block)
         end
 
@@ -50,6 +55,7 @@ module Samvera
         # @param attributes [Hash]
         # @return [Samvera::NestingIndexer::Documents::PreservationDocument]
         def self.write_document_attributes_to_preservation_layer(attributes)
+          SemverAssistant.removing_from_public_api(context: "#{self.class}##{__method__}", as_of: '2.0.0')
           Preservation.write_document(attributes)
         end
 
@@ -62,6 +68,7 @@ module Samvera
         # @param deepest_nested_depth [Integer]
         # @return [Hash] - the attributes written to the indexing layer
         def self.write_document_attributes_to_index_layer(id:, parent_ids:, ancestors:, pathnames:, deepest_nested_depth:)
+          SemverAssistant.removing_from_public_api(context: "#{self.class}##{__method__}", as_of: '2.0.0')
           Index.write_document(id: id, parent_ids: parent_ids, ancestors: ancestors, pathnames: pathnames, deepest_nested_depth: deepest_nested_depth)
         end
 
@@ -69,6 +76,7 @@ module Samvera
         # @see README.md
         # @param nesting_document [Samvera::NestingIndexer::Documents::IndexDocument]
         def self.write_nesting_document_to_index_layer(nesting_document:)
+          SemverAssistant.removing_from_public_api(context: "#{self.class}##{__method__}", as_of: '2.0.0')
           Index.write_to_storage(nesting_document)
         end
 

@@ -3,7 +3,6 @@ require 'forwardable'
 require 'set'
 
 module Samvera
-  # Establishing namespace
   module NestingIndexer
     # Responsible for reindexing the document associated with the given PID and its descendant documents
     # @note There is cycle detection via the Samvera::NestingIndexer::Configuration#maximum_nesting_depth counter
@@ -153,6 +152,6 @@ module Samvera
       end
       private_constant :ParentAndPathAndAncestorsBuilder
     end
-    private_constant :RelationshipReindexer
   end
 end
+Samvera::NestingIndexer.private_constant :RelationshipReindexer

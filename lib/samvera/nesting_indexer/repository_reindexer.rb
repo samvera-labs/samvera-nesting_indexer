@@ -1,7 +1,6 @@
 require 'samvera/nesting_indexer/exceptions'
 require 'forwardable'
 module Samvera
-  # Establishing namespace
   module NestingIndexer
     # Responsible for reindexing the entire repository
     # @api private
@@ -70,6 +69,6 @@ module Samvera
         raise Exceptions::ReindexingError.new(id, e)
       end
     end
-    private_constant :RepositoryReindexer
   end
 end
+Samvera::NestingIndexer.private_constant :RepositoryReindexer

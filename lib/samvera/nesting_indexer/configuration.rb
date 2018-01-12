@@ -3,7 +3,6 @@ require 'samvera/nesting_indexer/exceptions'
 require 'logger'
 
 module Samvera
-  # :nodoc:
   module NestingIndexer
     # @api public
     # Responsible for the configuration of the Samvera::NestingIndexer
@@ -81,6 +80,6 @@ module Samvera
         end
       end
     end
-    private_constant :Configuration
   end
 end
+Samvera::NestingIndexer.private_constant :Configuration

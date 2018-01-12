@@ -14,6 +14,6 @@ module Samvera
         ActiveSupport::Deprecation.warn(message, caller[1..-1]) if defined?(ActiveSupport::Deprecation) && !ENV.key?('SKIP_ACTIVE_SUPPORT_DEPRECATION')
       end
     end
-    private_constant :SemverAssistant
   end
 end
+Samvera::NestingIndexer.private_constant :SemverAssistant

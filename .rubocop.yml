@@ -22,6 +22,7 @@ AllCops:
     - 'bin/**/*'
     - Gemfile
     - Guardfile
+    - '**/templates/**/*'
     - samvera-nesting_indexer.gemspec
   TargetRubyVersion: 2.2
 LineLength:

@@ -14,6 +14,7 @@ The Samvera::NestingIndexer gem generates the graph related attributes related t
 * [Adapters](#adapters)
 * [Considerations](#considerations)
 * [Public API for Semantic Versioning](#public_api_for_semantic_versioning)
+* [Installation](#installation)
 
 ## Background
 
@@ -159,6 +160,18 @@ Any module or class with `@api public` documentation is part of the semantically
 * the module or class can be accessed upstream
 * all public methods are assumed to be `@api public` unless otherwise stated
 * deprecations will be announced prior to major version upgrades
+
+## Installation
+
+Add the following to your Gemfile:
+
+```ruby
+gem 'samvera-nesting_indexer'
+```
+
+Bundle up your gems (e.g. `bundle`).
+
+Then run `rails generator install samvera:nesting_indexer:install`.
 
 ## TODO
 

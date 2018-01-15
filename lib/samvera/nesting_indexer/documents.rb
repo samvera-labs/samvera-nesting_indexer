@@ -101,7 +101,9 @@ module Samvera
         #
         # @return Integer
         def deepest_nested_depth
-          pathnames.map(&:length).max
+          pathnames.map do |pathname|
+            pathname.split(ANCESTOR_AND_PATHNAME_DELIMITER).count
+          end.max
         end
 
         def sorted_parent_ids

@@ -8,6 +8,10 @@ module Samvera
         describe '#deepest_nested_depth' do
           subject { index_document.deepest_nested_depth }
           it { is_expected.to be_a(Integer) }
+
+          it 'is determined by longest pathname' do
+            expect(subject).to eq(2)
+          end
         end
 
         describe '#to_hash' do

@@ -68,10 +68,10 @@ if defined?(RSpec)
       subject { described_class.method(:each_child_document_of) }
 
       it 'requires the :document keyword (and does not require any others)' do
-        expect(required_keyword_parameters.call(subject)).to eq([:document])
+        expect(required_keyword_parameters.call(subject)).to eq(%i(document extent))
       end
 
-      it 'does not require any other parameters (besides :document)' do
+      it 'does not require any other parameters (besides :document, :extent)' do
         expect(required_parameters.call(subject)).to eq(required_keyword_parameters.call(subject))
       end
 

@@ -22,11 +22,13 @@ module Samvera
       # @param maximum_nesting_depth [Integer] What is the maximum allowed depth of nesting
       # @param configuration [#adapter, #logger] The :adapter conforms to the Samvera::NestingIndexer::Adapters::AbstractAdapter interface
       #                                          and the :logger conforms to Logger
+      # @param extent [String] - any value other than "full or nil is used to force adapter skip all children which already contain the indexing fields
       # @param queue [#shift, #push] queue
-      def initialize(id:, maximum_nesting_depth:, configuration:, queue: [])
+      def initialize(id:, maximum_nesting_depth:, configuration:, extent:, queue: [])
         @id = id.to_s
         @maximum_nesting_depth = maximum_nesting_depth.to_i
         @configuration = configuration
+        @extent = extent
         @queue = queue
       end
       attr_reader :id, :maximum_nesting_depth
@@ -43,13 +45,13 @@ module Samvera
 
       private
 
-      attr_reader :queue, :configuration
+      attr_reader :queue, :configuration, :extent
 
       def process_each_document
         processing_document = dequeue
         while processing_document
           process_a_document(processing_document)
-          adapter.each_child_document_of(document: processing_document) do |child|
+          adapter.each_child_document_of(document: processing_document, extent: extent) do |child|
             enqueue(child, processing_document.maximum_nesting_depth - 1)
           end
           processing_document = dequeue
@@ -57,7 +59,7 @@ module Samvera
       end
 
       def initial_index_document
-        adapter.find_index_document_by(id: id)
+        @initial_index_document ||= adapter.find_index_document_by(id: id)
       end
 
       extend Forwardable
@@ -127,7 +129,7 @@ module Samvera
 
         private
 
-        attr_reader :adapter
+        attr_reader :adapter, :extent
 
         def compile!
           @preservation_document.parent_ids.each do |parent_id|

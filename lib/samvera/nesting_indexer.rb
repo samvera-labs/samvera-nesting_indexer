@@ -18,12 +18,13 @@ module Samvera
     # @param id [String] - The permanent identifier of the object that will be reindexed along with its children.
     # @param maximum_nesting_depth [Integer] - used to short-circuit overly deep nesting as well as prevent accidental cyclic graphs
     #                                          from creating an infinite loop.
+    # @param extent [String] - any value other than "full or nil is used to force adapter skip all children which already contain the indexing fields
     # @return [Boolean] - It was successful
     # @raise Samvera::Exceptions::CycleDetectionError - A possible cycle was detected
     # @raise Samvera::Exceptions::ExceededMaximumNestingDepthError - We exceeded our maximum depth
     # @raise Samvera::Exceptions::DocumentIsItsOwnAncestorError - A document we were about to index appeared to be its own ancestor
-    def self.reindex_relationships(id:, maximum_nesting_depth: configuration.maximum_nesting_depth)
-      RelationshipReindexer.call(id: id, maximum_nesting_depth: maximum_nesting_depth, configuration: configuration)
+    def self.reindex_relationships(id:, maximum_nesting_depth: configuration.maximum_nesting_depth, extent: nil)
+      RelationshipReindexer.call(id: id, maximum_nesting_depth: maximum_nesting_depth, configuration: configuration, extent: extent)
       true
     end
 

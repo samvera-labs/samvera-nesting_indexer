@@ -43,11 +43,14 @@ module Samvera
 
         # @api public
         # @param document [Samvera::NestingIndexer::Documents::IndexDocument]
+        # @param extent [String] passed into adapter from reindex_relationships call
         # @yield [Samvera::NestingIndexer::Documents::IndexDocument]
-        def self.each_child_document_of(document:, &block)
+        # rubocop:disable Lint/UnusedMethodArgument
+        def self.each_child_document_of(document:, extent:, &block)
           SemverAssistant.removing_from_public_api(context: "#{self.class}##{__method__}", as_of: '2.0.0')
-          Index.each_child_document_of(document: document, &block)
+          Index.each_child_document_of(document: document, extent: nil, &block)
         end
+        # rubocop:enable Lint/UnusedMethodArgument
 
         # @api public
         # This is not something that I envision using in the production environment;
@@ -172,9 +175,11 @@ module Samvera
             Storage.find_each(&block)
           end
 
-          def self.each_child_document_of(document:, &block)
+          # rubocop:disable Lint/UnusedMethodArgument
+          def self.each_child_document_of(document:, extent: nil, &block)
             Storage.find_children_of_id(document.id).each(&block)
           end
+          # rubocop:enable Lint/UnusedMethodArgument
 
           def self.write_to_storage(doc)
             Storage.write(doc)

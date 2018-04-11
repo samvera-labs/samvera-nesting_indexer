@@ -8,7 +8,7 @@ module Samvera
       # Responsible for exposing the install generator (e.g. rails generator install amvera:nesting_indexer:install)
       class InstallGenerator < Rails::Generators::Base
         DEFAULT_MAXIMUM_NESTING_DEPTH = 5
-        source_root File.expand_path("../templates", __FILE__)
+        source_root File.expand_path('templates', __dir__)
         desc "Creates a Samvera::NestingIndexer initializer."
         class_option(
           :adapter,

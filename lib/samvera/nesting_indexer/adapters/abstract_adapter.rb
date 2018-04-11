@@ -37,8 +37,9 @@ module Samvera
 
         # @api public
         # @param document [Samvera::NestingIndexer::Documents::IndexDocument]
+        # @param extent [String] passed into adapter from reindex_relationships call
         # @yield [Samvera::NestingIndexer::Documents::IndexDocument]
-        def self.each_child_document_of(document:, &block)
+        def self.each_child_document_of(document:, extent:, &block)
           raise NotImplementedError
         end
 

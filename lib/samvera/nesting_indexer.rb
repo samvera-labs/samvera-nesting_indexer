@@ -90,9 +90,5 @@ module Samvera
       @configuration_block.call(configuration)
       @configuration_block = nil
     end
-
-    def self.semantic_version_messages
-      SemverAssistant.messages
-    end
   end
 end

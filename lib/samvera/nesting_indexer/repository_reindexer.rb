@@ -22,10 +22,11 @@ module Samvera
       # @param maximum_nesting_depth [Integer] detect cycles in the graph
       # @param configuration [#adapter, #logger] The :adapter conforms to the Samvera::NestingIndexer::Adapters::AbstractAdapter interface
       #                                          and the :logger conforms to Logger
-      def initialize(maximum_nesting_depth:, id_reindexer:, configuration:)
+      def initialize(maximum_nesting_depth:, id_reindexer:, configuration:, extent:)
         @maximum_nesting_depth = maximum_nesting_depth.to_i
         @id_reindexer = id_reindexer
         @configuration = configuration
+        @extent = extent
         @processed_ids = []
       end
 
@@ -38,7 +39,7 @@ module Samvera
 
       private
 
-      attr_reader :maximum_nesting_depth, :processed_ids, :id_reindexer, :configuration
+      attr_reader :maximum_nesting_depth, :processed_ids, :id_reindexer, :configuration, :extent
 
       extend Forwardable
       def_delegator :configuration, :adapter
@@ -62,7 +63,7 @@ module Samvera
       end
 
       def reindex_an_id(id)
-        id_reindexer.call(id: id)
+        id_reindexer.call(id: id, extent: extent)
         processed_ids << id
       rescue StandardError => e
         logger.error(e)

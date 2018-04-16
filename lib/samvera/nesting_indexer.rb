@@ -18,12 +18,12 @@ module Samvera
     # @param id [String] - The permanent identifier of the object that will be reindexed along with its children.
     # @param maximum_nesting_depth [Integer] - used to short-circuit overly deep nesting as well as prevent accidental cyclic graphs
     #                                          from creating an infinite loop.
-    # @param extent [String] - any value other than "full or nil is used to force adapter skip all children which already contain the indexing fields
+    # @param extent [String] - may be leveraged in adapter to limit the extent of the reindexing of children
     # @return [Boolean] - It was successful
     # @raise Samvera::Exceptions::CycleDetectionError - A possible cycle was detected
     # @raise Samvera::Exceptions::ExceededMaximumNestingDepthError - We exceeded our maximum depth
     # @raise Samvera::Exceptions::DocumentIsItsOwnAncestorError - A document we were about to index appeared to be its own ancestor
-    def self.reindex_relationships(id:, maximum_nesting_depth: configuration.maximum_nesting_depth, extent: nil)
+    def self.reindex_relationships(id:, maximum_nesting_depth: configuration.maximum_nesting_depth, extent:)
       RelationshipReindexer.call(id: id, maximum_nesting_depth: maximum_nesting_depth, configuration: configuration, extent: extent)
       true
     end
@@ -37,13 +37,14 @@ module Samvera
     # @api public
     # Responsible for reindexing the entire preservation layer.
     # @param maximum_nesting_depth [Integer] - there to guard against cyclic graphs
+    # @param extent [String] - for reindex_all, should result in full reindexing... leveraged in adapter to limit the extent of the reindexing of children
     # @return [Boolean] - It was successful
     # @raise Samvera::Exceptions::ReindexingError - There was a problem reindexing the graph.
-    def self.reindex_all!(maximum_nesting_depth: configuration.maximum_nesting_depth)
+    def self.reindex_all!(maximum_nesting_depth: configuration.maximum_nesting_depth, extent:)
       # While the RepositoryReindexer is responsible for reindexing everything, I
       # want to inject the lambda that will reindex a single item.
       id_reindexer = method(:reindex_relationships)
-      RepositoryReindexer.call(maximum_nesting_depth: maximum_nesting_depth, id_reindexer: id_reindexer, configuration: configuration)
+      RepositoryReindexer.call(maximum_nesting_depth: maximum_nesting_depth, id_reindexer: id_reindexer, configuration: configuration, extent: extent)
       true
     end
 

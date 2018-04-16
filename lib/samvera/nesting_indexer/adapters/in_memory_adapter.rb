@@ -43,7 +43,7 @@ module Samvera
         # @yield [Samvera::NestingIndexer::Documents::IndexDocument]
         # rubocop:disable Lint/UnusedMethodArgument
         def self.each_child_document_of(document:, extent:, &block)
-          Index.each_child_document_of(document: document, extent: nil, &block)
+          Index.each_child_document_of(document: document, extent: "full", &block)
         end
         # rubocop:enable Lint/UnusedMethodArgument
 

@@ -102,6 +102,7 @@ module Samvera
             let(:starting_graph) { the_scenario.fetch(:starting_graph) }
             let(:preservation_document_attributes_to_update) { the_scenario.fetch(:preservation_document_attributes_to_update) }
             let(:ending_graph) { the_scenario.fetch(:ending_graph) }
+
             it 'will update the graph' do
               # A custom test helper method that builds the starting graph in the indexing and persistence layer.
               # This builds the "initial" data state
@@ -111,7 +112,7 @@ module Samvera
               write_document_to_persistence_layers(preservation_document_attributes_to_update)
 
               # Run the "job" that will reindex the relationships for the given id.
-              NestingIndexer.reindex_relationships(id: preservation_document_attributes_to_update.fetch(:id), extent: nil)
+              NestingIndexer.reindex_relationships(id: preservation_document_attributes_to_update.fetch(:id), extent: "full")
 
               # A custom spec helper that verifies the expected ending graph versus the actual graph as retrieved
               # This verifies the "ending" data state
@@ -130,7 +131,7 @@ module Samvera
           }
           build_graph(starting_graph)
 
-          expect { NestingIndexer.reindex_relationships(id: :a, extent: nil) }.to raise_error(Exceptions::CycleDetectionError)
+          expect { NestingIndexer.reindex_relationships(id: :a, extent: "full") }.to raise_error(Exceptions::CycleDetectionError)
         end
 
         it 'catches a simple cyclic graph (start with A ={ B and add B ={ A relationship)' do
@@ -140,7 +141,7 @@ module Samvera
           }
           build_graph(starting_graph)
 
-          NestingIndexer.reindex_all!
+          NestingIndexer.reindex_all!(extent: "full")
 
           ending_graph = {
             parent_ids: { a: [], b: ['a'] },
@@ -151,7 +152,7 @@ module Samvera
 
           # We are writing (and succeeding at writing) a cyclic relationship
           NestingIndexer.adapter.write_document_attributes_to_preservation_layer(id: :a, parent_ids: ['b'])
-          expect { NestingIndexer.reindex_relationships(id: :a, extent: nil) }.to raise_error(ancestor_error)
+          expect { NestingIndexer.reindex_relationships(id: :a, extent: "full") }.to raise_error(ancestor_error)
 
           # We should have the same index that we started with.
           verify_graph_versus_storage(ending_graph)
@@ -164,7 +165,7 @@ module Samvera
           }
           build_graph(starting_graph)
 
-          NestingIndexer.reindex_all!
+          NestingIndexer.reindex_all!(extent: "full")
 
           ending_graph = {
             parent_ids: { a: [], b: ['a'], c: ['b'] },
@@ -175,7 +176,7 @@ module Samvera
 
           # We are writing (and succeeding at writing) a cyclic relationship
           NestingIndexer.adapter.write_document_attributes_to_preservation_layer(id: :b, parent_ids: ['a', 'c'])
-          expect { NestingIndexer.reindex_relationships(id: :b, extent: nil) }.to raise_error(ancestor_error)
+          expect { NestingIndexer.reindex_relationships(id: :b, extent: "full") }.to raise_error(ancestor_error)
 
           # We should have the same index that we started with.
           verify_graph_versus_storage(ending_graph)
@@ -187,10 +188,10 @@ module Samvera
           }
           build_graph(starting_graph)
           # If we give enough time to live this will index
-          expect { NestingIndexer.reindex_relationships(id: :a, maximum_nesting_depth: 5, extent: nil) }.not_to raise_error
+          expect { NestingIndexer.reindex_relationships(id: :a, maximum_nesting_depth: 5, extent: "full") }.not_to raise_error
 
           # If we don't give enough time to live this will fail in indexing
-          expect { NestingIndexer.reindex_relationships(id: :a, maximum_nesting_depth: 2, extent: nil) }.to(
+          expect { NestingIndexer.reindex_relationships(id: :a, maximum_nesting_depth: 2, extent: "full") }.to(
             raise_error(Samvera::NestingIndexer::Exceptions::CycleDetectionError)
           )
         end
@@ -202,7 +203,7 @@ module Samvera
             parent_ids: { a: [], b: ['a'], c: ['a', 'b'], d: ['b', 'c'], e: ['b', 'c'], f: ['e'], g: [] }
           }
           build_graph(starting_graph)
-          NestingIndexer.reindex_all!
+          NestingIndexer.reindex_all!(extent: "full")
           ending_graph = {
             parent_ids: { a: [], b: ['a'], c: ['a', 'b'], d: ['b', 'c'], e: ['b', 'c'], f: ['e'], g: [] },
             ancestors: {
@@ -223,7 +224,7 @@ module Samvera
           }
           build_graph(starting_graph)
 
-          NestingIndexer.reindex_all!
+          NestingIndexer.reindex_all!(extent: "full")
 
           ending_graph = {
             parent_ids: { a: [], b: ['a'], c: ['b', 'e'], d: [], e: ['d'] },
@@ -239,7 +240,7 @@ module Samvera
           }
           build_graph(starting_graph)
 
-          NestingIndexer.reindex_all!
+          NestingIndexer.reindex_all!(extent: "full")
 
           ending_graph = {
             parent_ids: { a: [], b: ['a'], c: ['a', 'b'], d: ['b'], e: ['c', 'd'], f: [] },
@@ -255,7 +256,7 @@ module Samvera
           }
           build_graph(starting_graph)
 
-          NestingIndexer.reindex_all!
+          NestingIndexer.reindex_all!(extent: "full")
 
           ending_graph = {
             parent_ids: { a: ['b'], b: ['c'], c: [] },
@@ -270,7 +271,7 @@ module Samvera
             parent_ids: { a: [], b: ['a', 'd'], c: ['b'], d: ['c'] }
           }
           build_graph(starting_graph)
-          expect { NestingIndexer.reindex_all! }.to raise_error(Exceptions::ReindexingError)
+          expect { NestingIndexer.reindex_all!(extent: "full") }.to raise_error(Exceptions::ReindexingError)
         end
       end
     end

@@ -22,7 +22,7 @@ module Samvera
       # @param maximum_nesting_depth [Integer] What is the maximum allowed depth of nesting
       # @param configuration [#adapter, #logger] The :adapter conforms to the Samvera::NestingIndexer::Adapters::AbstractAdapter interface
       #                                          and the :logger conforms to Logger
-      # @param extent [String] - any value other than "full or nil is used to force adapter skip all children which already contain the indexing fields
+      # @param extent [String] - may be leveraged in adapter to limit the extent of the reindexing of children
       # @param queue [#shift, #push] queue
       def initialize(id:, maximum_nesting_depth:, configuration:, extent:, queue: [])
         @id = id.to_s

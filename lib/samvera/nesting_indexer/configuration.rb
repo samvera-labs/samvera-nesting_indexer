@@ -46,6 +46,14 @@ module Samvera
         @solr_field_name_for_storing_pathnames || raise(Exceptions::SolrKeyConfigurationError.new(name: __method__, config: self))
       end
 
+      def solr_field_name_for_deepest_nested_depth=(input)
+        @solr_field_name_for_deepest_nested_depth = input.to_s
+      end
+
+      def solr_field_name_for_deepest_nested_depth
+        @solr_field_name_for_deepest_nested_depth || raise(Exceptions::SolrKeyConfigurationError.new(name: __method__, config: self))
+      end
+
       # @api public
       # @return Samvera::NestingIndexer::Adapters::AbstractAdapter
       def adapter

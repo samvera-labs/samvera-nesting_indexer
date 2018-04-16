@@ -96,6 +96,22 @@ module Samvera
         end
       end
 
+      describe '#solr_field_name_for_deepest_nested_depth' do
+        subject { configuration.solr_field_name_for_deepest_nested_depth }
+
+        describe 'when set' do
+          before { configuration.solr_field_name_for_deepest_nested_depth = :the_key }
+
+          it { is_expected.to be_a(String) }
+        end
+
+        describe 'when not set' do
+          it 'raises Exceptions::SolrKeyConfigurationError' do
+            expect { subject }.to raise_error(Exceptions::SolrKeyConfigurationError)
+          end
+        end
+      end
+
       context '#adapter' do
         it 'is not set when initialized (and thus does not send a logging message)' do
           expect do

@@ -42,13 +42,6 @@ module Samvera
           end
         end
 
-        describe '.write_document_attributes_to_index_layer' do
-          subject { described_class.write_document_attributes_to_index_layer(id: 1, parent_ids: 2, ancestors: 3, pathnames: 4, deepest_nested_depth: 5) }
-          it 'is defined but requires implementation in classes that extend this class (see documentation)' do
-            expect { subject }.to raise_error(NotImplementedError)
-          end
-        end
-
         describe '.write_nesting_document_to_index_layer' do
           subject { described_class.write_nesting_document_to_index_layer(nesting_document: 1) }
           it 'is defined but requires implementation in classes that extend this class (see documentation)' do

@@ -58,18 +58,6 @@ module Samvera
 
         # @api private
         # @see README.md
-        # @param id [String]
-        # @param parent_ids [Array<String>]
-        # @param ancestors [Array<String>]
-        # @param pathnames [Array<String>]
-        # @param deepest_nested_depth [Integer]
-        # @return [Hash] - the attributes written to the indexing layer
-        def self.write_document_attributes_to_index_layer(id:, parent_ids:, ancestors:, pathnames:, deepest_nested_depth:)
-          Index.write_document(id: id, parent_ids: parent_ids, ancestors: ancestors, pathnames: pathnames, deepest_nested_depth: deepest_nested_depth)
-        end
-
-        # @api private
-        # @see README.md
         # @param nesting_document [Samvera::NestingIndexer::Documents::IndexDocument]
         def self.write_nesting_document_to_index_layer(nesting_document:)
           Index.write_to_storage(nesting_document)
@@ -175,10 +163,6 @@ module Samvera
 
           def self.write_to_storage(doc)
             Storage.write(doc)
-          end
-
-          def self.write_document(attributes = {})
-            Documents::IndexDocument.new(attributes).tap { |doc| write_to_storage(doc) }
           end
 
           # :nodoc:

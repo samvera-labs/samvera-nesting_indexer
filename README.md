@@ -113,6 +113,8 @@ The following sequence diagram documents the interactions in [Samvera::NestingIn
 
 See [the text-based version of Reindex Relationship diagram](documentation/reindex_relationship.mermaid), leveraging the [Mermaid syntax](https://mermaidjs.github.io).
 
+See [documentation/README.md](documentation/README.md) for details on updating the diagram.
+
 ## Considerations
 
 Given a single object A, when we reindex A, we:

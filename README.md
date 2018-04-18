@@ -109,7 +109,7 @@ end
 
 The following sequence diagram documents the interactions in [Samvera::NestingIndexer::RelationshipReindexer](lib/samvera/nesting_indexer/relationship_reindexer.rb).
 
-![Reindex Relationship Diagram](documentation/reindex_relationship.mermaid.jpg)
+![Reindex Relationship Diagram](documentation/reindex_relationship.mermaid.png)
 
 See [the text-based version of Reindex Relationship diagram](documentation/reindex_relationship.mermaid), leveraging the [Mermaid syntax](https://mermaidjs.github.io).
 

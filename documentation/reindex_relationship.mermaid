@@ -15,8 +15,9 @@ sequenceDiagram
         Indexer-->>Adapter: adapter.find_preservation_document_by(id:)
         Adapter-->>Preservation: get preservation document
         Preservation-->>Indexer: receive preservation document
+        Indexer-->>Indexer: build_nesting_document_for(preservation document)
         Indexer-->>Indexer: guard_against_possiblity_of_self_ancestry
-        Indexer-->>Adapter: adapter.write_document_attributes_to_index_layer
+        Indexer-->>Adapter: adapter.write_nesting_document_to_index_layer
         Adapter-->>Index: write updated application index document
         Indexer-->>Indexer: enqueue children
     end

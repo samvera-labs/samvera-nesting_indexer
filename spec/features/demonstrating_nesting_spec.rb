@@ -65,7 +65,7 @@ module Samvera
         ].each do |the_scenario|
           it "works for #{the_scenario.fetch(:label)}" do
             build_graph(the_scenario.fetch(:starting_graph))
-            NestingIndexer.reindex_all!
+            NestingIndexer.reindex_all!(extent: "full")
             the_scenario.fetch(:expectations).each do |expectation|
               verify_allowed_parent_ids(expectation)
             end

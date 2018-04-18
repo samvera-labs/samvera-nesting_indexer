@@ -79,21 +79,6 @@ if defined?(RSpec)
         expect(block_parameter_extracter.call(subject)).to eq([:block])
       end
     end
-    describe '.write_document_attributes_to_index_layer' do
-      subject { described_class.method(:write_document_attributes_to_index_layer) }
-
-      it 'requires the :ancestors, :deepest_nested_depth, :id, :parent_ids, and :pathnames keyword (and does not require any others)' do
-        expect(required_keyword_parameters.call(subject)).to eq(%i(ancestors deepest_nested_depth id parent_ids pathnames))
-      end
-
-      it 'does not require any other parameters (besides :attributes)' do
-        expect(required_parameters.call(subject)).to eq(required_keyword_parameters.call(subject))
-      end
-
-      it 'does not expect a block' do
-        expect(block_parameter_extracter.call(subject)).to be_empty
-      end
-    end
 
     describe '.write_nesting_document_to_index_layer' do
       subject { described_class.method(:write_nesting_document_to_index_layer) }

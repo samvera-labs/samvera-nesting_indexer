@@ -1,5 +1,4 @@
 require 'dry-equalizer'
-require 'samvera/nesting_indexer/semver_assistant'
 
 module Samvera
   module NestingIndexer
@@ -7,7 +6,7 @@ module Samvera
     module Documents
       ANCESTOR_AND_PATHNAME_DELIMITER = '/'.freeze
 
-      # @api public
+      # @api private
       #
       # A simplified document that reflects the necessary attributes for re-indexing
       # the children of Fedora objects.
@@ -16,21 +15,18 @@ module Samvera
           @id = keywords.fetch(:id).to_s
           @parent_ids = Array(keywords.fetch(:parent_ids))
         end
-        SemverAssistant.removing_from_public_api(context: self, as_of: '2.0.0')
 
-        # @api public
+        # @api private
         # @return String The Fedora object's PID
         attr_reader :id
-        SemverAssistant.removing_from_public_api(context: "#{self}#id", as_of: '2.0.0')
 
-        # @api public
+        # @api private
         #
         # All of the direct parents of the Fedora document associated with the given PID.
         #
         # This does not include grandparents, great-grandparents, etc.
         # @return Array<String>
         attr_reader :parent_ids
-        SemverAssistant.removing_from_public_api(context: "#{self}#parent_id", as_of: '2.0.0')
       end
 
       # @api public
@@ -106,18 +102,18 @@ module Samvera
           end.max
         end
 
+        # @api private
         def sorted_parent_ids
-          SemverAssistant.removing_from_public_api(context: "#{self.class}##{__method__}", as_of: '2.0.0')
           parent_ids.sort
         end
 
+        # @api private
         def sorted_pathnames
-          SemverAssistant.removing_from_public_api(context: "#{self.class}##{__method__}", as_of: '2.0.0')
           pathnames.sort
         end
 
+        # @api private
         def sorted_ancestors
-          SemverAssistant.removing_from_public_api(context: "#{self.class}##{__method__}", as_of: '2.0.0')
           ancestors.sort
         end
       end

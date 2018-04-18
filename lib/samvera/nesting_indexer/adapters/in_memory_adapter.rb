@@ -4,34 +4,30 @@ require 'samvera/nesting_indexer/documents'
 module Samvera
   module NestingIndexer
     module Adapters
-      # @api public
+      # @api private
       #
       # Defines the interface for interacting with the InMemory layer. It is a reference
       # implementation that is used throughout tests.
       module InMemoryAdapter
-        SemverAssistant.removing_from_public_api(context: self, as_of: '2.0.0')
         extend AbstractAdapter
-        # @api public
+        # @api private
         # @param id [String]
         # @return Samvera::NestingIndexer::Document::PreservationDocument
         def self.find_preservation_document_by(id:)
-          SemverAssistant.removing_from_public_api(context: "#{self.class}##{__method__}", as_of: '2.0.0')
           Preservation.find(id)
         end
 
-        # @api public
+        # @api private
         # @param id [String]
         # @return [Samvera::NestingIndexer::Documents::IndexDocument]
         def self.find_index_document_by(id:)
-          SemverAssistant.removing_from_public_api(context: "#{self.class}##{__method__}", as_of: '2.0.0')
           Index.find(id)
         end
 
-        # @api public
+        # @api private
         # @yieldparam id [String] The `id` of the preservation document
         # @yieldparam parent_ids [String] The ids of the parent objects of this presevation document
         def self.each_perservation_document_id_and_parent_ids(&block)
-          SemverAssistant.removing_from_public_api(context: "#{self.class}##{__method__}", as_of: '2.0.0')
           Preservation.find_each do |document|
             block.call(document.id, document.parent_ids)
           end
@@ -41,45 +37,29 @@ module Samvera
           Preservation.find(id).parent_ids
         end
 
-        # @api public
+        # @api private
         # @param document [Samvera::NestingIndexer::Documents::IndexDocument]
         # @param extent [String] passed into adapter from reindex_relationships call
         # @yield [Samvera::NestingIndexer::Documents::IndexDocument]
         # rubocop:disable Lint/UnusedMethodArgument
         def self.each_child_document_of(document:, extent:, &block)
-          SemverAssistant.removing_from_public_api(context: "#{self.class}##{__method__}", as_of: '2.0.0')
-          Index.each_child_document_of(document: document, extent: nil, &block)
+          Index.each_child_document_of(document: document, extent: "full", &block)
         end
         # rubocop:enable Lint/UnusedMethodArgument
 
-        # @api public
+        # @api private
         # This is not something that I envision using in the production environment;
         # It is hear to keep the Preservation system isolated and accessible only through interfaces.
         # @param attributes [Hash]
         # @return [Samvera::NestingIndexer::Documents::PreservationDocument]
         def self.write_document_attributes_to_preservation_layer(attributes)
-          SemverAssistant.removing_from_public_api(context: "#{self.class}##{__method__}", as_of: '2.0.0')
           Preservation.write_document(attributes)
         end
 
-        # @api public
-        # @see README.md
-        # @param id [String]
-        # @param parent_ids [Array<String>]
-        # @param ancestors [Array<String>]
-        # @param pathnames [Array<String>]
-        # @param deepest_nested_depth [Integer]
-        # @return [Hash] - the attributes written to the indexing layer
-        def self.write_document_attributes_to_index_layer(id:, parent_ids:, ancestors:, pathnames:, deepest_nested_depth:)
-          SemverAssistant.removing_from_public_api(context: "#{self.class}##{__method__}", as_of: '2.0.0')
-          Index.write_document(id: id, parent_ids: parent_ids, ancestors: ancestors, pathnames: pathnames, deepest_nested_depth: deepest_nested_depth)
-        end
-
-        # @api public
+        # @api private
         # @see README.md
         # @param nesting_document [Samvera::NestingIndexer::Documents::IndexDocument]
         def self.write_nesting_document_to_index_layer(nesting_document:)
-          SemverAssistant.removing_from_public_api(context: "#{self.class}##{__method__}", as_of: '2.0.0')
           Index.write_to_storage(nesting_document)
         end
 
@@ -183,10 +163,6 @@ module Samvera
 
           def self.write_to_storage(doc)
             Storage.write(doc)
-          end
-
-          def self.write_document(attributes = {})
-            Documents::IndexDocument.new(attributes).tap { |doc| write_to_storage(doc) }
           end
 
           # :nodoc:

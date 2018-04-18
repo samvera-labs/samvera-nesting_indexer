@@ -36,14 +36,7 @@ module Samvera
         end
 
         describe '.each_child_document_of' do
-          subject { described_class.each_child_document_of(document: double, extent: nil) }
-          it 'is defined but requires implementation in classes that extend this class (see documentation)' do
-            expect { subject }.to raise_error(NotImplementedError)
-          end
-        end
-
-        describe '.write_document_attributes_to_index_layer' do
-          subject { described_class.write_document_attributes_to_index_layer(id: 1, parent_ids: 2, ancestors: 3, pathnames: 4, deepest_nested_depth: 5) }
+          subject { described_class.each_child_document_of(document: double, extent: "full") }
           it 'is defined but requires implementation in classes that extend this class (see documentation)' do
             expect { subject }.to raise_error(NotImplementedError)
           end

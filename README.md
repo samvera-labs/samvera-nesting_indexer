@@ -182,3 +182,9 @@ Then run `rails generator install samvera:nesting_indexer:install`.
 - [ ] Promote from [samvera-labs](https://github.com/samvera-labs) to [samvera](https://github.com/samvera) via the [promotion process](http://samvera-labs.github.io/promotion.html).
 - [ ] Write adapter method to assist in guarding against self-ancestry. We could probably expose a base adapter that has the method through use of the other adapter methods.
 - [ ] Add templates to generate the configuration
+
+## Contributing 
+
+If you're working on a PR for this project, create a feature branch off of `main`. 
+
+This repository follows the [Samvera Community Code of Conduct](https://samvera.atlassian.net/wiki/spaces/samvera/pages/405212316/Code+of+Conduct) and [language recommendations](https://github.com/samvera/maintenance/blob/master/templates/CONTRIBUTING.md#language).  Please ***do not*** create a branch called `master` for this repository or as part of your pull request; the branch will either need to be removed or renamed before it can be considered for inclusion in the code base and history of this repository.
